@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doglist - Pesquisa</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="lib/supabase.js"></script>
     <script>
         // Verifica se está logado
         if (!localStorage.getItem('loggedIn')) {
@@ -80,7 +79,7 @@
             return await getCurrentLocation();
         }
 
-        // Função modificada para buscar cães via Supabase
+        // Função para carregar e filtrar os cães
         async function loadDogs(filters = {}) {
             const results = document.querySelector('.results');
             results.innerHTML = '<div class="no-results">Carregando...</div>';
@@ -89,56 +88,12 @@
                 // Obter localização (atual ou por endereço)
                 const userLocation = await getLocation();
                 const radius = parseFloat(document.getElementById('radius').value) || 5;
-                
-                // Montar filtros para o Supabase
-                // Note que alguns filtros podem não precisar de tradução
-                const supabaseFilters = {};
-                
-                if (filters.estado) {
-                    supabaseFilters.estado = filters.estado.toLowerCase();
-                }
-                
-                if (filters.raca) {
-                    // Supabase não suporta LIKE nativamente via API, então fazemos isso após o fetch
-                }
-                
-                if (filters.idade && filters.idade !== 'unknown') {
-                    supabaseFilters.idade = filters.idade;
-                }
-                
-                if (filters.sexo && filters.sexo !== 'unknown') {
-                    supabaseFilters.sexo = filters.sexo;
-                }
-                
-                if (filters.castrado && filters.castrado !== 'unknown') {
-                    supabaseFilters.castrado = filters.castrado;
-                }
-                
-                if (filters.agressivo && filters.agressivo !== 'unknown') {
-                    supabaseFilters.agressivo = filters.agressivo;
-                }
-                
-                if (filters.porte) {
-                    supabaseFilters.porte = filters.porte;
-                }
-                
-                // Buscar cães do Supabase
-                const result = await window.supabaseServices.getDogs(supabaseFilters);
-                
-                if (!result.success) {
-                    throw new Error(result.error || 'Erro ao buscar animais');
-                }
-                
-                // Filtrar por raça e distância no cliente
-                let filteredDogs = result.dogs.filter(dog => {
+                const allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
+
+                const filteredDogs = allDogs.filter(dog => {
                     let matches = true;
-                    
-                    // Filtrar por raça (contains) se necessário
-                    if (filters.raca && dog.raca) {
-                        matches = matches && dog.raca.toLowerCase().includes(filters.raca.toLowerCase());
-                    }
-                    
-                    // Filtrar por distância se o cão tem coordenadas
+
+                    // Verificar distância se o cão tem coordenadas
                     if (dog.location && dog.location.lat && dog.location.lng) {
                         const distance = calculateDistance(
                             userLocation.lat,
@@ -148,15 +103,38 @@
                         );
                         matches = matches && (distance <= radius);
                     }
-                    
+
+                    // Aplicar outros filtros - ignora o filtro quando valor é "unknown"
+                    if (filters.estado && dog.estado) {
+                        matches = matches && dog.estado.toLowerCase() === filters.estado.toLowerCase();
+                    }
+                    if (filters.raca && dog.raca) {
+                        matches = matches && dog.raca.toLowerCase().includes(filters.raca.toLowerCase());
+                    }
+                    if (filters.idade && filters.idade !== 'unknown' && dog.idade) {
+                        matches = matches && dog.idade === filters.idade;
+                    }
+                    if (filters.sexo && filters.sexo !== 'unknown' && dog.sexo) {
+                        matches = matches && dog.sexo === filters.sexo;
+                    }
+                    if (filters.castrado && filters.castrado !== 'unknown' && dog.castrado) {
+                        matches = matches && dog.castrado === filters.castrado;
+                    }
+                    if (filters.agressivo && filters.agressivo !== 'unknown' && dog.agressivo) {
+                        matches = matches && dog.agressivo === filters.agressivo;
+                    }
+                    if (filters.porte && dog.porte) {
+                        matches = matches && dog.porte === filters.porte;
+                    }
+
                     return matches;
                 });
-                
+
                 if (filteredDogs.length === 0) {
                     results.innerHTML = '<div class="no-results">Nenhum cão encontrado com estes filtros</div>';
                     return;
                 }
-                
+
                 // Adicionar a distância a cada resultado
                 const dogsWithDistance = filteredDogs.map(dog => {
                     let distance = 'Distância não disponível';
@@ -171,7 +149,7 @@
                     }
                     return { ...dog, distance };
                 });
-                
+
                 // Ordenar por distância
                 dogsWithDistance.sort((a, b) => {
                     if (!a.location || !b.location) return 0;
@@ -189,11 +167,10 @@
                     );
                     return distA - distB;
                 });
-                
-                // Renderizar os resultados
+
                 results.innerHTML = dogsWithDistance.map(dog => `
                     <div class="result-card">
-                    <img src="${dog.image_url || dog.image || 'Images/DogList-Logo.png'}" alt="Cachorro" class="result-image">
+                    <img src="${dog.image || 'Images/DogList-Logo.png'}" alt="Cachorro" class="result-image">
                     <div class="result-info">
                             <div class="result-status ${dog.estado?.toLowerCase()}">${dog.estado || 'Status não definido'}</div>
                             <div class="result-location">
@@ -216,6 +193,7 @@
                         </div>
                 </div>
             `).join('');
+
             } catch (error) {
                 console.error('Erro ao carregar os cães:', error);
                 results.innerHTML = `<div class="no-results">${error.message || 'Erro ao obter localização. Por favor, verifique o endereço inserido ou permita o acesso à localização.'}</div>`;
@@ -239,177 +217,8 @@
             window.location.href = `animal-details.html?id=${id}`;
         }
 
-        // Inicializar a busca ao carregar a página
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Carregar raças do Supabase
-            try {
-                const result = await window.supabaseServices.getBreeds();
-                if (result.success && Array.isArray(result.breeds)) {
-                    commonBreeds = result.breeds;
-                    console.log('Raças carregadas do Supabase:', commonBreeds.length);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar raças:', error);
-            }
-            
-            // Mostrar todos os animais inicialmente
-            loadDogs();
-            
-            // Configurar o campo de raça com autocomplete
-            setupBreedSearch();
-        });
-        
-        // Lista de raças comuns de cães em Portugal
-        const commonBreeds = [
-            // Raças portuguesas
-            "Rafeiro Alentejano", "Cão da Serra da Estrela", "Cão de Água Português", "Podengo Português",
-            "Castro Laboreiro", "Cão de Fila de São Miguel", "Barbado da Terceira", "Perdigueiro Português",
-            "Cão de Gado Transmontano", "Cão do Barrocal Algarvio", "Cão de Serra de Aires",
-            
-            // Raças mais populares em Portugal
-            "Bulldog Francês", "Labrador Retriever", "Golden Retriever", "Pastor Alemão",
-            "Yorkshire Terrier", "Beagle", "Chihuahua", "Boxer", "Jack Russell Terrier",
-            "Poodle", "Cocker Spaniel", "Dachshund", "Pug", "Cavalier King Charles Spaniel",
-            "Shih Tzu", "Border Collie", "Schnauzer Miniatura", "Rottweiler", "Pinscher Miniatura",
-            
-            // Adicione mais raças conforme necessário
-            "Cão de raça mista", "SRD (Sem Raça Definida)", "Rafeiro"
-        ];
-        
-        function setupBreedSearch() {
-            const racaInput = document.getElementById('raca');
-            const suggestionsDiv = document.createElement('div');
-            suggestionsDiv.id = 'racaSuggestions';
-            suggestionsDiv.className = 'breed-suggestions';
-            suggestionsDiv.style.position = 'absolute';
-            suggestionsDiv.style.backgroundColor = 'white';
-            suggestionsDiv.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-            suggestionsDiv.style.borderRadius = '8px';
-            suggestionsDiv.style.width = 'calc(100% - 30px)';
-            suggestionsDiv.style.maxHeight = '200px';
-            suggestionsDiv.style.overflowY = 'auto';
-            suggestionsDiv.style.zIndex = '1000';
-            suggestionsDiv.style.display = 'none';
-            
-            racaInput.parentNode.style.position = 'relative';
-            racaInput.parentNode.appendChild(suggestionsDiv);
-            
-            let searchTimeout;
-            
-            racaInput.addEventListener('input', function() {
-                const query = this.value.trim().toLowerCase();
-                
-                if (searchTimeout) {
-                    clearTimeout(searchTimeout);
-                }
-                
-                if (query.length >= 2) {
-                    searchTimeout = setTimeout(() => {
-                        const matches = commonBreeds.filter(breed => 
-                            breed.toLowerCase().includes(query)
-                        );
-                        
-                        if (matches.length > 0) {
-                            suggestionsDiv.innerHTML = '';
-                            matches.forEach(breed => {
-                                const item = document.createElement('div');
-                                item.className = 'suggestion-item';
-                                item.style.padding = '10px 15px';
-                                item.style.cursor = 'pointer';
-                                item.style.transition = 'background-color 0.2s';
-                                item.textContent = breed;
-                                
-                                item.addEventListener('mouseover', function() {
-                                    this.style.backgroundColor = '#f0f0f0';
-                                });
-                                
-                                item.addEventListener('mouseout', function() {
-                                    this.style.backgroundColor = '';
-                                });
-                                
-                                item.addEventListener('click', function() {
-                                    racaInput.value = breed;
-                                    suggestionsDiv.style.display = 'none';
-                                    // Acionar a pesquisa
-                                    handleSearch();
-                                });
-                                
-                                suggestionsDiv.appendChild(item);
-                            });
-                            
-                            // Adicionar opção "Outro"
-                            const outroItem = document.createElement('div');
-                            outroItem.className = 'suggestion-item outro-option';
-                            outroItem.style.padding = '10px 15px';
-                            outroItem.style.cursor = 'pointer';
-                            outroItem.style.transition = 'background-color 0.2s';
-                            outroItem.style.borderTop = '1px solid #eee';
-                            outroItem.style.fontWeight = 'bold';
-                            outroItem.style.color = '#FF7F50';
-                            outroItem.textContent = "Outro - Escrever raça";
-                            
-                            outroItem.addEventListener('mouseover', function() {
-                                this.style.backgroundColor = '#f0f0f0';
-                            });
-                            
-                            outroItem.addEventListener('mouseout', function() {
-                                this.style.backgroundColor = '';
-                            });
-                            
-                            outroItem.addEventListener('click', function() {
-                                racaInput.value = '';
-                                racaInput.placeholder = "Digite a raça do cão";
-                                racaInput.focus();
-                                suggestionsDiv.style.display = 'none';
-                            });
-                            
-                            suggestionsDiv.appendChild(outroItem);
-                            suggestionsDiv.style.display = 'block';
-                        } else {
-                            suggestionsDiv.innerHTML = '<div class="suggestion-item" style="padding: 10px 15px;">Nenhuma raça encontrada</div>';
-                            
-                            // Adicionar opção "Outro" quando não há resultados
-                            const outroItem = document.createElement('div');
-                            outroItem.className = 'suggestion-item outro-option';
-                            outroItem.style.padding = '10px 15px';
-                            outroItem.style.cursor = 'pointer';
-                            outroItem.style.transition = 'background-color 0.2s';
-                            outroItem.style.borderTop = '1px solid #eee';
-                            outroItem.style.fontWeight = 'bold';
-                            outroItem.style.color = '#FF7F50';
-                            outroItem.textContent = "Outro - Escrever raça";
-                            
-                            outroItem.addEventListener('mouseover', function() {
-                                this.style.backgroundColor = '#f0f0f0';
-                            });
-                            
-                            outroItem.addEventListener('mouseout', function() {
-                                this.style.backgroundColor = '';
-                            });
-                            
-                            outroItem.addEventListener('click', function() {
-                                racaInput.value = '';
-                                racaInput.placeholder = "Digite a raça do cão";
-                                racaInput.focus();
-                                suggestionsDiv.style.display = 'none';
-                            });
-                            
-                            suggestionsDiv.appendChild(outroItem);
-                            suggestionsDiv.style.display = 'block';
-                        }
-                    }, 200);
-                } else {
-                    suggestionsDiv.style.display = 'none';
-                }
-            });
-            
-            // Esconder sugestões ao clicar fora
-            document.addEventListener('click', function(e) {
-                if (e.target !== racaInput && e.target !== suggestionsDiv) {
-                    suggestionsDiv.style.display = 'none';
-                }
-            });
-        }
+        // Carregar resultados iniciais
+        loadDogs();
     </script>
     <style>
         * {
@@ -785,5 +594,74 @@
             <div class="results"></div>
         </div>
     </div>
+
+    <script>
+        // Função para exibir os resultados
+        function displayResults(animals) {
+            const resultsContainer = document.querySelector('.results');
+            resultsContainer.innerHTML = '';
+
+            if (animals.length === 0) {
+                resultsContainer.innerHTML = '<div class="no-results">Nenhum animal encontrado com os critérios de busca.</div>';
+                return;
+            }
+
+            animals.forEach(animal => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+
+                // Determinar a imagem
+                let imageSrc = 'Images/DogList-Logo.png';
+                if (animal.image) {
+                    if (animal.image.startsWith('data:image')) {
+                        imageSrc = animal.image;
+                    } else {
+                        imageSrc = 'Images/' + animal.image;
+                    }
+                } else if (animal.selectedImage) {
+                    imageSrc = animal.selectedImage;
+                }
+
+                // Traduzir o estado para exibição
+                const statusLabel = animal.estado === 'encontrado' ? 'Encontrado' : 'Procurado';
+                const statusClass = animal.estado === 'encontrado' ? 'encontrado' : 'procurado';
+
+                // Obter endereço formatado
+                const address = animal.location?.address || animal.local || 'Localização não especificada';
+
+                // Criar o HTML do card
+                card.innerHTML = `
+                    <div style="width: 100%; height: 220px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                        <img src="${imageSrc}" alt="${animal.raca}" class="result-image">
+                    </div>
+                    <div class="result-info">
+                        <div class="result-status ${statusClass}">${statusLabel}</div>
+                        <div class="result-breed">
+                            <i class="fas fa-dog"></i>
+                            <span>${animal.raca || 'Raça não especificada'}</span>
+                        </div>
+                        <div class="result-address">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${address}</span>
+                        </div>
+                        <div class="result-contact">
+                            <i class="fas fa-phone"></i>
+                            <span>${animal.contacto || 'Contato não disponível'}</span>
+                        </div>
+                        <a href="animal-details.html?id=${animal.id}" class="see-more">Ver Detalhes</a>
+                    </div>
+                `;
+
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        // Inicializar a busca ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar todos os animais inicialmente
+            const animals = JSON.parse(localStorage.getItem('allDogs')) || [];
+            displayResults(animals);
+        });
+    </script>
 </body>
 </html>

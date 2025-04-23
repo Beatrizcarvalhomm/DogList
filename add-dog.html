@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="lib/supabase.js"></script>
     <style>
         * {
             margin: 0;
@@ -342,17 +341,6 @@
             margin-left: 4px;
         }
 
-        .suggestion-item.outro-option {
-            border-top: 1px solid #eee;
-            font-weight: bold;
-            color: #FF7F50;
-            background-color: #FFF8F5;
-        }
-        
-        .suggestion-item.outro-option:hover {
-            background-color: #FFE4D6;
-        }
-
         /* Responsiveness */
         @media (max-width: 768px) {
             .content {
@@ -565,25 +553,57 @@
         let breedSearchTimeout;
         
         // Lista de raças comuns de cães em Portugal
-        let commonBreeds = [];
-        
-        // Carregar lista de raças do Supabase
-        async function loadBreeds() {
-            try {
-                const result = await window.supabaseServices.getBreeds();
-                if (result.success && Array.isArray(result.breeds)) {
-                    commonBreeds = result.breeds;
-                    console.log('Raças carregadas do Supabase:', commonBreeds.length);
-                } else {
-                    // Usar a lista local como fallback
-                    console.warn('Usando lista local de raças como fallback');
-                    // Manter a lista existente
-                }
-            } catch (error) {
-                console.error('Erro ao carregar raças:', error);
-                // Manter a lista existente como fallback
-            }
-        }
+        const commonBreeds = [
+            // Raças portuguesas
+            "Rafeiro Alentejano", "Cão da Serra da Estrela", "Cão de Água Português", "Podengo Português",
+            "Castro Laboreiro", "Cão de Fila de São Miguel", "Barbado da Terceira", "Perdigueiro Português",
+            "Cão de Gado Transmontano", "Cão do Barrocal Algarvio", "Cão de Serra de Aires",
+            
+            // Raças internacionais populares
+            "Affenpinscher", "Airedale Terrier", "Akita", "Akita Americano", "Akita Japonês", "Alapaha Blue Blood Bulldog",
+            "American Bully", "American Staffordshire Terrier", "Antigo Cão de Pastor Inglês", "Basenji",
+            "Basset Hound", "Beagle", "Bearded Collie", "Beauceron", "Bedlington Terrier", "Bichon Frisé",
+            "Bloodhound", "Boerboel", "Boiadeiro Australiano", "Boiadeiro Bernês", "Border Collie", "Border Terrier",
+            "Boston Terrier", "Boxer", "Braco Alemão", "Braco Húngaro de Pelo Curto", "Braco Italiano", "Briard",
+            "Brittany", "Buldogue Americano", "Buldogue Francês", "Buldogue Inglês", "Bull Terrier", "Bull Terrier Miniatura",
+            "Bulldog Americano", "Bullmastiff", "Cairn Terrier", "Cane Corso", "Cão Chinês de Crista", "Cão de Montanha dos Pirenéus",
+            "Cão de Pastor Alemão", "Cão de Pastor Australiano", "Cão de Pastor Belga", "Cão de Pastor Branco Suíço",
+            "Cão de Pastor Catalão", "Cão de Pastor de Beauce", "Cão de Pastor de Brie", "Cão de Pastor de Shetland",
+            "Cão de Santo Humberto", "Cão d'Água Espanhol", "Cão d'Água Português", "Cão Lobo Checoslovaco",
+            "Cavalier King Charles Spaniel", "Chesapeake Bay Retriever", "Chihuahua", "Chin Japonês", "Chow Chow",
+            "Cirneco do Etna", "Clumber Spaniel", "Cocker Spaniel Americano", "Cocker Spaniel Inglês", "Collie",
+            "Coonhound", "Corgi Galês Cardigan", "Corgi Galês Pembroke", "Curly-Coated Retriever", "Dachshund",
+            "Dálmata", "Dandie Dinmont Terrier", "Deerhound", "Dobermann", "Dogo Argentino", "Dogo Canário",
+            "Dogue Alemão", "Dogue de Bordeaux", "Dogue do Tibete", "Drever", "Elkhound Norueguês", "Épagneul Bretão",
+            "Eurasier", "Fila Brasileiro", "Flat-Coated Retriever", "Fox Terrier", "Foxhound Americano", "Foxhound Inglês",
+            "Galgo Espanhol", "Galgo Italiano", "Galgo Persa", "Golden Retriever", "Grande Boiadeiro Suíço",
+            "Grande Münsterländer", "Greyhound", "Griffon Bruxelois", "Griffon de Pelo Duro", "Harrier", "Havanese",
+            "Hokkaido", "Husky Siberiano", "Irish Terrier", "Jack Russell Terrier", "Keeshond", "Kelpie Australiano",
+            "Kerry Blue Terrier", "King Charles Spaniel", "Komondor", "Kuvasz", "Labradoodle", "Labrador Retriever",
+            "Lagotto Romagnolo", "Lakeland Terrier", "Lancashire Heeler", "Leonberger", "Lhasa Apso", "Lulu da Pomerânia",
+            "Malamute do Alasca", "Maltês", "Manchester Terrier", "Mastiff", "Mastim Espanhol", "Mastim Napolitano",
+            "Mastim Tibetano", "Norwich Terrier", "Nova Scotia Duck Tolling Retriever", "Old English Sheepdog",
+            "Otterhound", "Papillon", "Pastor Alemão", "Pastor Australiano", "Pastor Belga Malinois", 
+            "Pastor Belga Tervuren", "Pastor Bergamasco", "Pastor Branco Suíço", "Pastor Cáucaso", 
+            "Pastor da Ásia Central", "Pastor de Beauce", "Pastor dos Pirinéus", "Pequeno Cão Leão", 
+            "Pequinês", "Perdigueiro Português", "Pharaoh Hound", "Pinscher Alemão", "Pinscher Miniatura",
+            "Pit Bull Terrier Americano", "Podenco Ibicenco", "Podengo Português", "Pointer Inglês", "Poodle",
+            "Poodle Miniatura", "Poodle Toy", "Pug", "Puli", "Pumi", "Racka", "Rottweiler", "Saluki",
+            "Samoieda", "São Bernardo", "Schipperke", "Schnauzer", "Schnauzer Gigante", "Schnauzer Miniatura",
+            "Scottish Terrier", "Sealyham Terrier", "Setter Gordon", "Setter Inglês", "Setter Irlandês",
+            "Shar Pei", "Shiba Inu", "Shih Tzu", "Skye Terrier", "Sloughi", "Spaniel Bretão", "Spaniel do Campo",
+            "Spaniel dos Campos", "Spaniel Francês", "Spaniel Japonês", "Spaniel Tibetano", "Spitz Alemão",
+            "Spitz Finlandês", "Spitz Japonês", "Springer Spaniel Inglês", "Stabyhoun", "Staffordshire Bull Terrier",
+            "Swedish Vallhund", "Teckel", "Terra Nova", "Terrier Brasileiro", "Terrier Checo", "Terrier Escocês",
+            "Terrier Irlandês", "Terrier Japonês", "Terrier Norfolk", "Terrier Norwich", "Terrier Preto da Rússia",
+            "Terrier Tibetano", "Tosa Inu", "Vizsla", "Vulpino Italiano", "Weimaraner", "Welsh Springer Spaniel",
+            "Welsh Terrier", "West Highland White Terrier", "Whippet", "Xoloitzcuintle", "Yorkshire Terrier",
+            
+            // Cães de raça mista comuns
+            "Labradoodle", "Goldendoodle", "Cockapoo", "Maltipoo", "Puggle", "Schnoodle", "Cavachon", "Pomsky", 
+            "Cavapoo", "Chorkie", "Chiweenie", "Morkie", "Poochon", "Sheepadoodle", "Bernedoodle", "Aussiepoo",
+            "Cão de raça mista", "SRD (Sem Raça Definida)", "Rafeiro"
+        ];
 
         function initMap(lat, lng) {
             // Default to Lisbon if no coordinates provided
@@ -830,35 +850,9 @@
                                 });
                                 suggestionsContainer.appendChild(div);
                             });
-                            
-                            // Adicionar opção "Outro" no final das sugestões
-                            const outroDiv = document.createElement('div');
-                            outroDiv.className = 'suggestion-item outro-option';
-                            outroDiv.textContent = "Outro - Escrever raça";
-                            outroDiv.addEventListener('click', function() {
-                                breedInput.value = '';
-                                breedInput.placeholder = "Digite a raça do cão";
-                                breedInput.focus();
-                                suggestionsContainer.style.display = 'none';
-                            });
-                            suggestionsContainer.appendChild(outroDiv);
-                            
                             suggestionsContainer.style.display = 'block';
                         } else {
                             suggestionsContainer.innerHTML = '<div class="suggestion-item">Nenhuma raça encontrada</div>';
-                            
-                            // Adicionar opção "Outro" quando não há resultados
-                            const outroDiv = document.createElement('div');
-                            outroDiv.className = 'suggestion-item outro-option';
-                            outroDiv.textContent = "Outro - Escrever raça";
-                            outroDiv.addEventListener('click', function() {
-                                breedInput.value = '';
-                                breedInput.placeholder = "Digite a raça do cão";
-                                breedInput.focus();
-                                suggestionsContainer.style.display = 'none';
-                            });
-                            suggestionsContainer.appendChild(outroDiv);
-                            
                             suggestionsContainer.style.display = 'block';
                         }
                     }, 200); // Shorter timeout as it's a local search
@@ -1000,22 +994,20 @@
                 return;
             }
             
-            // Se todos os campos estiverem válidos, prosseguir com o envio
-            try {
-                const formData = new FormData(this);
-                const imageFile = document.getElementById('photoInput').files[0];
-                
-                // Get breed value (might be empty now)
-                const breedValue = document.getElementById('breedSearch').value.trim();
+            const formData = new FormData(this);
+            const imageFile = document.getElementById('photoInput').files[0];
+            
+            // Get breed value (might be empty now)
+            const breedValue = document.getElementById('breedSearch').value.trim();
 
-                // Compress image before saving
+            // Compress image before saving
+            try {
                 const compressedImage = await compressImage(imageFile);
-                const imageBase64 = await blobToBase64(compressedImage);
                 
-                // Prepare dog data
-                const dogData = {
-                    user_id: localStorage.getItem('currentUserId'),
-                    image: imageBase64,
+                const dog = {
+                    id: generateUniqueId(),
+                    userId: localStorage.getItem('currentUserId'),
+                    image: await blobToBase64(compressedImage),
                     estado: formData.get('estado'),
                     location: {
                         lat: document.getElementById('latitude').value,
@@ -1029,31 +1021,27 @@
                     agressivo: formData.get('agressivo'),
                     porte: formData.get('porte'),
                     contacto: document.getElementById('contact').value,
-                    user_name: localStorage.getItem('userName') || 'Usuário'
+                    dataAdicao: new Date().toISOString(),
+                    userName: localStorage.getItem('userName') || 'Usuário'
                 };
 
-                // Mostrar indicador de carregamento
-                const saveButton = document.querySelector('.save-button');
-                saveButton.disabled = true;
-                saveButton.textContent = 'Salvando...';
-
-                // Salvar no Supabase
-                const result = await window.supabaseServices.saveDog(dogData);
-
-                if (result.success) {
+                let allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
+                allDogs.push(dog);
+                
+                try {
+                    localStorage.setItem('allDogs', JSON.stringify(allDogs));
                     alert('Animal adicionado com sucesso!');
                     window.location.href = 'account.html';
-                } else {
-                    throw new Error(result.error);
+                } catch (error) {
+                    if (error.name === 'QuotaExceededError') {
+                        alert('Não foi possível salvar. Armazenamento cheio. Por favor, remova alguns itens antigos.');
+                    } else {
+                        alert('Erro ao salvar. Por favor, tente novamente.');
+                    }
                 }
             } catch (error) {
-                console.error('Erro ao adicionar animal:', error);
-                alert('Erro ao adicionar animal: ' + error.message);
-                
-                // Restaurar o botão
-                const saveButton = document.querySelector('.save-button');
-                saveButton.disabled = false;
-                saveButton.textContent = 'Adicionar Animal';
+                console.error('Erro ao processar imagem:', error);
+                alert('Erro ao processar a imagem. Por favor, tente novamente.');
             }
         });
 
@@ -1112,32 +1100,36 @@
             });
         }
 
-        // Inicializar mapa, pesquisa de raças, e carregar raças do Supabase
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Carregar raças do Supabase
-            await loadBreeds();
-            
-            // Inicializar mapa
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        initMap(position.coords.latitude, position.coords.longitude);
-                    },
-                    (error) => {
-                        console.error('Erro ao obter localização:', error);
-                        initMap(); // Will use default Lisbon coordinates
-                    }
-                );
-            } else {
-                initMap(); // Will use default Lisbon coordinates
-            }
-            
-            // Preencher automaticamente o campo de contato com o número do usuário
+        // Inicializar mapa e pesquisa de raças
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    initMap(position.coords.latitude, position.coords.longitude);
+                },
+                (error) => {
+                    console.error('Erro ao obter localização:', error);
+                    initMap(); // Will use default Lisbon coordinates
+                }
+            );
+        } else {
+            initMap(); // Will use default Lisbon coordinates
+        }
+        
+        // Initialize breed search
+        setupBreedSearch();
+
+        // Preencher automaticamente o campo de contato com o número do usuário
+        document.addEventListener('DOMContentLoaded', function() {
             const userPhone = localStorage.getItem('userPhone');
             if (userPhone) {
                 document.getElementById('contact').value = userPhone;
             }
         });
+
+        // Função para gerar um ID único
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
     </script>
 </body>
 </html>

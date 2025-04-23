@@ -4,235 +4,243 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Termos - Doglist</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
 
         body {
             background-color: #FFE4D6;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            color: #333;
         }
 
         .container {
             width: 100%;
-            max-width: 500px;
-            padding: 30px;
-            margin: 30px;
-            background-color: white;
-            border-radius: 40px;
-            position: relative;
-            min-height: 85vh;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
-            background-color: #FFE4D6;
-            margin: -20px -20px 0;
-            padding: 30px 20px;
-            border-radius: 40px 40px 0 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin: 0 20px;
+            border-radius: 0 0 20px 20px;
         }
 
         .back-button {
-            font-size: 24px;
+            font-size: 28px;
             text-decoration: none;
-            color: #000;
+            color: #FF7F50;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
         }
 
-        h1 {
-            color: #000;
-            font-size: 32px;
-            font-weight: bold;
+        .back-button:hover {
+            background-color: #FFE4D6;
+            transform: translateX(-3px);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: 0.5px;
         }
 
         .content {
-            padding: 30px 20px;
-            background: white;
-            border-radius: 20px;
-            margin-top: 20px;
-        }
-
-        .terms-text {
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 20px;
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .terms-section {
-            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .terms-section:last-child {
+            margin-bottom: 40px;
         }
 
         .terms-section h2 {
-            font-size: 18px;
-            margin-bottom: 12px;
             color: #FF7F50;
-            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .terms-section p {
-            font-size: 14px;
-            margin-bottom: 12px;
-            line-height: 1.4;
+            font-size: 16px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #444;
         }
 
-        .checkbox-container {
-            position: fixed;
-            bottom: 40px;
-            right: 40px;
-            background: #FF7F50;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+        .terms-list {
+            list-style-type: none;
+            margin-bottom: 15px;
+        }
+
+        .terms-list li {
+            font-size: 16px;
+            padding: 10px 0;
+            color: #444;
             display: flex;
-            justify-content: center;
             align-items: center;
-            cursor: pointer;
+            gap: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .checkbox-container input {
-            width: 25px;
-            height: 25px;
-            cursor: pointer;
+        .terms-list li:last-child {
+            border-bottom: none;
         }
 
-        .paw-prints-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
+        .terms-list li i {
+            color: #FF7F50;
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .accept-button {
+            display: block;
             width: 100%;
-            height: 100vh;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: -1;
+            max-width: 300px;
+            padding: 15px 30px;
+            background-color: #FF7F50;
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 30px auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.3);
         }
 
-        .paw-print {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 50 50' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 20C17.2091 20 19 18.2091 19 16C19 13.7909 17.2091 12 15 12C12.7909 12 11 13.7909 11 16C11 18.2091 12.7909 20 15 20Z' fill='%23FF7F50'/%3E%3Cpath d='M25 18C27.2091 18 29 16.2091 29 14C29 11.7909 27.2091 10 25 10C22.7909 10 21 11.7909 21 14C21 16.2091 22.7909 18 25 18Z' fill='%23FF7F50'/%3E%3Cpath d='M35 20C37.2091 20 39 18.2091 39 16C39 13.7909 37.2091 12 35 12C32.7909 12 31 13.7909 31 16C31 18.2091 32.7909 20 35 20Z' fill='%23FF7F50'/%3E%3Cpath d='M25 35C29.4183 35 33 31.4183 33 27C33 22.5817 29.4183 19 25 19C20.5817 19 17 22.5817 17 27C17 31.4183 20.5817 35 25 35Z' fill='%23FF7F50'/%3E%3C/svg%3E");
-            background-size: contain;
-            background-repeat: no-repeat;
-            opacity: 0;
-            animation: floatUpAnimation 4s ease-in-out infinite;
-            transform-origin: center;
+        .accept-button:hover {
+            background-color: #ff6a3c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 127, 80, 0.4);
         }
 
-        .paw-print:nth-child(2n) {
-            transform: scaleX(-1);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .paw-print:nth-child(1) { animation-delay: 0s; left: 5%; bottom: 0%; --rotation: -5deg; }
-        .paw-print:nth-child(2) { animation-delay: 0.5s; left: 15%; bottom: 20%; --rotation: 5deg; }
-        .paw-print:nth-child(3) { animation-delay: 1s; left: 25%; bottom: 40%; --rotation: -5deg; }
-        .paw-print:nth-child(4) { animation-delay: 1.5s; left: 35%; bottom: 60%; --rotation: 5deg; }
-        .paw-print:nth-child(5) { animation-delay: 2s; left: 45%; bottom: 80%; --rotation: -5deg; }
-        .paw-print:nth-child(6) { animation-delay: 2.5s; left: 55%; bottom: 10%; --rotation: 5deg; }
-        .paw-print:nth-child(7) { animation-delay: 3s; left: 65%; bottom: 30%; --rotation: -5deg; }
-        .paw-print:nth-child(8) { animation-delay: 3.5s; left: 75%; bottom: 50%; --rotation: 5deg; }
-        .paw-print:nth-child(9) { animation-delay: 4s; left: 85%; bottom: 70%; --rotation: -5deg; }
-        .paw-print:nth-child(10) { animation-delay: 4.5s; left: 95%; bottom: 90%; --rotation: 5deg; }
+        @media (max-width: 768px) {
+            .header {
+                margin: 0;
+                border-radius: 0;
+            }
 
-        @keyframes floatUpAnimation {
-            0% {
-                opacity: 0;
-                transform: translateY(200px) scale(0.8) rotate(var(--rotation, 0deg));
+            .content {
+                padding: 15px;
             }
-            20% {
-                opacity: 0.8;
-                transform: translateY(150px) scale(1) rotate(var(--rotation, 0deg));
-            }
-            80% {
-                opacity: 0.8;
-                transform: translateY(-150px) scale(1) rotate(var(--rotation, 0deg));
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-200px) scale(0.8) rotate(var(--rotation, 0deg));
+
+            .terms-section {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="paw-prints-container">
-        <div class="paw-print"></div>
-        <div class="paw-print"></div>
-        <div class="paw-print"></div>
-        <div class="paw-print"></div>
-        <div class="paw-print"></div>
-        <div class="paw-print"></div>
-        <div class="paw-print"></div>
-        <div class="paw-print"></div>
-        <div class="paw-print"></div>
-        <div class="paw-print"></div>
-    </div>
     <div class="container">
         <div class="header">
-            <a href="register.html" class="back-button">←</a>
-            <h1>Termos</h1>
+            <a href="register.html" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="title">Termos e Condições</h1>
         </div>
 
         <div class="content">
             <div class="terms-section">
-                <h2>1. Objetivo da Plataforma</h2>
+                <h2><i class="fas fa-bullseye"></i> 1. Objetivo da Plataforma</h2>
                 <p>O Doglist é uma plataforma comunitária dedicada a:</p>
-                <p>• Ajudar a localizar animais perdidos<br>
-                   • Reportar animais encontrados<br>
-                   • Compartilhar localização de clínicas veterinárias<br>
-                   • Criar uma rede de apoio para animais perdidos</p>
+                <ul class="terms-list">
+                    <li><i class="fas fa-paw"></i> Ajudar a localizar animais perdidos</li>
+                    <li><i class="fas fa-search"></i> Reportar animais encontrados</li>
+                    <li><i class="fas fa-clinic-medical"></i> Compartilhar localização de clínicas veterinárias</li>
+                    <li><i class="fas fa-users"></i> Criar uma rede de apoio para animais perdidos</li>
+                </ul>
             </div>
 
             <div class="terms-section">
-                <h2>2. Uso Responsável</h2>
+                <h2><i class="fas fa-shield-alt"></i> 2. Uso Responsável</h2>
                 <p>Ao utilizar o Doglist, você concorda em:</p>
-                <p>• Fornecer informações verdadeiras sobre animais perdidos/encontrados<br>
-                   • Não usar a plataforma para fins comerciais<br>
-                   • Respeitar a privacidade de outros usuários<br>
-                   • Manter as informações de localização das clínicas atualizadas</p>
+                <ul class="terms-list">
+                    <li><i class="fas fa-check-circle"></i> Fornecer informações verdadeiras sobre animais perdidos/encontrados</li>
+                    <li><i class="fas fa-ban"></i> Não usar a plataforma para fins comerciais</li>
+                    <li><i class="fas fa-user-shield"></i> Respeitar a privacidade de outros usuários</li>
+                    <li><i class="fas fa-sync-alt"></i> Manter as informações de localização das clínicas atualizadas</li>
+                </ul>
             </div>
 
             <div class="terms-section">
-                <h2>3. Privacidade e Dados</h2>
+                <h2><i class="fas fa-lock"></i> 3. Privacidade e Dados</h2>
                 <p>Coletamos apenas dados essenciais para:</p>
-                <p>• Identificação do usuário<br>
-                   • Localização aproximada para busca de animais<br>
-                   • Contato para comunicação entre usuários<br>
-                   • Mapeamento de clínicas veterinárias</p>
+                <ul class="terms-list">
+                    <li><i class="fas fa-id-card"></i> Identificação do usuário</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Localização aproximada para busca de animais</li>
+                    <li><i class="fas fa-comments"></i> Contato para comunicação entre usuários</li>
+                    <li><i class="fas fa-map"></i> Mapeamento de clínicas veterinárias</li>
+                </ul>
             </div>
 
             <div class="terms-section">
-                <h2>4. Responsabilidades</h2>
+                <h2><i class="fas fa-exclamation-triangle"></i> 4. Responsabilidades</h2>
                 <p>O Doglist não se responsabiliza por:</p>
-                <p>• Veracidade das informações postadas por usuários<br>
-                   • Negociações ou acordos entre usuários<br>
-                   • Qualidade dos serviços veterinários indicados<br>
-                   • Custos relacionados a resgates ou tratamentos</p>
+                <ul class="terms-list">
+                    <li><i class="fas fa-info-circle"></i> Veracidade das informações postadas por usuários</li>
+                    <li><i class="fas fa-handshake"></i> Negociações ou acordos entre usuários</li>
+                    <li><i class="fas fa-hospital"></i> Qualidade dos serviços veterinários indicados</li>
+                    <li><i class="fas fa-dollar-sign"></i> Custos relacionados a resgates ou tratamentos</li>
+                </ul>
             </div>
-        </div>
 
-        <label class="checkbox-container">
-            <input type="checkbox" id="terms-checkbox" onchange="handleCheckbox()">
-        </label>
+            <button class="accept-button" onclick="acceptTerms()">Aceitar Termos</button>
+        </div>
     </div>
 
     <script>
-        function handleCheckbox() {
-            const checkbox = document.getElementById('terms-checkbox');
-            if (checkbox.checked) {
-                // Salvar que o usuário aceitou os termos
-                localStorage.setItem('termsWereAccepted', 'true');
-                
-                // Redirecionar de volta para a página de registro
-                window.location.href = 'register.html';
-            }
+        function acceptTerms() {
+            // Definir flag de que os termos foram aceitos
+            localStorage.setItem('termsAccepted', 'true');
+            
+            // Redirecionar de volta para a página de registro
+            window.location.href = 'register.html';
         }
     </script>
 </body>
