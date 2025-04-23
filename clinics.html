@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doglist - Veterinários</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #FFE4D6;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #FFE4D6 0%, #fff 100%);
+        }
+
+        .header {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin: 0 20px;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .back-button {
+            font-size: 28px;
+            text-decoration: none;
+            color: #FF7F50;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #FFE4D6;
+            transform: translateX(-3px);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: 0.5px;
+            margin: 0 auto;
+        }
+
+        #map {
+            flex: 1;
+            width: calc(100% - 40px);
+            min-height: 500px;
+            background-color: #FFE4D6;
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .status-indicator {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .status-open {
+            background-color: #4CAF50;
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .status-closed {
+            background-color: #f44336;
+            color: white;
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.6);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 14px;
+            color: #333;
+            padding: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #nearestClinicLegend {
+            cursor: pointer;
+        }
+
+        #nearestClinicLegend:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+            transform: translateX(3px);
+        }
+
+        .navigation {
+            background-color: rgba(255, 228, 214, 0.95);
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-item {
+            color: #000;
+            text-decoration: none;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            color: #FF7F50;
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            color: #FF7F50;
+        }
+
+        .nav-item.active:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #FF7F50;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        .clinic-popup {
+            padding: 20px;
+            min-width: 280px;
+            max-width: 320px;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #FF7F50;
+            padding-bottom: 8px;
+        }
+
+        .popup-info {
+            margin-bottom: 12px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .popup-info i {
+            color: #FF7F50;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .popup-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .popup-button {
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background-color: #FF7F50;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.2);
+        }
+
+        .popup-button:hover {
+            background-color: #ff6b3d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 127, 80, 0.3);
+        }
+
+        .leaflet-popup-content-wrapper {
+            padding: 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            width: auto !important;
+        }
+
+        .leaflet-popup-close-button {
+            padding: 10px !important;
+            color: #666 !important;
+            transition: all 0.3s ease;
+        }
+
+        .leaflet-popup-close-button:hover {
+            color: #FF7F50 !important;
+            transform: rotate(90deg);
+        }
+
+        .legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="home.html" class="back-button">←</a>
+            <span class="title">Veterinários</span>
+        </div>
+        
+        <div id="map"></div>
+
+        <div class="map-legend">
+            <div class="legend-item" id="myLocationLegend" onclick="centerMapOnUserLocation()" style="cursor: pointer;">
+                <div class="legend-color" style="background-color: #FF7F50;"></div>
+                <span class="legend-text">Sua localização</span>
+            </div>
+            <div class="legend-item" id="nearestClinicLegend" onclick="showNearestClinicFromLegend()" style="cursor: pointer;">
+                <div class="legend-color" style="background-color: #FF0000;"></div>
+                <span class="legend-text">Clínica mais próxima</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4CAF50;"></div>
+                <span class="legend-text">Outras clínicas</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar se está logado
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+
+        let map;
+        let userMarker;
+        let clinicMarkers = [];
+
+        function initMap(lat, lng) {
+            map = L.map('map').setView([lat, lng], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Adicionar marcador do usuário
+            userMarker = L.circleMarker([lat, lng], {
+                radius: 8,
+                fillColor: '#FF7F50',
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 1
+            }).addTo(map);
+
+            searchVeterinarians(lat, lng);
+        }
+
+        function searchVeterinarians(lat, lng) {
+            const query = `
+                [out:json][timeout:25];
+                (
+                    node["amenity"="veterinary"](around:50000,${lat},${lng});
+                    way["amenity"="veterinary"](around:50000,${lat},${lng});
+                    relation["amenity"="veterinary"](around:50000,${lat},${lng});
+                    node["healthcare"="veterinary"](around:50000,${lat},${lng});
+                    way["healthcare"="veterinary"](around:50000,${lat},${lng});
+                    relation["healthcare"="veterinary"](around:50000,${lat},${lng});
+                );
+                out body;
+                >;
+                out skel qt;
+            `;
+
+            fetch('https://overpass-api.de/api/interpreter', {
+                method: 'POST',
+                body: query
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados recebidos:', data);
+                processVeterinarians(data.elements, lat, lng);
+            })
+            .catch(error => {
+                console.error('Erro na busca:', error);
+                alert('Erro ao buscar veterinários. Tente novamente mais tarde.');
+            });
+        }
+
+        function processVeterinarians(elements, userLat, userLng) {
+            // Limpar marcadores existentes
+            clinicMarkers.forEach(marker => marker.remove());
+            clinicMarkers = [];
+
+            // Filtrar apenas clínicas que estão abertas agora
+            const clinics = elements.filter(elem => {
+                if (elem.type === 'node' && (elem.tags?.amenity === 'veterinary' || elem.tags?.healthcare === 'veterinary')) {
+                    return isOpenNow(elem.tags.opening_hours);
+                }
+                return false;
+            });
+
+            // Ordenar por distância
+            clinics.sort((a, b) => {
+                const distA = getDistance(userLat, userLng, a.lat, a.lon);
+                const distB = getDistance(userLat, userLng, b.lat, b.lon);
+                return distA - distB;
+            });
+
+            if (clinics.length === 0) {
+                alert('Não há clínicas veterinárias abertas no momento. Tente mais tarde ou em caso de emergência, procure um hospital veterinário 24h.');
+                return;
+            }
+
+            // Adicionar evento de clique para o item da legenda da clínica mais próxima
+            document.getElementById('nearestClinicLegend').addEventListener('click', () => {
+                if (clinicMarkers.length > 0) {
+                    clinicMarkers[0].openPopup();
+                }
+            });
+
+            clinics.forEach((clinic, index) => {
+                const isNearest = index === 0;
+                const marker = L.circleMarker([clinic.lat, clinic.lon], {
+                    radius: isNearest ? 10 : 8,
+                    fillColor: isNearest ? '#FF0000' : '#4CAF50',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 1
+                }).addTo(map);
+
+                if (isNearest) {
+                    marker.setStyle({
+                        weight: 3,
+                        fillOpacity: 0.9
+                    });
+                }
+
+                const distance = getDistance(userLat, userLng, clinic.lat, clinic.lon);
+                const distanceText = distance < 1 ? 
+                    `${Math.round(distance * 1000)}m` : 
+                    `${distance.toFixed(1)}km`;
+
+                const popupContent = `
+                    <div class="clinic-popup">
+                        <div class="popup-title">${clinic.tags.name || 'Clínica Veterinária'}</div>
+                        <div class="popup-info">
+                            <i class="fas fa-map-marker-alt"></i> 
+                            <span>${clinic.tags.address || clinic.tags['addr:street'] || 'Endereço não disponível'}</span>
+                        </div>
+                        <div class="popup-info">
+                            <i class="fas fa-route"></i> 
+                            <span>Distância: ${distanceText}</span>
+                        </div>
+                        ${clinic.tags.phone ? `
+                            <div class="popup-info">
+                                <i class="fas fa-phone"></i> 
+                                <span>${clinic.tags.phone}</span>
+                            </div>
+                        ` : ''}
+                        <div class="popup-buttons">
+                            <a href="https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${clinic.lat},${clinic.lon}" 
+                               target="_blank" 
+                               class="popup-button">
+                               <i class="fas fa-directions"></i> Como chegar
+                            </a>
+                            ${clinic.tags.phone ? `
+                                <a href="tel:${clinic.tags.phone}" class="popup-button">
+                                    <i class="fas fa-phone"></i> Ligar
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                clinicMarkers.push(marker);
+            });
+
+            // Ajustar o zoom para mostrar todos os marcadores
+            if (clinicMarkers.length > 0) {
+                const group = new L.featureGroup([userMarker, ...clinicMarkers]);
+                map.fitBounds(group.getBounds().pad(0.2));
+            }
+        }
+
+        function isOpenNow(openingHours) {
+            if (!openingHours) return true; // Se não tiver horário, assumimos que está aberto
+
+            const now = new Date();
+            const weekday = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'][now.getDay()];
+            const currentTime = now.getHours() * 100 + now.getMinutes();
+
+            try {
+                const rules = openingHours.split(';').map(rule => rule.trim());
+                
+                for (const rule of rules) {
+                    if (rule.includes(weekday)) {
+                        const times = rule.split(' ')[1];
+                        if (!times) continue;
+
+                        const [start, end] = times.split('-').map(time => {
+                            const [hours, minutes] = time.split(':').map(Number);
+                            return hours * 100 + (minutes || 0);
+                        });
+
+                        if (currentTime >= start && currentTime <= end) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            } catch (e) {
+                console.error('Erro ao processar horário:', e);
+                return true; // Em caso de erro no formato, assumimos que está aberto
+            }
+        }
+
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Raio da Terra em km
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function toRad(value) {
+            return value * Math.PI / 180;
+        }
+
+        // Obter localização do usuário
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    console.log('Localização obtida:', lat, lng);
+                    initMap(lat, lng);
+                },
+                (error) => {
+                    console.error('Erro ao obter localização:', error);
+                    alert('Não foi possível obter sua localização. Usando localização padrão.');
+                    initMap(45.0703, 7.6869); // Turim, Itália
+                }
+            );
+        } else {
+            alert('Seu navegador não suporta geolocalização.');
+            initMap(45.0703, 7.6869); // Turim, Itália
+        }
+
+        function addClinicMarker(clinic) {
+            const marker = L.marker([clinic.lat, clinic.lng], {
+                    icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: `<i class="fas fa-hospital" style="color: red; font-size: 24px;"></i>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 24]
+                    })
+                }).addTo(map);
+
+            marker.on('click', function() {
+                map.setView([clinic.lat, clinic.lng], 16, {
+                    animate: true,
+                    duration: 1
+                });
+                
+                marker.bindPopup(`
+                    <div style="padding: 10px;">
+                        <h3 style="color: #333; margin-bottom: 8px;">${clinic.name}</h3>
+                        <p style="color: #666; margin-bottom: 5px;">${clinic.address}</p>
+                        <p style="color: #666; margin-bottom: 5px;">Tel: ${clinic.phone}</p>
+                        <div class="status-indicator ${clinic.isOpen ? 'status-open' : 'status-closed'}">
+                            ${clinic.isOpen ? 'Aberto' : 'Fechado'}
+                        </div>
+                    </div>
+                `).openPopup();
+            });
+
+            return marker;
+        }
+
+        // Função para mostrar a clínica mais próxima ao clicar na legenda
+        function showNearestClinicFromLegend() {
+            if (!map || !clinicMarkers || clinicMarkers.length === 0) {
+                alert('Não foi possível encontrar clínicas veterinárias próximas.');
+                        return;
+                    }
+                    
+            // Obter localização do usuário
+            const userLocation = userMarker.getLatLng();
+            
+            // Encontrar a clínica mais próxima
+            let nearestClinic = null;
+            let shortestDistance = Infinity;
+
+            clinicMarkers.forEach(clinic => {
+                const clinicLatLng = clinic.getLatLng();
+                const distance = userLocation.distanceTo(clinicLatLng);
+                
+                if (distance < shortestDistance) {
+                    shortestDistance = distance;
+                    nearestClinic = clinic;
+                }
+            });
+
+            if (nearestClinic) {
+                // Zoom direto para a clínica mais próxima
+                map.setView(nearestClinic.getLatLng(), 15);
+
+                // Adicionar animação visual ao marcador
+                const element = nearestClinic.getElement();
+                if (element) {
+                    element.style.animation = 'pulse 1s';
+                }
+
+                // Mostrar popup com informações da clínica
+                nearestClinic.openPopup();
+        } else {
+                alert('Não foi possível encontrar uma clínica veterinária próxima.');
+            }
+        }
+
+        // Função para centralizar o mapa na localização do usuário
+        function centerMapOnUserLocation() {
+            if (!map || !userMarker) {
+                alert('Não foi possível encontrar sua localização.');
+                return;
+            }
+            
+            // Centralizar mapa na localização do usuário
+            map.setView(userMarker.getLatLng(), 15);
+            
+            // Adicionar efeito visual ao marcador do usuário
+            const element = userMarker.getElement();
+            if (element) {
+                element.style.animation = 'pulse 1s';
+                setTimeout(() => {
+                    element.style.animation = '';
+                }, 1000);
+            }
+        }
+
+        // Adicionar evento de clique na legenda
+        document.getElementById('nearestClinicLegend').onclick = showNearestClinicFromLegend;
+    </script>
+</body>
+</html>

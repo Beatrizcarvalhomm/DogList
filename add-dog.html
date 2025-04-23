@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doglist - Adicionar Animal</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="lib/supabase.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #FFE4D6;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #FFE4D6 0%, #fff 100%);
+        }
+
+        .header {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin: 0 20px;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .back-button {
+            font-size: 28px;
+            text-decoration: none;
+            color: #FF7F50;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #FFE4D6;
+            transform: translateX(-3px);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: 0.5px;
+            margin: 0 auto;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 25px 0 15px;
+            color: #FF7F50;
+            border-left: 4px solid #FF7F50;
+            padding-left: 10px;
+        }
+
+        .photo-upload {
+            width: 200px;
+            height: 200px;
+            background: white;
+            border-radius: 20px;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px dashed #ddd;
+        }
+
+        .photo-upload:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .photo-upload img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-upload i {
+            position: absolute;
+            color: #888;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .photo-upload:hover i {
+            transform: scale(1.1);
+            color: #FF7F50;
+        }
+
+        .photo-upload.has-image {
+            border: none;
+        }
+
+        .photo-upload.has-image i {
+            display: none;
+        }
+
+        .photo-hint {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .options-group {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-label {
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: block;
+            color: #333;
+        }
+
+        .option-item {
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-item input[type="radio"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .option-item input[type="radio"]:checked {
+            border: 6px solid #FF7F50;
+        }
+
+        .option-item label {
+            cursor: pointer;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s ease;
+            margin-bottom: 5px;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #FF7F50;
+            box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.2);
+        }
+
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid white;
+        }
+
+        .location-info {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .location-info i {
+            color: #FF7F50;
+            font-size: 18px;
+        }
+
+        .use-my-location {
+            background-color: #FF7F50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .use-my-location:hover {
+            background-color: #ff6b3d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .save-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #FF7F50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+
+        .save-button:hover {
+            background-color: #ff6b3d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .location-search {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .location-search input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .location-search input:focus {
+            outline: none;
+            border-color: #FF7F50;
+            box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.2);
+        }
+
+        .location-suggestions, .breed-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 15px 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f5f5f5;
+            transition: all 0.2s ease;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .breed-search {
+            position: relative;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .required-field::after {
+            content: "*";
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+
+        .suggestion-item.outro-option {
+            border-top: 1px solid #eee;
+            font-weight: bold;
+            color: #FF7F50;
+            background-color: #FFF8F5;
+        }
+        
+        .suggestion-item.outro-option:hover {
+            background-color: #FFE4D6;
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .content {
+                padding: 15px;
+            }
+            
+            .photo-upload {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .map-container {
+                height: 250px;
+            }
+
+            .header {
+                margin: 0;
+                border-radius: 0;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 15px;
+            }
+            
+            .options-group {
+                padding: 15px;
+            }
+            
+            .save-button {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="home.html" class="back-button">←</a>
+            <span class="title">Adicionar Animal</span>
+        </div>
+
+        <div class="content">
+            <form id="addDogForm">
+                <h2 class="section-title">Foto do Animal</h2>
+                <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                    <img id="photoPreview" alt="Preview">
+                    <i class="fas fa-camera fa-2x"></i>
+                    <input type="file" id="photoInput" style="display: none" accept="image/*" onchange="previewImage(this)">
+                </div>
+                <p class="photo-hint">Toque para adicionar uma foto (máx. 5MB)</p>
+
+                <h2 class="section-title">Informações Básicas</h2>
+                <div class="options-group">
+                    <label class="option-label required-field">Estado</label>
+                    <div class="option-item">
+                        <input type="radio" name="estado" id="encontrado" value="encontrado" required>
+                        <label for="encontrado">Encontrado</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="estado" id="procurado" value="procurado">
+                        <label for="procurado">Procurado</label>
+                    </div>
+                </div>
+
+                <h2 class="section-title">Localização</h2>
+                <div class="input-group">
+                    <div class="location-search">
+                        <input type="text" id="locationSearch" placeholder="Pesquisar endereço..." autocomplete="off">
+                        <div id="locationSuggestions" class="location-suggestions"></div>
+                    </div>
+                    <div class="map-container" id="map"></div>
+                    <div class="location-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="locationText">Clique no mapa ou pesquise um endereço</span>
+                    </div>
+                    <button type="button" class="use-my-location" onclick="useMyLocation()">
+                        <i class="fas fa-location-arrow"></i>
+                        Usar minha localização atual
+                    </button>
+                    <input type="hidden" id="latitude" required>
+                    <input type="hidden" id="longitude" required>
+                </div>
+
+                <h2 class="section-title">Características</h2>
+                <div class="input-group breed-search">
+                    <input type="text" class="input-field" name="raca" id="breedSearch" placeholder="Raça (opcional)" minlength="2" maxlength="50" pattern="[A-Za-zÀ-ÿ\s\-]+" title="Por favor, insira uma raça válida (apenas letras, espaços e hífens)">
+                    <div id="breedSuggestions" class="breed-suggestions"></div>
+                </div>
+
+                <div class="options-group">
+                    <label class="option-label required-field">Idade</label>
+                    <div class="option-item">
+                        <input type="radio" name="idade" id="idade1" value="0-5" required>
+                        <label for="idade1">0-5 anos</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="idade" id="idade2" value="5-10">
+                        <label for="idade2">5-10 anos</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="idade" id="idade3" value="10+">
+                        <label for="idade3">+10 anos</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="idade" id="idade4" value="unknown">
+                        <label for="idade4">Não sei</label>
+                    </div>
+                </div>
+
+                <div class="options-group">
+                    <label class="option-label required-field">Sexo</label>
+                    <div class="option-item">
+                        <input type="radio" name="sexo" id="sexo1" value="male" required>
+                        <label for="sexo1">Macho</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="sexo" id="sexo2" value="female">
+                        <label for="sexo2">Fêmea</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="sexo" id="sexo3" value="unknown">
+                        <label for="sexo3">Não sei</label>
+                    </div>
+                </div>
+
+                <div class="options-group">
+                    <label class="option-label required-field">Castrado</label>
+                    <div class="option-item">
+                        <input type="radio" name="castrado" id="castrado1" value="yes" required>
+                        <label for="castrado1">Sim</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="castrado" id="castrado2" value="no">
+                        <label for="castrado2">Não</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="castrado" id="castrado3" value="unknown">
+                        <label for="castrado3">Não sei</label>
+                    </div>
+                </div>
+
+                <div class="options-group">
+                    <label class="option-label required-field">Agressividade</label>
+                    <div class="option-item">
+                        <input type="radio" name="agressivo" id="agressivo1" value="none" required>
+                        <label for="agressivo1">Não é agressivo</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="agressivo" id="agressivo2" value="humans">
+                        <label for="agressivo2">Agressivo com pessoas</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="agressivo" id="agressivo3" value="animals">
+                        <label for="agressivo3">Agressivo com outros animais</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="agressivo" id="agressivo4" value="both">
+                        <label for="agressivo4">Agressivo com pessoas e animais</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="agressivo" id="agressivo5" value="unknown">
+                        <label for="agressivo5">Não sei</label>
+                    </div>
+                </div>
+
+                <div class="options-group">
+                    <label class="option-label required-field">Porte</label>
+                    <div class="option-item">
+                        <input type="radio" name="porte" id="porte1" value="small" required>
+                        <label for="porte1">Pequeno</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="porte" id="porte2" value="medium">
+                        <label for="porte2">Médio</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="porte" id="porte3" value="large">
+                        <label for="porte3">Grande</label>
+                    </div>
+                </div>
+
+                <h2 class="section-title">Contacto</h2>
+                <div class="input-group">
+                    <label for="contact" class="option-label">Contacto</label>
+                    <input type="tel" id="contact" name="contact" class="input-field" 
+                        placeholder="Seu número de contato" 
+                        required
+                        pattern="[2-9][0-9]{8}"
+                        title="Número de telefone deve ter 9 dígitos">
+                    <span id="contactError" style="color: red; display: none; font-size: 14px; margin-top: 5px;">Número de telefone deve ter exatamente 9 dígitos</span>
+                </div>
+
+                <button type="submit" class="save-button">Adicionar Animal</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Verificar se está logado
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+        
+        let map, marker;
+        let lastValidLocation;
+        let searchTimeout;
+        let breedSearchTimeout;
+        
+        // Lista de raças comuns de cães em Portugal
+        let commonBreeds = [];
+        
+        // Carregar lista de raças do Supabase
+        async function loadBreeds() {
+            try {
+                const result = await window.supabaseServices.getBreeds();
+                if (result.success && Array.isArray(result.breeds)) {
+                    commonBreeds = result.breeds;
+                    console.log('Raças carregadas do Supabase:', commonBreeds.length);
+                } else {
+                    // Usar a lista local como fallback
+                    console.warn('Usando lista local de raças como fallback');
+                    // Manter a lista existente
+                }
+            } catch (error) {
+                console.error('Erro ao carregar raças:', error);
+                // Manter a lista existente como fallback
+            }
+        }
+
+        function initMap(lat, lng) {
+            // Default to Lisbon if no coordinates provided
+            lat = lat || 38.7223;
+            lng = lng || -9.1393;
+
+            console.log('Inicializando mapa com coordenadas:', lat, lng);
+
+            map = L.map('map').setView([lat, lng], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            marker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(map);
+
+            marker.on('dragend', function(e) {
+                console.log('Marker arrastado para:', e.target.getLatLng());
+                updateLocation(e.target.getLatLng());
+            });
+
+            // Certificar-se de que o clique no mapa atualiza a localização
+            map.on('click', function(e) {
+                console.log('Clique no mapa em:', e.latlng);
+                marker.setLatLng(e.latlng);
+                updateLocation(e.latlng);
+            });
+
+            // Inicializar com a localização atual
+            updateLocation({ lat, lng });
+            
+            // Configurar os elementos de busca
+            setupLocationSearch();
+            setupBreedSearch();
+            
+            // Adicionar uma mensagem para o usuário
+            let popupContent = document.createElement('div');
+            popupContent.innerHTML = '<b>Clique no mapa para definir a localização</b><br>ou pesquise um endereço acima.';
+            
+            L.popup()
+                .setLatLng([lat, lng])
+                .setContent(popupContent)
+                .openOn(map);
+        }
+
+        function setupLocationSearch() {
+            const searchInput = document.getElementById('locationSearch');
+            const suggestionsContainer = document.getElementById('locationSuggestions');
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                // Clear previous timeout
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                
+                // Show loading indicator
+                if (query.length > 2) {
+                    suggestionsContainer.innerHTML = '<div class="suggestion-item">A carregar sugestões...</div>';
+                    suggestionsContainer.style.display = 'block';
+                    
+                    // Debounce the search to avoid too many requests
+                    searchTimeout = setTimeout(() => {
+                        searchLocations(query);
+                    }, 500);
+                } else {
+                    suggestionsContainer.style.display = 'none';
+                }
+            });
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (e.target !== searchInput && e.target !== suggestionsContainer) {
+                    suggestionsContainer.style.display = 'none';
+                }
+            });
+        }
+        
+        function searchLocations(query) {
+            const suggestionsContainer = document.getElementById('locationSuggestions');
+            
+            console.log('Buscando endereço:', query);
+            
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=pt&accept-language=pt`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Falha na pesquisa');
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Resultados da busca:', data);
+                    
+                    if (data.length === 0) {
+                        suggestionsContainer.innerHTML = '<div class="suggestion-item">Nenhum resultado encontrado</div>';
+                        return;
+                    }
+                    
+                    suggestionsContainer.innerHTML = '';
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = item.display_name;
+                        div.addEventListener('click', function() {
+                            // Set the selected location
+                            const lat = parseFloat(item.lat);
+                            const lng = parseFloat(item.lon);
+                            
+                            console.log('Local selecionado das sugestões:', item.display_name, lat, lng);
+                            
+                            // Atualizar os inputs hidden diretamente para garantir
+                            document.getElementById('latitude').value = lat;
+                            document.getElementById('longitude').value = lng;
+                            document.getElementById('locationText').textContent = item.display_name;
+                            
+                            // Update map and marker
+                            map.setView([lat, lng], 16);
+                            marker.setLatLng([lat, lng]);
+                            
+                            // Also call the update function to store in lastValidLocation
+                            updateLocation({ lat, lng });
+                            
+                            // Update input and hide suggestions
+                            document.getElementById('locationSearch').value = item.display_name;
+                            suggestionsContainer.style.display = 'none';
+                            
+                            // Show a confirmation to the user
+                            const locationInfo = document.querySelector('.location-info');
+                            locationInfo.style.color = '#27ae60';
+                            locationInfo.style.fontWeight = 'bold';
+                            
+                            setTimeout(() => {
+                                locationInfo.style.color = '';
+                                locationInfo.style.fontWeight = '';
+                            }, 2000);
+                        });
+                        suggestionsContainer.appendChild(div);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro na pesquisa:', error);
+                    suggestionsContainer.innerHTML = '<div class="suggestion-item">Erro na pesquisa. Tente novamente.</div>';
+                });
+        }
+
+        function updateLocation(latlng) {
+            console.log('Atualizando localização:', latlng);
+            document.getElementById('latitude').value = latlng.lat;
+            document.getElementById('longitude').value = latlng.lng;
+            
+            const loadingText = 'A carregar endereço...';
+            document.getElementById('locationText').textContent = loadingText;
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&accept-language=pt`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Falha ao obter endereço');
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Endereço obtido:', data);
+                    if (data.display_name) {
+                        document.getElementById('locationText').textContent = data.display_name;
+                        lastValidLocation = {
+                            lat: latlng.lat,
+                            lng: latlng.lng,
+                            address: data.display_name
+                        };
+                        // Verificar se os inputs hidden foram realmente atualizados
+                        console.log('Latitude input:', document.getElementById('latitude').value);
+                        console.log('Longitude input:', document.getElementById('longitude').value);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao obter endereço:', error);
+                    document.getElementById('locationText').textContent = 'Não foi possível obter o endereço. Por favor, tente novamente.';
+                    if (lastValidLocation) {
+                        marker.setLatLng([lastValidLocation.lat, lastValidLocation.lng]);
+                        document.getElementById('latitude').value = lastValidLocation.lat;
+                        document.getElementById('longitude').value = lastValidLocation.lng;
+                        document.getElementById('locationText').textContent = lastValidLocation.address;
+                    }
+                });
+        }
+
+        function useMyLocation() {
+            if (navigator.geolocation) {
+                const locationButton = document.querySelector('.use-my-location');
+                locationButton.disabled = true;
+                locationButton.textContent = 'A obter localização...';
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        map.setView([lat, lng], 15);
+                        marker.setLatLng([lat, lng]);
+                        updateLocation({ lat, lng });
+                        locationButton.disabled = false;
+                        locationButton.innerHTML = '<i class="fas fa-location-arrow"></i> Usar minha localização atual';
+                    },
+                    (error) => {
+                        console.error('Erro ao obter localização:', error);
+                        alert('Não foi possível obter sua localização. Por favor, selecione manualmente no mapa.');
+                        locationButton.disabled = false;
+                        locationButton.innerHTML = '<i class="fas fa-location-arrow"></i> Usar minha localização atual';
+                    }
+                );
+            } else {
+                alert('Seu navegador não suporta geolocalização.');
+            }
+        }
+
+        function setupBreedSearch() {
+            const breedInput = document.getElementById('breedSearch');
+            const suggestionsContainer = document.getElementById('breedSuggestions');
+            
+            breedInput.addEventListener('input', function() {
+                const query = this.value.trim().toLowerCase();
+                
+                // Clear previous timeout
+                if (breedSearchTimeout) {
+                    clearTimeout(breedSearchTimeout);
+                }
+                
+                // Show suggestions if the query is at least 2 characters
+                if (query.length >= 2) {
+                    breedSearchTimeout = setTimeout(() => {
+                        // Filter breeds that match the query
+                        const matchedBreeds = commonBreeds.filter(breed => 
+                            breed.toLowerCase().includes(query)
+                        );
+                        
+                        // Display matched breeds
+                        if (matchedBreeds.length > 0) {
+                            suggestionsContainer.innerHTML = '';
+                            matchedBreeds.forEach(breed => {
+                                const div = document.createElement('div');
+                                div.className = 'suggestion-item';
+                                div.textContent = breed;
+                                div.addEventListener('click', function() {
+                                    breedInput.value = breed;
+                                    suggestionsContainer.style.display = 'none';
+                                });
+                                suggestionsContainer.appendChild(div);
+                            });
+                            
+                            // Adicionar opção "Outro" no final das sugestões
+                            const outroDiv = document.createElement('div');
+                            outroDiv.className = 'suggestion-item outro-option';
+                            outroDiv.textContent = "Outro - Escrever raça";
+                            outroDiv.addEventListener('click', function() {
+                                breedInput.value = '';
+                                breedInput.placeholder = "Digite a raça do cão";
+                                breedInput.focus();
+                                suggestionsContainer.style.display = 'none';
+                            });
+                            suggestionsContainer.appendChild(outroDiv);
+                            
+                            suggestionsContainer.style.display = 'block';
+                        } else {
+                            suggestionsContainer.innerHTML = '<div class="suggestion-item">Nenhuma raça encontrada</div>';
+                            
+                            // Adicionar opção "Outro" quando não há resultados
+                            const outroDiv = document.createElement('div');
+                            outroDiv.className = 'suggestion-item outro-option';
+                            outroDiv.textContent = "Outro - Escrever raça";
+                            outroDiv.addEventListener('click', function() {
+                                breedInput.value = '';
+                                breedInput.placeholder = "Digite a raça do cão";
+                                breedInput.focus();
+                                suggestionsContainer.style.display = 'none';
+                            });
+                            suggestionsContainer.appendChild(outroDiv);
+                            
+                            suggestionsContainer.style.display = 'block';
+                        }
+                    }, 200); // Shorter timeout as it's a local search
+                } else {
+                    suggestionsContainer.style.display = 'none';
+                }
+            });
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (e.target !== breedInput && e.target !== suggestionsContainer) {
+                    suggestionsContainer.style.display = 'none';
+                }
+            });
+        }
+
+        function previewImage(input) {
+            const preview = document.getElementById('photoPreview');
+            const photoUpload = document.querySelector('.photo-upload');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('A imagem deve ter no máximo 5MB');
+                    input.value = '';
+                    return;
+                }
+
+                // Validate file type
+                if (!file.type.match('image.*')) {
+                    alert('Por favor, selecione apenas arquivos de imagem');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    photoUpload.classList.add('has-image');
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('addDogForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Check for required fields first
+            const requiredFields = ["estado", "idade", "sexo", "castrado", "agressivo", "porte"];
+            let hasErrors = false;
+            
+            // Verificar o campo de contato primeiro
+            const contactInput = document.getElementById('contact');
+            const contactError = document.getElementById('contactError');
+            
+            if (!contactInput.value.match(/^[2-9][0-9]{8}$/)) {
+                contactError.style.display = 'block';
+                contactInput.focus();
+                hasErrors = true;
+            } else {
+                contactError.style.display = 'none';
+            }
+            
+            requiredFields.forEach(field => {
+                const radioButtons = document.querySelectorAll(`input[name="${field}"]`);
+                let isChecked = false;
+                radioButtons.forEach(radio => {
+                    if (radio.checked) isChecked = true;
+                });
+                
+                if (!isChecked) {
+                    // Display error for radio button group
+                    const label = document.querySelector(`label.option-label[for="${field}"]`) || 
+                                  document.querySelector(`.options-group:has(input[name="${field}"]) .option-label`);
+                    
+                    if (label) {
+                        label.style.color = '#e74c3c';
+                        setTimeout(() => {
+                            label.style.color = '';
+                        }, 3000);
+                    }
+                    hasErrors = true;
+                }
+            });
+            
+            // Also check if photo is uploaded
+            const photoInput = document.getElementById('photoInput');
+            if (!photoInput.files || !photoInput.files[0]) {
+                const photoUpload = document.querySelector('.photo-upload');
+                photoUpload.style.border = '2px solid #e74c3c';
+                document.querySelector('.photo-hint').style.color = '#e74c3c';
+                setTimeout(() => {
+                    photoUpload.style.border = '2px dashed var(--medium-gray)';
+                    document.querySelector('.photo-hint').style.color = '';
+                }, 3000);
+                hasErrors = true;
+            }
+            
+            // Check location
+            if (!document.getElementById('latitude').value || !document.getElementById('longitude').value) {
+                document.querySelector('.location-info').style.border = '2px solid #e74c3c';
+                document.querySelector('.location-info').style.color = '#e74c3c';
+                document.querySelector('.location-info').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Por favor, selecione uma localização no mapa ou use o campo de busca.';
+                
+                // Adicionar botão para tentar usar localização atual
+                const retryButton = document.createElement('button');
+                retryButton.type = 'button';
+                retryButton.className = 'use-my-location';
+                retryButton.style.marginTop = '10px';
+                retryButton.innerHTML = '<i class="fas fa-location-arrow"></i> Usar minha localização atual';
+                retryButton.onclick = function() {
+                    useMyLocation();
+                };
+                document.querySelector('.location-info').appendChild(retryButton);
+                
+                setTimeout(() => {
+                    document.querySelector('.location-info').style.border = '';
+                    document.querySelector('.location-info').style.color = '';
+                    document.querySelector('.location-info').innerHTML = '<i class="fas fa-map-marker-alt"></i><span id="locationText">Clique no mapa ou pesquise um endereço</span>';
+                }, 5000);
+                hasErrors = true;
+                
+                // Scroll para a seção do mapa
+                document.querySelector('.map-container').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // Make sure the location text is properly updated when coordinates are available
+                const locationText = document.getElementById('locationText');
+                if (locationText.textContent === 'Clique no mapa ou pesquise um endereço' || !locationText.textContent.trim()) {
+                    // If no specific address is shown, use a generic location description
+                    locationText.textContent = `Localização selecionada (${document.getElementById('latitude').value.substring(0, 6)}, ${document.getElementById('longitude').value.substring(0, 6)})`;
+                }
+            }
+            
+            if (hasErrors) {
+                return;
+            }
+            
+            // Se todos os campos estiverem válidos, prosseguir com o envio
+            try {
+                const formData = new FormData(this);
+                const imageFile = document.getElementById('photoInput').files[0];
+                
+                // Get breed value (might be empty now)
+                const breedValue = document.getElementById('breedSearch').value.trim();
+
+                // Compress image before saving
+                const compressedImage = await compressImage(imageFile);
+                const imageBase64 = await blobToBase64(compressedImage);
+                
+                // Prepare dog data
+                const dogData = {
+                    user_id: localStorage.getItem('currentUserId'),
+                    image: imageBase64,
+                    estado: formData.get('estado'),
+                    location: {
+                        lat: document.getElementById('latitude').value,
+                        lng: document.getElementById('longitude').value,
+                        address: document.getElementById('locationText').textContent
+                    },
+                    raca: breedValue || "Não especificada",
+                    idade: formData.get('idade'),
+                    sexo: formData.get('sexo'),
+                    castrado: formData.get('castrado'),
+                    agressivo: formData.get('agressivo'),
+                    porte: formData.get('porte'),
+                    contacto: document.getElementById('contact').value,
+                    user_name: localStorage.getItem('userName') || 'Usuário'
+                };
+
+                // Mostrar indicador de carregamento
+                const saveButton = document.querySelector('.save-button');
+                saveButton.disabled = true;
+                saveButton.textContent = 'Salvando...';
+
+                // Salvar no Supabase
+                const result = await window.supabaseServices.saveDog(dogData);
+
+                if (result.success) {
+                    alert('Animal adicionado com sucesso!');
+                    window.location.href = 'account.html';
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Erro ao adicionar animal:', error);
+                alert('Erro ao adicionar animal: ' + error.message);
+                
+                // Restaurar o botão
+                const saveButton = document.querySelector('.save-button');
+                saveButton.disabled = false;
+                saveButton.textContent = 'Adicionar Animal';
+            }
+        });
+
+        // Função para comprimir imagem
+        async function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // Redimensionar se a imagem for muito grande
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 800;
+                        
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        canvas.toBlob(resolve, 'image/jpeg', 0.7);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Função para converter Blob para Base64
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    resolve(reader.result);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Inicializar mapa, pesquisa de raças, e carregar raças do Supabase
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Carregar raças do Supabase
+            await loadBreeds();
+            
+            // Inicializar mapa
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        initMap(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        console.error('Erro ao obter localização:', error);
+                        initMap(); // Will use default Lisbon coordinates
+                    }
+                );
+            } else {
+                initMap(); // Will use default Lisbon coordinates
+            }
+            
+            // Preencher automaticamente o campo de contato com o número do usuário
+            const userPhone = localStorage.getItem('userPhone');
+            if (userPhone) {
+                document.getElementById('contact').value = userPhone;
+            }
+        });
+    </script>
+</body>
+</html>

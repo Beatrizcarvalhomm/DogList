@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Utilizador - Doglist</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4"></script>
+    <script type="module" src="lib/supabase.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #FFE4D6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            margin: 30px;
+            background-color: white;
+            border-radius: 40px;
+            position: relative;
+            min-height: 85vh;
+        }
+
+        .header {
+            background-color: #FFE4D6;
+            margin: -20px -20px 0;
+            padding: 30px 20px;
+            border-radius: 40px 40px 0 0;
+        }
+
+        h1 {
+            color: #000;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .welcome {
+            color: #FF7F50;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .logo {
+            position: absolute;
+            top: 50px;
+            right: -10px;
+            width: 150px;
+            height: auto;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .input-container {
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+            position: relative;
+        }
+
+        .input-label {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            background-color: #F0F1F7;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .input-group input:focus {
+            outline: none;
+        }
+
+        .toggle-password {
+            position: absolute !important;
+            right: 10px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            background: none !important;
+            border: none !important;
+            cursor: pointer !important;
+            font-size: 20px !important;
+            padding: 0 !important;
+            width: 40px !important;
+            height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #333 !important;
+            z-index: 10 !important;
+        }
+
+        .toggle-password:hover {
+            color: #666 !important;
+        }
+
+        .terms {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+
+        .terms a {
+            color: #FF7F50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        button {
+            width: 100%;
+            padding: 20px;
+            background-color: #FF7F50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.1);
+        }
+
+        button:hover {
+            background-color: #ff8f66;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 127, 80, 0.2);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #000;
+        }
+
+        .login-link a {
+            color: #FF7F50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .paw-prints-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .paw-print {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 50 50' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 20C17.2091 20 19 18.2091 19 16C19 13.7909 17.2091 12 15 12C12.7909 12 11 13.7909 11 16C11 18.2091 12.7909 20 15 20Z' fill='%23FF7F50'/%3E%3Cpath d='M25 18C27.2091 18 29 16.2091 29 14C29 11.7909 27.2091 10 25 10C22.7909 10 21 11.7909 21 14C21 16.2091 22.7909 18 25 18Z' fill='%23FF7F50'/%3E%3Cpath d='M35 20C37.2091 20 39 18.2091 39 16C39 13.7909 37.2091 12 35 12C32.7909 12 31 13.7909 31 16C31 18.2091 32.7909 20 35 20Z' fill='%23FF7F50'/%3E%3Cpath d='M25 35C29.4183 35 33 31.4183 33 27C33 22.5817 29.4183 19 25 19C20.5817 19 17 22.5817 17 27C17 31.4183 20.5817 35 25 35Z' fill='%23FF7F50'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0;
+            animation: floatUpAnimation 4s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        .paw-print:nth-child(2n) {
+            transform: scaleX(-1);
+        }
+
+        .paw-print:nth-child(1) { animation-delay: 0s; left: 5%; bottom: 0%; --rotation: -5deg; }
+        .paw-print:nth-child(2) { animation-delay: 0.5s; left: 15%; bottom: 20%; --rotation: 5deg; }
+        .paw-print:nth-child(3) { animation-delay: 1s; left: 25%; bottom: 40%; --rotation: -5deg; }
+        .paw-print:nth-child(4) { animation-delay: 1.5s; left: 35%; bottom: 60%; --rotation: 5deg; }
+        .paw-print:nth-child(5) { animation-delay: 2s; left: 45%; bottom: 80%; --rotation: -5deg; }
+        .paw-print:nth-child(6) { animation-delay: 2.5s; left: 55%; bottom: 10%; --rotation: 5deg; }
+        .paw-print:nth-child(7) { animation-delay: 3s; left: 65%; bottom: 30%; --rotation: -5deg; }
+        .paw-print:nth-child(8) { animation-delay: 3.5s; left: 75%; bottom: 50%; --rotation: 5deg; }
+        .paw-print:nth-child(9) { animation-delay: 4s; left: 85%; bottom: 70%; --rotation: -5deg; }
+        .paw-print:nth-child(10) { animation-delay: 4.5s; left: 95%; bottom: 90%; --rotation: 5deg; }
+
+        @keyframes floatUpAnimation {
+            0% {
+                opacity: 0;
+                transform: translateY(200px) scale(0.8) rotate(var(--rotation, 0deg));
+            }
+            20% {
+                opacity: 0.8;
+                transform: translateY(150px) scale(1) rotate(var(--rotation, 0deg));
+            }
+            80% {
+                opacity: 0.8;
+                transform: translateY(-150px) scale(1) rotate(var(--rotation, 0deg));
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-200px) scale(0.8) rotate(var(--rotation, 0deg));
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="paw-prints-container">
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Novo utilizador</h1>
+            <p class="welcome">Bem-vindo!</p>
+            <img src="Images/DogList-Logo.png" alt="Doglist Logo" class="logo">
+        </div>
+
+        <div class="input-container">
+            <div class="input-group">
+                <div class="input-label">Nome</div>
+                <input 
+                    type="text" 
+                    id="nome"
+                    placeholder="Escreva aqui o seu nome"
+                    required
+                >
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">Telemóvel</div>
+                <input 
+                    type="tel" 
+                    id="telefone"
+                    placeholder="Escreva aqui o seu número de telefone"
+                    required
+                    pattern="[2-9][0-9]{8}"
+                    title="Número de telefone deve ter 9 dígitos"
+                >
+                <span id="phoneError" style="color: red; display: none; font-size: 14px; margin-top: 5px;">Número de telefone deve ter exatamente 9 dígitos</span>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">Password</div>
+                <div style="position: relative;">
+                    <input 
+                        type="password" 
+                        id="password"
+                        placeholder="Escreva aqui a sua Password"
+                        required
+                        pattern="^(?=.*[!@#$%^&*(),.?:{}\|<>])(?=.*[a-zA-Z0-9]).{7,}$"
+                        title="A senha deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial"
+                    >
+                    <button type="button" class="toggle-password" onclick="togglePassword('password')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #333; z-index: 10;" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <span id="passwordError" style="color: red; display: none; font-size: 14px; margin-top: 5px;">A senha deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial</span>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">Confirmar Password</div>
+                <div style="position: relative;">
+                    <input 
+                        type="password" 
+                        id="confirmPassword"
+                        placeholder="Confirmar Password"
+                        required
+                    >
+                    <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #333; z-index: 10;" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="terms">
+                <label>
+                    <input type="checkbox" id="termsAccepted" required>
+                    Aceito os <a href="javascript:void(0)" onclick="saveFormAndOpenTerms()">Termos</a>
+                </label>
+            </div>
+            <script>
+                // Função para salvar dados do formulário e redirecionar para os termos
+                function saveFormAndOpenTerms() {
+                    // Salvar os dados do formulário temporariamente
+                    const name = document.getElementById('nome').value;
+                    const phone = document.getElementById('telefone').value;
+                    const password = document.getElementById('password').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    
+                    localStorage.setItem('tempRegisterName', name);
+                    localStorage.setItem('tempRegisterPhone', phone);
+                    localStorage.setItem('tempRegisterPassword', password);
+                    localStorage.setItem('tempRegisterConfirmPassword', confirmPassword);
+                    
+                    // Redirecionar para a página de termos
+                    window.location.href = 'termos.html';
+                }
+                
+                // Restaurar os dados do formulário se existirem
+                document.addEventListener('DOMContentLoaded', function() {
+                    const savedName = localStorage.getItem('tempRegisterName');
+                    const savedPhone = localStorage.getItem('tempRegisterPhone');
+                    const savedPassword = localStorage.getItem('tempRegisterPassword');
+                    const savedConfirmPassword = localStorage.getItem('tempRegisterConfirmPassword');
+                    
+                    if (savedName) document.getElementById('nome').value = savedName;
+                    if (savedPhone) document.getElementById('telefone').value = savedPhone;
+                    if (savedPassword) document.getElementById('password').value = savedPassword;
+                    if (savedConfirmPassword) document.getElementById('confirmPassword').value = savedConfirmPassword;
+                    
+                    // Verificar se os termos foram aceitos na página de termos
+                    if (localStorage.getItem('termsWereAccepted') === 'true') {
+                        document.getElementById('termsAccepted').checked = true;
+                        // Remover a flag após usar
+                        localStorage.removeItem('termsWereAccepted');
+                    } else {
+                        // Garantir que a checkbox comece desmarcada se não foi explicitamente aceita
+                        document.getElementById('termsAccepted').checked = false;
+                    }
+                });
+            </script>
+
+            <button id="registerButton">Criar</button>
+
+            <div class="login-link">
+                <span>Já tem uma conta? </span>
+                <a href="index.html">Log In</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = passwordInput.parentElement.querySelector('.toggle-password i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.classList.remove('fa-eye');
+                toggleButton.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.classList.remove('fa-eye-slash');
+                toggleButton.classList.add('fa-eye');
+            }
+        }
+
+        document.getElementById('registerButton').addEventListener('click', async function() {
+            try {
+                // Obter os valores dos campos
+                const nome = document.getElementById('nome').value.trim();
+                const telefone = document.getElementById('telefone').value.trim();
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const termsAccepted = document.getElementById('termsAccepted').checked;
+                
+                // Validações
+                let error = '';
+                
+                if (!nome || !telefone || !password || !confirmPassword) {
+                    error = 'Por favor, preencha todos os campos.';
+                }
+                else if (nome.length < 2) {
+                    error = 'O nome deve ter pelo menos 2 caracteres.';
+                }
+                else if (!/^[2-9][0-9]{8}$/.test(telefone)) {
+                    error = 'Número de telefone inválido. Por favor, forneça um número com 9 dígitos.';
+                }
+                else if (password !== confirmPassword) {
+                    error = 'As senhas não coincidem.';
+                }
+                else if (!/^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[a-zA-Z0-9]).{7,}$/.test(password)) {
+                    error = 'A senha deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial.';
+                }
+                else if (!termsAccepted) {
+                    error = 'Por favor, aceite os termos para continuar.';
+                }
+                
+                // Se houver erro, mostrar e parar
+                if (error) {
+                    showError(error);
+                    return;
+                }
+                
+                // Mostrar indicador de carregamento
+                const registerButton = document.getElementById('registerButton');
+                registerButton.disabled = true;
+                registerButton.textContent = 'Criando conta...';
+                registerButton.style.opacity = '0.7';
+                
+                try {
+                    // Verificar se o módulo Supabase está disponível
+                    if (!window.supabaseServices || !window.supabaseServices.registerUser) {
+                        throw new Error('Serviço de registro não disponível. Recarregue a página e tente novamente.');
+                    }
+                    
+                    // Registrar via Supabase
+                    const userData = {
+                        nome: nome,
+                        telefone: telefone,
+                        password: password
+                    };
+                    
+                    console.log('Iniciando registro de usuário...');
+                    const result = await window.supabaseServices.registerUser(userData);
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Erro desconhecido ao criar conta');
+                    }
+                    
+                    console.log('Registro bem-sucedido:', result);
+                    
+                    // Limpar quaisquer dados temporários
+                    localStorage.removeItem('tempRegisterName');
+                    localStorage.removeItem('tempRegisterPhone');
+                    localStorage.removeItem('tempRegisterPassword');
+                    localStorage.removeItem('tempRegisterConfirmPassword');
+                    
+                    // Mensagem de sucesso e redirecionamento
+                    alert("Conta criada com sucesso! Você será redirecionado para a página inicial.");
+                    window.location.href = 'home.html';
+                } catch (error) {
+                    console.error("Erro ao criar usuário:", error);
+                    showError(error.message || "Erro ao criar conta. Tente novamente.");
+                    
+                    // Restaurar o botão
+                    registerButton.disabled = false;
+                    registerButton.textContent = 'Criar';
+                    registerButton.style.opacity = '1';
+                }
+            } catch (error) {
+                console.error("Erro inesperado:", error);
+                showError("Ocorreu um erro inesperado. Por favor, tente novamente.");
+            }
+        });
+
+        // Função para mostrar mensagens de erro
+        function showError(message) {
+            // Criar ou usar um elemento para mostrar o erro
+            let errorDiv = document.getElementById('form-error');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'form-error';
+                errorDiv.style.color = 'red';
+                errorDiv.style.marginTop = '10px';
+                errorDiv.style.marginBottom = '10px';
+                errorDiv.style.textAlign = 'center';
+                errorDiv.style.fontWeight = 'bold';
+                
+                // Inserir antes do botão de registro
+                const registerButton = document.getElementById('registerButton');
+                registerButton.parentNode.insertBefore(errorDiv, registerButton);
+            }
+            
+            // Mostrar a mensagem
+            errorDiv.textContent = message;
+            
+            // Esconder a mensagem após 5 segundos
+            setTimeout(() => {
+                errorDiv.textContent = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

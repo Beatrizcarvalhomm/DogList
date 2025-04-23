@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Supabase</title>
+    <!-- Usando a versão ESM do Supabase -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/+esm'
+
+        const SUPABASE_URL = 'https://hvipmhdmppyfslbdnevq.supabase.co'
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2aXBtaGRtcHB5ZnNsYmRuZXZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjY0NjUsImV4cCI6MjA2MDQwMjQ2NX0.36E2gK-S8zDW4qyI3OaezbllEF7Rg_yKpXafzNbP_I4'
+
+        async function testConnection() {
+            try {
+                console.log('Iniciando teste de conexão...')
+                const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+                
+                console.log('Cliente Supabase criado, testando conexão...')
+                
+                // Testar conexão buscando apenas os IDs dos usuários
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('id')
+                    .limit(5)
+
+                if (error) {
+                    throw new Error(`Erro na conexão: ${error.message}`)
+                }
+
+                document.getElementById('result').innerHTML = `
+                    <p style="color: green">✓ Conexão com Supabase estabelecida com sucesso!</p>
+                    <p>Status: Conectado ao projeto ${SUPABASE_URL}</p>
+                    <p>Teste de leitura realizado com sucesso.</p>
+                `
+
+                console.log('Conexão bem sucedida, primeiros registros:', data)
+            } catch (error) {
+                console.error('Erro detalhado:', error)
+                document.getElementById('result').innerHTML = `
+                    <p style="color: red">✗ Erro ao conectar com Supabase:</p>
+                    <pre>${error.message}</pre>
+                    <p>Verifique o console do navegador (F12) para mais detalhes.</p>
+                `
+            }
+        }
+
+        // Iniciar o teste quando a página carregar
+        window.onload = testConnection
+    </script>
+</head>
+<body>
+    <h1>Teste de Conexão Supabase</h1>
+    <div id="result">Testando conexão...</div>
+</body>
+</html> 

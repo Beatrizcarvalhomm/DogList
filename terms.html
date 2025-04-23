@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doglist - Termos e Condições</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .terms-content {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .terms-content h2 {
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .terms-content p {
+            margin-bottom: 10px;
+        }
+        
+        .terms-content ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .checkbox-container input {
+            margin-right: 10px;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-cancel {
+            background-color: #f44336;
+        }
+        
+        .btn:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #d32f2f;
+        }
+        
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Termos e Condições</h1>
+        
+        <div class="terms-content">
+            <h2>1. Aceitação dos Termos</h2>
+            <p>Ao utilizar o Doglist, você concorda em cumprir e estar vinculado por estes Termos e Condições. Se você não concordar com qualquer parte destes termos, por favor, não utilize nosso serviço.</p>
+            
+            <h2>2. Descrição do Serviço</h2>
+            <p>O Doglist é uma plataforma que permite aos usuários registrar informações sobre animais perdidos e encontrados, facilitando sua localização e recuperação.</p>
+            
+            <h2>3. Privacidade e Proteção de Dados</h2>
+            <p>Respeitamos sua privacidade e protegemos suas informações pessoais. Ao utilizar nosso serviço, você concorda com nossa Política de Privacidade, que descreve como coletamos, usamos e protegemos suas informações.</p>
+            
+            <h2>4. Responsabilidades do Usuário</h2>
+            <p>Ao utilizar o Doglist, você concorda em:</p>
+            <ul>
+                <li>Fornecer informações verdadeiras e precisas sobre você e seus animais</li>
+                <li>Usar o serviço apenas para fins legítimos relacionados à localização de animais perdidos ou encontrados</li>
+                <li>Não usar o serviço para assediar, ameaçar ou enganar outros usuários</li>
+                <li>Respeitar a privacidade e os direitos dos outros usuários</li>
+            </ul>
+            
+            <h2>5. Conteúdo do Usuário</h2>
+            <p>Você é responsável por todo o conteúdo que publica em nossa plataforma, incluindo fotos, descrições e informações de contato. Você deve ter direitos sobre qualquer conteúdo que compartilha e não deve violar direitos de terceiros.</p>
+            
+            <h2>6. Limitação de Responsabilidade</h2>
+            <p>O Doglist não garante a precisão, completude ou utilidade de qualquer informação na plataforma e não será responsável por qualquer perda ou dano resultante do uso ou da incapacidade de usar nosso serviço.</p>
+            
+            <h2>7. Modificações dos Termos</h2>
+            <p>Reservamo-nos o direito de modificar estes termos a qualquer momento. As modificações entrarão em vigor imediatamente após sua publicação. O uso continuado do serviço após a publicação de alterações constitui aceitação dessas alterações.</p>
+        </div>
+        
+        <div class="checkbox-container">
+            <input type="checkbox" id="termsAccepted">
+            <label for="termsAccepted">Eu li e concordo com os Termos e Condições</label>
+        </div>
+        
+        <div id="error-message" class="error" style="display: none;">
+            Por favor, aceite os termos para continuar.
+        </div>
+        
+        <div class="btn-container">
+            <button class="btn btn-cancel" id="cancelButton">Cancelar</button>
+            <button class="btn" id="acceptButton">Aceitar e Continuar</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se existem dados temporários
+            const tempUserId = localStorage.getItem('tempUserId');
+            const tempUserName = localStorage.getItem('tempUserName');
+            const tempUserPhone = localStorage.getItem('tempUserPhone');
+            
+            if (!tempUserId || !tempUserName || !tempUserPhone) {
+                // Se não houver dados temporários, redirecionar para a página de registro
+                alert('Erro ao processar o registro. Por favor, tente novamente.');
+                window.location.href = 'register.html';
+                return;
+            }
+            
+            // Manipular o botão cancelar
+            document.getElementById('cancelButton').addEventListener('click', function() {
+                // Limpar dados temporários
+                localStorage.removeItem('tempUserId');
+                localStorage.removeItem('tempUserName');
+                localStorage.removeItem('tempUserPhone');
+                
+                // Redirecionar para a página inicial
+                window.location.href = 'index.html';
+            });
+            
+            // Manipular o botão aceitar
+            document.getElementById('acceptButton').addEventListener('click', function() {
+                const termsAccepted = document.getElementById('termsAccepted').checked;
+                
+                if (!termsAccepted) {
+                    document.getElementById('error-message').style.display = 'block';
+                    return;
+                }
+                
+                // Aceito os termos, finalizar o registro
+                completeRegistration();
+            });
+            
+            function completeRegistration() {
+                try {
+                    // Definir o usuário como logado
+                    localStorage.setItem('currentUserId', tempUserId);
+                    localStorage.setItem('userName', tempUserName);
+                    localStorage.setItem('userPhone', tempUserPhone);
+                    localStorage.setItem('loggedIn', 'true');
+                    
+                    // Limpar dados temporários
+                    localStorage.removeItem('tempUserId');
+                    localStorage.removeItem('tempUserName');
+                    localStorage.removeItem('tempUserPhone');
+                    
+                    // Redirecionar para a página inicial
+                    window.location.href = 'home.html';
+                } catch (error) {
+                    console.error('Erro ao completar o registro:', error);
+                    alert('Ocorreu um erro ao finalizar seu registro. Por favor, tente novamente.');
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

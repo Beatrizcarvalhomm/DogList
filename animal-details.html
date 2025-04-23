@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Animal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #FFE4D6;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #FFE4D6 0%, #fff 100%);
+        }
+
+        .header {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin: 0 20px 20px 20px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #FF7F50;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #FFE4D6;
+            transform: translateX(-3px);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+            margin: 0;
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .animal-image {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 30px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .animal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .animal-info {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .info-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-item {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.1);
+        }
+
+        .info-item i {
+            color: #FF7F50;
+            font-size: 24px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .info-content label {
+            display: block;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .info-content span {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .location span {
+            color: #FF7F50;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                margin: 0 10px 15px 10px;
+                padding: 15px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .animal-image {
+                height: 300px;
+                margin-bottom: 20px;
+            }
+
+            .info-section {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .info-item {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1>Detalhes do Animal</h1>
+        </div>
+
+        <main class="content">
+            <div class="animal-image">
+                <img id="animalImage" src="Images/DogList-Logo.png" alt="Imagem do Animal">
+            </div>
+
+            <div class="info-section">
+                <div class="info-item">
+                    <i class="fas fa-dog"></i>
+                    <div class="info-content">
+                        <label>Raça</label>
+                        <span id="animalBreed">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-ruler-vertical"></i>
+                    <div class="info-content">
+                        <label>Porte</label>
+                        <span id="animalSize">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-venus-mars"></i>
+                    <div class="info-content">
+                        <label>Sexo</label>
+                        <span id="animalGender">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div class="info-content">
+                        <label>Idade</label>
+                        <span id="animalAge">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-cut"></i>
+                    <div class="info-content">
+                        <label>Castrado</label>
+                        <span id="animalNeutered">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="info-content">
+                        <label>Agressividade</label>
+                        <span id="animalAggressive">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div class="info-content">
+                        <label>Localização</label>
+                        <span id="animalLocation">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="info-content">
+                        <label>Status</label>
+                        <span id="animalStatus">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <div class="info-content">
+                        <label>Contato</label>
+                        <span id="animalContact">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <div class="info-content">
+                        <label>Data de Registro</label>
+                        <span id="animalDate">Carregando...</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-user"></i>
+                    <div class="info-content">
+                        <label>Registrado por</label>
+                        <span id="animalUser">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Verificar se está logado
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+        
+        const breeds = [
+            'Affenpinscher', 'Afghan Hound', 'Airedale Terrier', 'Akita', 'Alaskan Malamute',
+            'American Bulldog', 'American Pit Bull Terrier', 'Australian Shepherd', 'Basenji',
+            'Basset Hound', 'Beagle', 'Bernese Mountain Dog', 'Bichon Frise', 'Border Collie',
+            'Boston Terrier', 'Boxer', 'Bulldog', 'Bullmastiff', 'Chihuahua', 'Chow Chow',
+            'Cocker Spaniel', 'Collie', 'Dachshund', 'Dalmatian', 'Doberman Pinscher',
+            'English Setter', 'French Bulldog', 'German Shepherd', 'Golden Retriever',
+            'Great Dane', 'Greyhound', 'Husky', 'Jack Russell Terrier', 'Labrador Retriever',
+            'Maltese', 'Mastiff', 'Newfoundland', 'Pekingese', 'Pomeranian', 'Poodle',
+            'Pug', 'Rottweiler', 'Saint Bernard', 'Samoyed', 'Schnauzer', 'Shar Pei',
+            'Shih Tzu', 'Yorkshire Terrier', 'Indefinido'
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obter o ID do animal da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const animalId = urlParams.get('id');
+            
+            // Verificar se o ID é válido
+            if (!animalId || animalId === 'undefined') {
+                // Exibir informações padrão quando o ID é inválido
+                document.getElementById('animalBreed').textContent = 'Não disponível';
+                document.getElementById('animalSize').textContent = 'Não disponível';
+                document.getElementById('animalGender').textContent = 'Não disponível';
+                document.getElementById('animalAge').textContent = 'Não disponível';
+                document.getElementById('animalNeutered').textContent = 'Não disponível';
+                document.getElementById('animalAggressive').textContent = 'Não disponível';
+                document.getElementById('animalLocation').textContent = 'Não disponível';
+                document.getElementById('animalStatus').textContent = 'Não disponível';
+                document.getElementById('animalContact').textContent = 'Não disponível';
+                document.getElementById('animalDate').textContent = 'Não disponível';
+                document.getElementById('animalUser').textContent = 'Não disponível';
+                
+                // Carregar a imagem padrão
+                document.getElementById('animalImage').src = 'Images/DogList-Logo.png';
+                
+                // Atualizar o título da página
+                document.querySelector('.header h1').textContent = 'Animal não encontrado';
+                
+                console.log('ID inválido ou indefinido:', animalId);
+                return;
+            }
+
+            // Obter os dados do animal do localStorage
+            const animals = JSON.parse(localStorage.getItem('allDogs')) || [];
+            console.log('Todos os animais:', animals); // Para debug
+            
+            const dog = animals.find(d => d.id === animalId);
+
+            if (dog) {
+                console.log('Dados do animal encontrado:', dog); // Para debug
+
+                // Atualizar a imagem
+                const animalImage = document.getElementById('animalImage');
+                if (dog.image) {
+                    // Verifica se a imagem é um data URL (base64)
+                    if (dog.image.startsWith('data:image')) {
+                        animalImage.src = dog.image;
+                    } else {
+                        // Se não for base64, assume que é o nome do arquivo na pasta Images/
+                        animalImage.src = 'Images/' + dog.image;
+                    }
+                } else if (dog.selectedImage) {
+                    animalImage.src = dog.selectedImage;
+                } else {
+                    animalImage.src = 'Images/DogList-Logo.png';
+                }
+
+                // Obter o nome do usuário atual
+                const userName = localStorage.getItem('userName') || 'Usuário';
+
+                // Atualizar os detalhes usando os nomes exatos das propriedades
+                document.getElementById('animalBreed').textContent = dog.raca || dog.breed || 'Não especificado';
+                document.getElementById('animalSize').textContent = translateSize(dog.porte || dog.size) || dog.porte || dog.size || 'Não especificado';
+                document.getElementById('animalGender').textContent = translateGender(dog.sexo || dog.gender) || dog.sexo || dog.gender || 'Não especificado';
+                document.getElementById('animalAge').textContent = translateAge(dog.idade || dog.age) || dog.idade || dog.age || 'Não especificado';
+                document.getElementById('animalNeutered').textContent = translateNeutered(dog.castrado || dog.neutered) || dog.castrado || dog.neutered || 'Não especificado';
+                document.getElementById('animalAggressive').textContent = translateAggressive(dog.agressivo || dog.aggressive) || dog.agressivo || dog.aggressive || 'Não especificado';
+                document.getElementById('animalLocation').textContent = (dog.location?.address || dog.local || dog.location) || 'Não especificado';
+                document.getElementById('animalStatus').textContent = translateStatus(dog.estado || dog.status) || dog.estado || dog.status || 'Não especificado';
+                document.getElementById('animalContact').textContent = dog.contacto || dog.contact || 'Não especificado';
+                document.getElementById('animalDate').textContent = formatDate(dog.date || dog.dataAdicao) || 'Não especificado';
+                document.getElementById('animalUser').textContent = dog.user || dog.userName || userName || 'Não especificado';
+
+                // Log para debug
+                console.log('Detalhes atualizados:', {
+                    raca: dog.raca,
+                    porte: dog.porte,
+                    sexo: dog.sexo,
+                    idade: dog.idade,
+                    castrado: dog.castrado,
+                    agressivo: dog.agressivo,
+                    local: dog.local,
+                    estado: dog.estado,
+                    contacto: dog.contacto,
+                    date: dog.date || dog.dataAdicao,
+                    user: dog.user || userName
+                });
+            } else {
+                // Caso o animal não seja encontrado
+                document.getElementById('animalBreed').textContent = 'Não disponível';
+                document.getElementById('animalSize').textContent = 'Não disponível';
+                document.getElementById('animalGender').textContent = 'Não disponível';
+                document.getElementById('animalAge').textContent = 'Não disponível';
+                document.getElementById('animalNeutered').textContent = 'Não disponível';
+                document.getElementById('animalAggressive').textContent = 'Não disponível';
+                document.getElementById('animalLocation').textContent = 'Não disponível';
+                document.getElementById('animalStatus').textContent = 'Não disponível';
+                document.getElementById('animalContact').textContent = 'Não disponível';
+                document.getElementById('animalDate').textContent = 'Não disponível';
+                document.getElementById('animalUser').textContent = 'Não disponível';
+                
+                // Carregar a imagem padrão
+                document.getElementById('animalImage').src = 'Images/DogList-Logo.png';
+                
+                // Atualizar o título da página
+                document.querySelector('.header h1').textContent = 'Animal não encontrado';
+                
+                console.log('Animal não encontrado com ID:', animalId);
+            }
+        });
+
+        function formatDate(dateString) {
+            if (!dateString) return null;
+            const date = new Date(dateString);
+            const options = { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return date.toLocaleDateString('pt-BR', options);
+        }
+
+        // Funções auxiliares para tradução dos valores
+        function translateSize(size) {
+            const sizes = {
+                'small': 'Pequeno',
+                'medium': 'Médio',
+                'large': 'Grande'
+            };
+            return sizes[size];
+        }
+
+        function translateGender(gender) {
+            const genders = {
+                'male': 'Macho',
+                'female': 'Fêmea',
+                'unknown': 'Não sei'
+            };
+            return genders[gender];
+        }
+
+        function translateAge(age) {
+            const ages = {
+                '0-5': '0-5 anos',
+                '5-10': '5-10 anos',
+                '10+': 'Mais de 10 anos',
+                'unknown': 'Não sei'
+            };
+            return ages[age];
+        }
+
+        function translateNeutered(neutered) {
+            const neutereds = {
+                'yes': 'Sim',
+                'no': 'Não',
+                'unknown': 'Não sei'
+            };
+            return neutereds[neutered];
+        }
+
+        function translateAggressive(aggressive) {
+            const aggressives = {
+                'none': 'Não é agressivo',
+                'humans': 'Agressivo com pessoas',
+                'animals': 'Agressivo com outros animais',
+                'both': 'Agressivo com pessoas e animais',
+                'unknown': 'Não sei'
+            };
+            return aggressives[aggressive];
+        }
+
+        function translateStatus(status) {
+            const statuses = {
+                'encontrado': 'Encontrado',
+                'procurado': 'Procurado'
+            };
+            return statuses[status];
+        }
+
+        // Função para calcular distância entre dois pontos (usando fórmula de Haversine)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Raio da Terra em km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; // Distância em km
+        }
+
+        // Função para encontrar a clínica mais próxima
+        function findNearestClinic(dogLat, dogLng) {
+            if (!clinicMarkers || clinicMarkers.length === 0) return null;
+
+            let nearestClinic = clinicMarkers[0];
+            let shortestDistance = calculateDistance(
+                dogLat, 
+                dogLng, 
+                nearestClinic.getLngLat().lat,
+                nearestClinic.getLngLat().lng
+            );
+
+            clinicMarkers.forEach(clinic => {
+                const distance = calculateDistance(
+                    dogLat,
+                    dogLng,
+                    clinic.getLngLat().lat,
+                    clinic.getLngLat().lng
+                );
+
+                if (distance < shortestDistance) {
+                    shortestDistance = distance;
+                    nearestClinic = clinic;
+                }
+            });
+
+            return nearestClinic;
+        }
+
+        // Função para mostrar a clínica mais próxima
+        function showNearestClinic() {
+            if (!map || !clinicMarkers || clinicMarkers.length === 0) {
+                alert('Não foi possível encontrar clínicas veterinárias próximas.');
+                return;
+            }
+
+            // Obter localização atual do cachorro
+            const dogLocation = map.getCenter();
+            
+            // Encontrar a clínica mais próxima
+            const nearestClinic = findNearestClinic(dogLocation.lat, dogLocation.lng);
+            
+            if (nearestClinic) {
+                // Primeiro, dar zoom out para mostrar ambos os pontos
+                map.flyTo({
+                    center: [
+                        (dogLocation.lng + nearestClinic.getLngLat().lng) / 2,
+                        (dogLocation.lat + nearestClinic.getLngLat().lat) / 2
+                    ],
+                    zoom: 12,
+                    duration: 1000,
+                    essential: true
+                });
+
+                // Depois de 1 segundo, dar zoom na clínica
+                setTimeout(() => {
+                    map.flyTo({
+                        center: nearestClinic.getLngLat(),
+                        zoom: 15,
+                        duration: 1000,
+                        essential: true
+                    });
+
+                    // Adicionar animação visual ao marcador da clínica
+                    const element = nearestClinic.getElement();
+                    if (element) {
+                        element.classList.add('marker-zoom');
+                        setTimeout(() => {
+                            element.classList.remove('marker-zoom');
+                        }, 500);
+                    }
+
+                    // Mostrar informações da clínica
+                    const clinicInfo = nearestClinic.getPopup();
+                    if (clinicInfo) {
+                        clinicInfo.addTo(map);
+                    }
+                }, 1000);
+            } else {
+                alert('Não foi possível encontrar uma clínica veterinária próxima.');
+            }
+        }
+
+        // Remover eventos de clique dos marcadores vermelhos
+        if (typeof markers !== 'undefined') {
+            markers.forEach(marker => {
+                const element = marker.getElement();
+                if (element) {
+                    element.style.pointerEvents = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

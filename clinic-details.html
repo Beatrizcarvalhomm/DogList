@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Clínica Veterinária</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 100%;
+            min-height: 100vh;
+            background-color: #FFF;
+            position: relative;
+        }
+
+        .header {
+            background-color: #FFE4D6;
+            margin: -20px -20px 0;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-button {
+            text-decoration: none;
+            color: #000;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .clinic-details {
+            padding: 20px;
+        }
+
+        .clinic-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .clinic-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .status-open {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .status-closed {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .info-content {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            background-color: #FF7F50;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #FFE4D6;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -4px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            color: #000;
+            text-decoration: none;
+            font-size: 24px;
+            padding: 8px;
+        }
+
+        .nav-item.active {
+            color: #FF7F50;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="clinics.html" class="back-button">←</a>
+            <span class="title">Detalhes da Clínica</span>
+        </div>
+
+        <div class="clinic-details" id="clinicDetails">
+            <!-- Conteúdo será preenchido via JavaScript -->
+        </div>
+
+        <div class="navigation">
+            <a href="home.html" class="nav-item">
+                <i class="fas fa-home"></i>
+            </a>
+            <a href="search.html" class="nav-item">
+                <i class="fas fa-search"></i>
+            </a>
+            <a href="clinics.html" class="nav-item active">
+                <i class="fas fa-clinic-medical"></i>
+            </a>
+            <a href="account.html" class="nav-item">
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
+    </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_PLACES_API_KEY&libraries=places"></script>
+    <script>
+        // Verificar se a API key do Google Places está configurada
+        if (document.querySelector('script[src*="maps.googleapis.com"]').src.includes('YOUR_GOOGLE_PLACES_API_KEY')) {
+            console.error('Por favor, substitua YOUR_GOOGLE_PLACES_API_KEY por uma chave de API válida do Google Places');
+            alert('É necessário configurar uma chave de API do Google Places para obter informações detalhadas das clínicas.');
+        }
+
+        // Verificar se está logado
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+
+        // Obter parâmetros da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const clinicData = JSON.parse(decodeURIComponent(urlParams.get('data')));
+
+        // Inicializar dados da clínica se não existirem
+        if (!clinicData.isOpen) {
+            clinicData.isOpen = false; // Valor padrão
+        }
+
+        // Função para buscar detalhes da clínica usando Google Places API
+        async function fetchClinicDetails() {
+            try {
+                const service = new google.maps.places.PlacesService(document.createElement('div'));
+                
+                const request = {
+                    query: clinicData.name + ' ' + clinicData.address,
+                    fields: ['place_id', 'name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'rating', 'website']
+                };
+
+                service.findPlaceFromQuery(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+                        const placeId = results[0].place_id;
+                        
+                        service.getDetails({
+                            placeId: placeId,
+                            fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'rating', 'website', 'reviews']
+                        }, (place, detailStatus) => {
+                            if (detailStatus === google.maps.places.PlacesServiceStatus.OK) {
+                                // Atualizar os dados da clínica com informações do Google Places
+                                clinicData.address = place.formatted_address || clinicData.address;
+                                clinicData.phone = place.formatted_phone_number || clinicData.phone;
+                                clinicData.rating = place.rating || clinicData.rating;
+                                clinicData.website = place.website || clinicData.website;
+                                
+                                if (place.opening_hours && place.opening_hours.weekday_text) {
+                                    clinicData.status = place.opening_hours.weekday_text.join('\n');
+                                    clinicData.isOpen = place.opening_hours.isOpen();
+                                }
+                                
+                                // Atualizar a exibição
+                                displayClinicDetails();
+                            } else {
+                                console.error('Error fetching place details:', detailStatus);
+                                displayClinicDetails(); // Fallback to existing data
+                            }
+                        });
+                    } else {
+                        console.error('Error finding place:', status);
+                        displayClinicDetails(); // Fallback to existing data
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching clinic details:', error);
+                displayClinicDetails(); // Fallback to existing data
+            }
+        }
+
+        function displayClinicDetails() {
+            const clinicDetailsElement = document.getElementById('clinicDetails');
+            const statusClass = clinicData.isOpen ? 'status-open' : 'status-closed';
+            const statusText = clinicData.isOpen ? 'Aberto' : 'Fechado';
+
+            clinicDetailsElement.innerHTML = `
+                <h2 class="clinic-name">${clinicData.name}</h2>
+                <span class="clinic-status ${statusClass}">${statusText}</span>
+                <div class="info-section">
+                    <p class="info-title">Endereço:</p>
+                    <p class="info-content">${clinicData.address || 'Endereço não disponível'}</p>
+                </div>
+                <div class="info-section">
+                    <p class="info-title">Telefone:</p>
+                    <p class="info-content">${clinicData.phone || 'Telefone não disponível'}</p>
+                </div>
+                <div class="info-section">
+                    <p class="info-title">Horário de Funcionamento:</p>
+                    <p class="info-content">${clinicData.status ? clinicData.status.replace(/\n/g, '<br>') : 'Segunda a Sexta: 09:00 - 17:00'}</p>
+                </div>
+                ${clinicData.rating ? `
+                <div class="info-section">
+                    <p class="info-title">Avaliação:</p>
+                    <p class="info-content">${clinicData.rating} ⭐</p>
+                </div>` : ''}
+                ${clinicData.website ? `
+                <div class="info-section">
+                    <p class="info-title">Website:</p>
+                    <p class="info-content"><a href="${clinicData.website}" target="_blank">${clinicData.website}</a></p>
+                </div>` : ''}
+                <div class="action-buttons">
+                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinicData.name + ' ' + clinicData.address)}" class="action-button" target="_blank">Como Chegar</a>
+                </div>
+            `;
+        }
+
+        // Inicializar a página
+        fetchClinicDetails(); // Buscar dados atualizados do Google Places primeiro
+        displayClinicDetails(); // Exibir dados existentes enquanto aguarda resposta da API
+    </script>
+</body>
+</html>
