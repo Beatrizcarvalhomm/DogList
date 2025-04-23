@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doglist - Mapa</title>
+    <!-- Favicon em vários tamanhos para melhor suporte -->
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="96x96">
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="Images/DogList-Logo.png">
     <!-- Preconnect to external domains -->
-    <link rel="preconnect" href="https://unpkg.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://tile.openstreetmap.org">
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Leaflet JS - moved to end of body -->
     <style>
         * {
             margin: 0;
@@ -55,7 +55,7 @@
             right: 10px;
             padding: 15px;
             border-radius: 15px;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 255, 255, 0.8);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             backdrop-filter: blur(10px);
@@ -64,7 +64,7 @@
         }
 
         .map-legend:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.9);
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
@@ -158,13 +158,6 @@
             display: none;
         }
         
-        .custom-marker-icon {
-            background-size: contain;
-            background-repeat: no-repeat;
-            width: 32px !important;
-            height: 32px !important;
-        }
-        
         .loading-indicator {
             position: absolute;
             top: 50%;
@@ -228,164 +221,267 @@
         </nav>
     </div>
 
-    <!-- Leaflet JS - moved to end of body for faster page loading -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Google Maps Script -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYiAXh7HwQgCEudiSzPR3bUuYQ1mnS3b4&libraries=geometry&callback=initMap" async defer></script>
+    
     <script>
         // Verificar se está logado
         if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'index.html';
         }
         
-        // Create a marker template for better performance
-        function createMarkerIcon(color) {
-            return L.divIcon({
-                className: 'custom-marker-icon',
-                html: `
-                    <div style="position: relative; width: 40px; height: 40px;">
-                        <div style="position: absolute; width: 40px; height: 40px; background-color: ${color}; border-radius: 50%; opacity: 0.7; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>
-                        <i class="fas fa-paw" style="position: absolute; top: 8px; left: 8px; color: white; font-size: 24px;"></i>
-                    </div>
-                `,
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
+        let map;
+        let userMarker;
+        let petMarkers = [];
+        let infoWindow;
+        
+        function initMap() {
+            // Criar infoWindow reutilizável
+            infoWindow = new google.maps.InfoWindow({
+                maxWidth: 300
             });
+            
+            // Inicializar o mapa
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+                center: { lat: 38.7223, lng: -9.1393 }, // Lisboa como default
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                    position: google.maps.ControlPosition.TOP_RIGHT,
+                    mapTypeIds: [
+                        google.maps.MapTypeId.ROADMAP,
+                        google.maps.MapTypeId.SATELLITE,
+                        google.maps.MapTypeId.HYBRID,
+                        google.maps.MapTypeId.TERRAIN
+                    ]
+                },
+                streetViewControl: false,
+                fullscreenControl: true,
+                zoomControl: true
+            });
+            
+            // Estilizar janela de informações
+            google.maps.event.addListener(infoWindow, 'domready', function() {
+                const iwOuter = document.querySelector('.gm-style-iw');
+                if (iwOuter) {
+                    iwOuter.style.padding = '0';
+                    iwOuter.style.borderRadius = '10px';
+                    iwOuter.style.overflow = 'hidden';
+                    iwOuter.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
+                }
+                
+                // Estilizar botão de fechar
+                const closeButton = document.querySelector('.gm-ui-hover-effect');
+                if (closeButton) {
+                    closeButton.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                    closeButton.style.borderRadius = '50%';
+                    closeButton.style.width = '30px';
+                    closeButton.style.height = '30px';
+                    closeButton.style.top = '8px';
+                    closeButton.style.right = '8px';
+                    closeButton.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+                    
+                    closeButton.addEventListener('mouseover', function() {
+                        this.style.backgroundColor = '#FF7F50';
+                        this.style.transform = 'rotate(90deg)';
+                        const closeIcon = this.querySelector('img');
+                        if (closeIcon) {
+                            closeIcon.style.filter = 'invert(100%)';
+                        }
+                    });
+                    
+                    closeButton.addEventListener('mouseout', function() {
+                        this.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                        this.style.transform = 'rotate(0deg)';
+                        const closeIcon = this.querySelector('img');
+                        if (closeIcon) {
+                            closeIcon.style.filter = 'none';
+                        }
+                    });
+                }
+            });
+
+            // Adicionar botão de atualização
+            const refreshControlDiv = document.createElement('div');
+            const refreshControl = createRefreshControl(refreshControlDiv);
+            refreshControlDiv.index = 1;
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(refreshControlDiv);
+            
+            // Obter localização do usuário
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        // Centralizar mapa na localização do usuário
+                        map.setCenter(userLocation);
+                        
+                        // Adicionar marcador do usuário
+                        addUserMarker(userLocation);
+                        
+                        // Adicionar marcadores dos animais
+                        addPetMarkers();
+                        
+                        // Esconder indicador de carregamento
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                    },
+                    (error) => {
+                        console.error('Erro ao obter localização:', error);
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                        
+                        // Mesmo sem localização, mostrar os marcadores de animais
+                        addPetMarkers();
+                    }
+                );
+            } else {
+                console.error('Geolocalização não é suportada por este navegador.');
+                document.getElementById('loadingIndicator').style.display = 'none';
+                
+                // Mesmo sem localização, mostrar os marcadores de animais
+                addPetMarkers();
+            }
         }
         
-        // Create location marker icon template
-        const locationIcon = L.divIcon({
-            className: 'custom-marker-icon',
-            html: `
-                <div style="position: relative; width: 40px; height: 40px;">
-                    <div style="position: absolute; width: 40px; height: 40px; background-color: #007bff; border-radius: 50%; opacity: 0.7; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>
-                    <i class="fas fa-map-marker-alt" style="position: absolute; top: 5px; left: 11px; color: white; font-size: 20px;"></i>
-                </div>
-            `,
-            iconSize: [40, 40],
-            iconAnchor: [20, 40]
-        });
+        function createRefreshControl(controlDiv) {
+            // Estilo do botão de atualizar
+            const controlUI = document.createElement('div');
+            controlUI.style.backgroundColor = '#fff';
+            controlUI.style.border = 'none';
+            controlUI.style.borderRadius = '4px';
+            controlUI.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            controlUI.style.cursor = 'pointer';
+            controlUI.style.margin = '10px';
+            controlUI.style.textAlign = 'center';
+            controlUI.title = 'Atualizar marcadores';
+            controlDiv.appendChild(controlUI);
+            
+            // Ícone de atualização
+            const controlText = document.createElement('div');
+            controlText.style.padding = '8px';
+            controlText.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            controlUI.appendChild(controlText);
+            
+            // Evento de clique
+            controlUI.addEventListener('click', function() {
+                addPetMarkers();
+            });
+            
+            return controlUI;
+        }
         
-        // Cache marker icons for better performance
-        const markerIcons = {
-            red: createMarkerIcon('red'),
-            green: createMarkerIcon('green')
-        };
-
-        // Inicializa o mapa
-        const map = L.map('map', {
-            zoomControl: true,
-            maxZoom: 18,
-            minZoom: 5,
-            preferCanvas: true // Better performance for many markers
-        }).setView([38.7223, -9.1393], 13);
-
-        // Adiciona o layer do OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxNativeZoom: 19,
-            maxZoom: 19
-        }).addTo(map);
-
-        // Create an object to store markers for efficient updating
-        let markerLayer = L.layerGroup().addTo(map);
+        function addUserMarker(location) {
+            // Remover marcador existente, se houver
+            if (userMarker) {
+                userMarker.setMap(null);
+            }
+            
+            // Criar novo marcador do usuário
+            userMarker = new google.maps.Marker({
+                position: location,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: '#007bff',
+                    fillOpacity: 0.7,
+                    strokeColor: '#FFFFFF',
+                    strokeWeight: 2,
+                    scale: 10
+                },
+                title: 'Sua localização',
+                zIndex: 10
+            });
+            
+            // Adicionar círculo de precisão
+            new google.maps.Circle({
+                map: map,
+                center: location,
+                radius: 200, // 200 metros
+                strokeColor: '#007bff',
+                strokeOpacity: 0.3,
+                strokeWeight: 2,
+                fillColor: '#007bff',
+                fillOpacity: 0.1
+            });
+            
+            // Adicionar evento de clique ao marcador
+            userMarker.addListener('click', () => {
+                infoWindow.setContent('<div style="text-align: center; padding: 10px;"><strong>Você está aqui</strong></div>');
+                infoWindow.open(map, userMarker);
+            });
+            
+            return userMarker;
+        }
         
-        // Hide loading indicator when map is ready
-        map.whenReady(() => {
-            document.getElementById('loadingIndicator').style.display = 'none';
-        });
-
-        // Função para adicionar marcadores de animais - optimized
         function addPetMarkers() {
-            // Clear existing markers for better performance on updates
-            markerLayer.clearLayers();
+            // Limpar marcadores existentes
+            clearPetMarkers();
             
             const allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
             
-            // Process dogs in batches for better performance
+            // Processar em lotes para melhor performance
             const processBatch = (startIdx, batchSize) => {
                 const endIdx = Math.min(startIdx + batchSize, allDogs.length);
                 
                 for (let i = startIdx; i < endIdx; i++) {
                     const dog = allDogs[i];
                     if (dog.location && dog.location.lat && dog.location.lng) {
-                        const markerColor = dog.estado === 'procurado' ? 'red' : 'green';
-                        const marker = L.marker([dog.location.lat, dog.location.lng], {
-                            icon: markerIcons[markerColor]
+                        const isProcurado = dog.estado === 'procurado';
+                        const marker = new google.maps.Marker({
+                            position: new google.maps.LatLng(dog.location.lat, dog.location.lng),
+                            map: map,
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                fillColor: isProcurado ? '#ff0000' : '#00ff00',
+                                fillOpacity: 0.7,
+                                strokeColor: '#FFFFFF',
+                                strokeWeight: 2,
+                                scale: 10
+                            },
+                            title: dog.raca || 'Cachorro',
+                            zIndex: 5
                         });
                         
-                        // Use event delegation for popups - only create when clicked
-                        marker.on('click', function() {
-                            this.bindPopup(`
-                                <div style="text-align: center;">
-                                    <img src="${dog.image || 'Images/DogList-Logo.png'}" loading="lazy" style="width: 100px; height: 100px; object-fit: cover; object-position: center; border-radius: 10px; margin: 0 auto 10px; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        // Adicionar evento de clique ao marcador
+                        marker.addListener('click', () => {
+                            const content = `
+                                <div style="text-align: center; padding: 15px;">
+                                    <img src="${dog.image || 'Images/DogList-Logo.png'}" style="width: 100px; height: 100px; object-fit: cover; object-position: center; border-radius: 10px; margin: 0 auto 10px; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                     <p style="color: #666; margin: 4px 0;"><i class="fas fa-dog"></i> ${dog.raca || 'Raça não especificada'}</p>
                                     <p style="color: #666; margin: 4px 0;"><i class="fas fa-info-circle"></i> ${dog.estado || 'Status não especificado'}</p>
                                     <button onclick="window.location.href='animal-details.html?id=${dog.id}'" style="background: #FF7F50; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; margin-top: 10px; transition: all 0.3s ease;">Ver Detalhes</button>
                                 </div>
-                            `).openPopup();
+                            `;
+                            
+                            infoWindow.setContent(content);
+                            infoWindow.open(map, marker);
                         });
                         
-                        markerLayer.addLayer(marker);
+                        petMarkers.push(marker);
                     }
                 }
                 
-                // Process next batch if needed
+                // Processar próximo lote se necessário
                 if (endIdx < allDogs.length) {
                     setTimeout(() => {
                         processBatch(endIdx, batchSize);
-                    }, 10); // Small delay to prevent UI blocking
+                    }, 10); // Pequeno atraso para evitar bloqueio da UI
                 }
             };
             
-            // Start batch processing - 50 dogs at a time
+            // Iniciar processamento em lotes - 50 cães por vez
             processBatch(0, 50);
         }
 
-        // Obtém localização atual do usuário
-        map.locate({setView: true, maxZoom: 16});
-
-        // Callback quando encontra a localização
-        function onLocationFound(e) {
-            const radius = e.accuracy / 2;
-            L.marker(e.latlng, {
-                icon: locationIcon
-            }).addTo(map)
-                .bindPopup("Você está aqui").openPopup();
-            
-            // Adicionar um círculo azul translúcido para mostrar a área de precisão
-            L.circle(e.latlng, {
-                radius: radius,
-                color: '#007bff',
-                fillColor: '#007bff',
-                fillOpacity: 0.1,
-                weight: 1
-            }).addTo(map);
-            
-            // Adiciona os marcadores de animais após localizar o usuário
-            addPetMarkers();
+        function clearPetMarkers() {
+            // Limpar todos os marcadores existentes
+            petMarkers.forEach(marker => marker.setMap(null));
+            petMarkers = [];
         }
-
-        map.on('locationfound', onLocationFound);
-
-        // Callback se houver erro na localização
-        function onLocationError(e) {
-            console.log(e.message);
-            // Mesmo com erro na localização, mostra os marcadores de animais
-            addPetMarkers();
-        }
-
-        map.on('locationerror', onLocationError);
-        
-        // Add refresh button to reload animal markers
-        const refreshButton = L.control({position: 'topleft'});
-        refreshButton.onAdd = function() {
-            const div = L.DomUtil.create('div', 'refresh-button');
-            div.innerHTML = '<button style="padding: 8px; background: white; border: none; border-radius: 4px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"><i class="fas fa-sync-alt"></i></button>';
-            div.onclick = function() {
-                addPetMarkers();
-            };
-            return div;
-        };
-        refreshButton.addTo(map);
     </script>
 </body>
 </html>

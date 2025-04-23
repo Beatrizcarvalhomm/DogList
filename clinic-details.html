@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes da Clínica Veterinária</title>
+    <!-- Favicons -->
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png">
+    <link rel="shortcut icon" href="Images/DogList-Logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="Images/DogList-Logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -128,6 +133,35 @@
             color: #FF7F50;
             transform: scale(1.2);
         }
+
+        /* Estilo para o botão fechar */
+        .close-button {
+            position: absolute !important;
+            top: 20px !important;
+            right: 20px !important;
+            width: 40px !important;
+            height: 40px !important;
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #666 !important;
+            font-size: 20px !important;
+            text-decoration: none !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+            z-index: 100 !important;
+            transform: none !important;
+            transition: none !important;
+        }
+
+        .close-button:hover {
+            background-color: #FF7F50 !important;
+            color: white !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+            transform: none !important;
+            transition: none !important;
+        }
     </style>
 </head>
 <body>
@@ -135,6 +169,7 @@
         <div class="header">
             <a href="clinics.html" class="back-button">←</a>
             <span class="title">Detalhes da Clínica</span>
+            <a href="clinics.html" class="close-button">&times;</a>
         </div>
 
         <div class="clinic-details" id="clinicDetails">
@@ -156,14 +191,8 @@
             </a>
         </div>
     </div>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_PLACES_API_KEY&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYiAXh7HwQgCEudiSzPR3bUuYQ1mnS3b4&libraries=places"></script>
     <script>
-        // Verificar se a API key do Google Places está configurada
-        if (document.querySelector('script[src*="maps.googleapis.com"]').src.includes('YOUR_GOOGLE_PLACES_API_KEY')) {
-            console.error('Por favor, substitua YOUR_GOOGLE_PLACES_API_KEY por uma chave de API válida do Google Places');
-            alert('É necessário configurar uma chave de API do Google Places para obter informações detalhadas das clínicas.');
-        }
-
         // Verificar se está logado
         if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'index.html';
@@ -228,12 +257,9 @@
 
         function displayClinicDetails() {
             const clinicDetailsElement = document.getElementById('clinicDetails');
-            const statusClass = clinicData.isOpen ? 'status-open' : 'status-closed';
-            const statusText = clinicData.isOpen ? 'Aberto' : 'Fechado';
 
             clinicDetailsElement.innerHTML = `
                 <h2 class="clinic-name">${clinicData.name}</h2>
-                <span class="clinic-status ${statusClass}">${statusText}</span>
                 <div class="info-section">
                     <p class="info-title">Endereço:</p>
                     <p class="info-content">${clinicData.address || 'Endereço não disponível'}</p>
@@ -251,13 +277,8 @@
                     <p class="info-title">Avaliação:</p>
                     <p class="info-content">${clinicData.rating} ⭐</p>
                 </div>` : ''}
-                ${clinicData.website ? `
-                <div class="info-section">
-                    <p class="info-title">Website:</p>
-                    <p class="info-content"><a href="${clinicData.website}" target="_blank">${clinicData.website}</a></p>
-                </div>` : ''}
                 <div class="action-buttons">
-                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinicData.name + ' ' + clinicData.address)}" class="action-button" target="_blank">Como Chegar</a>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(clinicData.name + ' ' + clinicData.address)}" class="action-button" target="_blank">Como Chegar</a>
                 </div>
             `;
         }
