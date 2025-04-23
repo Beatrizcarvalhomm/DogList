@@ -394,7 +394,7 @@
                     <i class="fas fa-camera fa-2x"></i>
                     <input type="file" id="photoInput" style="display: none" accept="image/*" onchange="previewImage(this)">
                 </div>
-                <p class="photo-hint">Toque para adicionar uma foto (máx. 5MB)</p>
+                <p class="photo-hint">Toque para adicionar uma foto (opcional)</p>
 
                 <h2 class="section-title">Informações Básicas</h2>
                 <div class="options-group">
@@ -532,6 +532,7 @@
                     <input type="tel" id="contact" name="contact" class="input-field" 
                         placeholder="Seu número de contato" 
                         required
+                        readonly
                         pattern="[2-9][0-9]{8}"
                         title="Número de telefone deve ter 9 dígitos">
                     <span id="contactError" style="color: red; display: none; font-size: 14px; margin-top: 5px;">Número de telefone deve ter exatamente 9 dígitos</span>
@@ -943,19 +944,6 @@
                 }
             });
             
-            // Also check if photo is uploaded
-            const photoInput = document.getElementById('photoInput');
-            if (!photoInput.files || !photoInput.files[0]) {
-                const photoUpload = document.querySelector('.photo-upload');
-                photoUpload.style.border = '2px solid #e74c3c';
-                document.querySelector('.photo-hint').style.color = '#e74c3c';
-                setTimeout(() => {
-                    photoUpload.style.border = '2px dashed var(--medium-gray)';
-                    document.querySelector('.photo-hint').style.color = '';
-                }, 3000);
-                hasErrors = true;
-            }
-            
             // Check location
             if (!document.getElementById('latitude').value || !document.getElementById('longitude').value) {
                 document.querySelector('.location-info').style.border = '2px solid #e74c3c';
@@ -1000,19 +988,23 @@
             
             // Get breed value (might be empty now)
             const breedValue = document.getElementById('breedSearch').value.trim();
-
-            // Compress image before saving
+            
             try {
-                const compressedImage = await compressImage(imageFile);
+                let imageData = null;
+                // Process image only if one was selected
+                if (imageFile) {
+                    const compressedImage = await compressImage(imageFile);
+                    imageData = await blobToBase64(compressedImage);
+                }
                 
                 const dog = {
                     id: generateUniqueId(),
                     userId: localStorage.getItem('currentUserId'),
-                    image: await blobToBase64(compressedImage),
+                    image: imageData || null,
                     estado: formData.get('estado'),
                     location: {
-                        lat: document.getElementById('latitude').value,
-                        lng: document.getElementById('longitude').value,
+                        lat: parseFloat(document.getElementById('latitude').value),
+                        lng: parseFloat(document.getElementById('longitude').value),
                         address: document.getElementById('locationText').textContent
                     },
                     raca: breedValue || "Não especificada",
@@ -1124,6 +1116,11 @@
             const userPhone = localStorage.getItem('userPhone');
             if (userPhone) {
                 document.getElementById('contact').value = userPhone;
+            } else {
+                // Se não houver telefone do usuário, mostrar um alerta
+                alert('Por favor, atualize seu perfil com um número de telefone para adicionar animais.');
+                // Redirecionar para a página de conta
+                window.location.href = 'account.html';
             }
         });
 

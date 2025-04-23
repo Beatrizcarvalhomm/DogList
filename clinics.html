@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DogList - Clínicas Veterinárias</title>
+    <title>Doglist - Veterinários</title>
     <!-- Favicon em vários tamanhos para melhor suporte -->
     <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="32x32">
     <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="96x96">
@@ -11,304 +11,377 @@
     <link rel="apple-touch-icon" href="Images/DogList-Logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilos gerais */
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            font-family: Arial, sans-serif;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #FFE4D6;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
             color: #333;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
         }
-        
+
         .container {
+            width: 100%;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            width: 100%;
+            background: linear-gradient(135deg, #FFE4D6 0%, #fff 100%);
         }
-        
-        /* Estilos do cabeçalho */
-        header {
-            background-color: #4285f4;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        /* Estilos da seção do mapa */
-        .map-section {
-            position: relative;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        #map {
-            height: 100%;
-            width: 100%;
-            flex: 1;
-        }
-        
-        /* Estilos dos controles */
-        .controls-container {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 10;
-        }
-        
-        .button {
-            background-color: #4285f4;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+        .header {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin: 0 20px;
+            border-radius: 0 0 20px 20px;
         }
-        
-        .button:hover {
-            background-color: #3367d6;
-        }
-        
-        /* Estilos do status da busca */
-        .search-status {
-            position: absolute;
-            top: 60px;
-            left: 10px;
-            background-color: white;
-            padding: 10px 15px;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            display: none;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .search-status-text {
-            font-size: 14px;
-        }
-        
-        /* Estilos para os status das clínicas */
-        .clinic-status {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-            margin-right: 5px;
-        }
-        
-        .status-open {
-            background-color: #4CAF50;
-            color: white;
-        }
-        
-        .status-closed {
-            background-color: #f44336;
-            color: white;
-        }
-        
-        /* Estilos do popup das clínicas */
-        .clinic-popup {
-            max-width: 300px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .clinic-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        .clinic-info {
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-        
-        .clinic-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        .clinic-button {
-            background-color: #4285f4;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            flex: 1;
-            text-align: center;
+
+        .back-button {
+            font-size: 28px;
             text-decoration: none;
+            color: #FF7F50;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
         }
-        
-        .clinic-button:hover {
-            background-color: #3367d6;
+
+        .back-button:hover {
+            background-color: #FFE4D6;
+            transform: translateX(-3px);
         }
-        
-        .clinic-button.directions {
+
+        .logo {
+            display: none;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: 0.5px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #map {
+            flex: 1;
+            width: calc(100% - 40px);
+            min-height: 500px;
+            background-color: #FFE4D6;
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .status-indicator {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .status-open {
             background-color: #4CAF50;
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
-        
-        .clinic-button.directions:hover {
-            background-color: #388E3C;
+
+        .status-closed {
+            background-color: #f44336;
+            color: white;
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
         }
-        
-        .clinic-button.call {
-            background-color: #FF9800;
-        }
-        
-        .clinic-button.call:hover {
-            background-color: #F57C00;
-        }
-        
-        /* Estilos da legenda do mapa */
+
         .map-legend {
             position: absolute;
-            bottom: 20px;
-            right: 10px;
-            background-color: white;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 10;
-            max-width: 200px;
+            bottom: 30px;
+            left: 30px;
+            padding: 15px;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        
-        .legend-title {
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
+
         .legend-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
+            margin: 8px 0;
+            font-size: 14px;
+            color: #333;
+            padding: 8px;
+            transition: all 0.3s ease;
             cursor: pointer;
         }
-        
+
         .legend-color {
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            margin-right: 8px;
+            margin-right: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        
-        .legend-text {
-            font-size: 12px;
+
+        #nearestClinicLegend {
+            cursor: pointer;
         }
-        
-        /* Estilos do indicador de carregamento */
+
+        #nearestClinicLegend:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+            transform: translateX(3px);
+        }
+
+        .navigation {
+            background-color: rgba(255, 228, 214, 0.95);
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-item {
+            color: #000;
+            text-decoration: none;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            color: #FF7F50;
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            color: #FF7F50;
+        }
+
+        .nav-item.active:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #FF7F50;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        .clinic-popup {
+            padding: 20px;
+            min-width: 280px;
+            max-width: 320px;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #FF7F50;
+            padding-bottom: 8px;
+        }
+
+        .popup-info {
+            margin-bottom: 12px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .popup-info:hover {
+            background-color: #f0f0f0;
+            transform: translateX(2px);
+        }
+
+        .popup-info i {
+            color: #FF7F50;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .popup-info:hover i {
+            transform: scale(1.2);
+        }
+
+        .popup-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .popup-button {
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background-color: #FF7F50;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.2);
+        }
+
+        .popup-button:hover {
+            background-color: #ff6b3d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 127, 80, 0.3);
+        }
+
+        .popup-button-disabled {
+            background-color: #bbb !important;
+            color: #f5f5f5;
+            cursor: not-allowed !important;
+            opacity: 0.7;
+            box-shadow: none !important;
+            transform: none !important;
+            transition: none !important;
+        }
+
+        .popup-button-disabled:hover {
+            background-color: #bbb !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .unavailable-info {
+            color: #999;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+        .info-window {
+            padding: 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
         .loading-indicator {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             text-align: center;
-            z-index: 1000;
-            display: none;
+            z-index: 9999;
         }
-        
+
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 127, 80, 0.3);
             border-radius: 50%;
-            border-top: 4px solid #4285f4;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+            border-top-color: #FF7F50;
+            animation: spin 1s ease-in-out infinite;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
-        
-        /* Responsividade */
-        @media (max-width: 600px) {
-            .header-title {
-                font-size: 1.2rem;
+
+        /* Ajustes para o botão de fechar no mobile */
+        @media (max-width: 768px) {
+            .gm-ui-hover-effect {
+                top: 5px !important;
+                right: 5px !important;
             }
             
-            .button {
-                font-size: 12px;
-                padding: 8px 12px;
-            }
-            
-            .map-legend {
-                max-width: 150px;
-            }
-            
-            .legend-title {
-                font-size: 12px;
-            }
-            
-            .legend-text {
-                font-size: 10px;
+            .gm-style-iw {
+                max-width: 90vw !important;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1 class="header-title">DogList - Clínicas Veterinárias</h1>
-        </header>
+        <div class="header">
+            <a href="home.html" class="back-button">←</a>
+            <img src="Images/DogList-Logo.png" alt="DogList Logo" class="logo">
+            <span class="title">Veterinários</span>
+        </div>
         
-        <div class="map-section">
-            <div id="map"></div>
-            
-            <div class="controls-container">
-                <button class="button" id="findClinicsButton" onclick="findNearestClinics()">
-                    <i class="fas fa-search"></i> Buscar clínicas veterinárias próximas
-                </button>
+        <div id="map"></div>
+        <div id="loadingIndicator" class="loading-indicator">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px;">Buscando clínicas veterinárias...</p>
+        </div>
+
+        <div class="map-legend">
+            <div class="legend-item" id="myLocationLegend" onclick="centerMapOnUserLocation()">
+                <div class="legend-color" style="background-color: #007bff;"></div>
+                <span class="legend-text">Sua localização</span>
             </div>
-            
-            <div class="search-status" id="searchStatus">
-                <i class="fas fa-spinner fa-spin"></i>
-                <div class="search-status-text" id="searchStatusText">Buscando clínicas veterinárias próximas...</div>
+            <div class="legend-item" id="nearestClinicLegend" onclick="showNearestClinic()">
+                <div class="legend-color" style="background-color: #FF0000;"></div>
+                <span class="legend-text">Clínica mais próxima</span>
             </div>
-            
-            <div class="map-legend" id="mapLegend" style="display: none;">
-                <div class="legend-title">Legenda</div>
-                <div class="legend-items" id="legendItems">
-                    <!-- Items will be added dynamically -->
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4CAF50;"></div>
+                <span class="legend-text">Clínicas abertas</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FF9800;"></div>
+                <span class="legend-text">Clínicas fechadas</span>
+            </div>
+            <div class="legend-item refresh-location" onclick="refreshUserLocation()">
+                <div class="legend-color" style="background-color: #ffffff; display: flex; justify-content: center; align-items: center;">
+                    <i class="fas fa-sync-alt" style="color: #FF7F50;"></i>
                 </div>
+                <span class="legend-text">Atualizar localização</span>
             </div>
         </div>
-    </div>
-    
-    <div id="loadingIndicator" class="loading-indicator">
-        <div class="spinner"></div>
-        <p style="margin-top: 10px;">Buscando clínicas veterinárias...</p>
     </div>
 
     <!-- Script do Google Maps -->
@@ -326,535 +399,618 @@
         let userLocation;
         let infoWindow;
         let nearestClinic = null;
-        let markers = [];
-        let currentUserPosition = null;
-        let searchTerms = ['veterinário', 'clínica veterinária', 'hospital veterinário', 'pet shop veterinário'];
-        let clinicData = [];
-        let searchRadius = 50000; // 50km em metros
-        
-        // Cores para os marcadores
-        const markerColors = {
-            user: '#4285F4',      // Azul Google
-            nearbyClinic: '#34A853', // Verde Google
-            searchClinic: '#EA4335'  // Vermelho Google
-        };
-        
-        // Função para inicializar o mapa
+
         function initMap() {
-            // Criar mapa
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 15,
-                mapId: 'f9c6037a4c5cd53b',
-                fullscreenControl: false,
-                streetViewControl: false,
-                mapTypeControl: false,
-                zoomControl: true,
-                zoomControlOptions: {
-                    position: google.maps.ControlPosition.RIGHT_BOTTOM
+            // Criando infoWindow que será reutilizada
+            infoWindow = new google.maps.InfoWindow({
+                maxWidth: 320,
+                disableAutoPan: false,
+                // Disable the default close button
+                hideCloseButton: true
+            });
+            
+            // Estilo personalizado para InfoWindow
+            google.maps.event.addListener(infoWindow, 'domready', function() {
+                // Estilizar container da InfoWindow
+                const iwOuter = document.querySelector('.gm-style-iw');
+                if (iwOuter) {
+                    iwOuter.style.padding = '0';
+                    iwOuter.style.borderRadius = '15px';
+                    iwOuter.style.overflow = 'hidden';
+                    iwOuter.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
+                }
+                
+                // Hide the default close button
+                const closeButton = document.querySelector('.gm-ui-hover-effect');
+                if (closeButton) {
+                    closeButton.style.display = 'none';
                 }
             });
-            
-            // Criar janela de informação
-            infoWindow = new google.maps.InfoWindow({
-                maxWidth: 350
+
+            // Inicializar o mapa
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+                center: { lat: -23.5505, lng: -46.6333 }, // São Paulo como default
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                    position: google.maps.ControlPosition.TOP_RIGHT,
+                    mapTypeIds: [
+                        google.maps.MapTypeId.ROADMAP,
+                        google.maps.MapTypeId.SATELLITE,
+                        google.maps.MapTypeId.HYBRID,
+                        google.maps.MapTypeId.TERRAIN
+                    ]
+                },
+                streetViewControl: false,
+                fullscreenControl: true,
+                zoomControl: true
             });
-            
-            // Verificar se o navegador suporta geolocalização
+
+            // Obter localização do usuário com alta precisão
             if (navigator.geolocation) {
-                // Adicionar o indicador de carregamento
-                showLoadingIndicator();
+                const geoOptions = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                };
                 
-                // Obter a localização do usuário
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const userPosition = {
+                        userLocation = {
                             lat: position.coords.latitude,
                             lng: position.coords.longitude
                         };
                         
-                        // Salvar a posição do usuário para uso futuro
-                        currentUserPosition = userPosition;
+                        console.log("Localização obtida:", userLocation);
                         
-                        // Centralizar o mapa na posição do usuário
-                        map.setCenter(userPosition);
+                        // Centralizar mapa na localização do usuário
+                        map.setCenter(userLocation);
+
+                        // Adicionar marcador do usuário
+                        addUserMarker(userLocation);
                         
-                        // Criar marcador na posição do usuário
-                        userMarker = new google.maps.Marker({
-                            position: userPosition,
-                            map: map,
-                            icon: {
-                                path: google.maps.SymbolPath.CIRCLE,
-                                fillColor: markerColors.user,
-                                fillOpacity: 1,
-                                strokeColor: '#FFFFFF',
-                                strokeWeight: 2,
-                                scale: 8
-                            },
-                            title: 'Sua localização'
-                        });
-                        
-                        // Esconder o indicador de carregamento
-                        hideLoadingIndicator();
-                        
-                        // Mostrar os controles
-                        document.querySelector('.controls-container').style.display = 'block';
-                        
-                        // Esconder a legenda inicialmente
-                        document.querySelector('.map-legend').style.display = 'none';
+                        // Buscar clínicas veterinárias próximas
+                        searchVeterinaryClinics(userLocation);
                     },
                     (error) => {
-                        // Lidar com erros de geolocalização
-                        hideLoadingIndicator();
                         console.error('Erro ao obter localização:', error);
-                        
-                        // Centralizar em uma posição padrão (São Paulo)
-                        const defaultPosition = { lat: -23.550520, lng: -46.633308 };
-                        map.setCenter(defaultPosition);
-                        
-                        // Mostrar mensagem para o usuário
-                        alert('Não foi possível obter sua localização. O mapa foi centralizado em São Paulo. Por favor, permita o acesso à sua localização para melhores resultados.');
-                        
-                        // Mostrar os controles mesmo assim
-                        document.querySelector('.controls-container').style.display = 'block';
-                    }
+                        handleLocationError(error);
+                    },
+                    geoOptions
                 );
             } else {
-                // O navegador não suporta geolocalização
-                hideLoadingIndicator();
-                console.error('Geolocalização não suportada pelo navegador.');
+                console.error('Geolocalização não é suportada por este navegador.');
+                document.getElementById('loadingIndicator').style.display = 'none';
+                alert('Seu navegador não suporta geolocalização. Usando localização padrão.');
                 
-                // Centralizar em uma posição padrão (São Paulo)
-                const defaultPosition = { lat: -23.550520, lng: -46.633308 };
-                map.setCenter(defaultPosition);
-                
-                // Mostrar mensagem para o usuário
-                alert('Seu navegador não suporta geolocalização. O mapa foi centralizado em São Paulo.');
-                
-                // Mostrar os controles mesmo assim
-                document.querySelector('.controls-container').style.display = 'block';
+                // Usar localização padrão
+                userLocation = { lat: -23.5505, lng: -46.6333 }; // São Paulo
+                addUserMarker(userLocation);
+                searchVeterinaryClinics(userLocation);
             }
         }
-        
-        // Função para encontrar clínicas veterinárias próximas
-        function findNearestClinics() {
-            // Verificar se temos a posição do usuário
-            if (!currentUserPosition) {
-                alert('Sua localização não está disponível. Por favor, permita o acesso à sua localização e tente novamente.');
-                return;
+
+        function handleLocationError(error) {
+            document.getElementById('loadingIndicator').style.display = 'none';
+            
+            let errorMessage = 'Erro desconhecido ao obter localização.';
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Permissão para geolocalização negada. Usando localização padrão.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Informação de localização indisponível. Usando localização padrão.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Tempo esgotado ao obter sua localização. Usando localização padrão.';
+                    break;
             }
             
-            // Limpar marcadores existentes (exceto o do usuário)
-            clearMarkers();
+            alert(errorMessage);
             
-            // Limpar dados de clínicas anteriores
-            clinicData = [];
-            
-            // Mostrar status de busca
-            const searchStatus = document.querySelector('.search-status');
-            searchStatus.style.display = 'flex';
-            
-            // Inicializar o serviço PlacesService
-            const service = new google.maps.places.PlacesService(map);
-            
-            // Contador para acompanhar buscas concluídas
-            let completedSearches = 0;
-            const totalSearches = searchTerms.length;
-            
-            // Realizar busca para cada termo
-            searchTerms.forEach(term => {
-                // Primeiramente, usar textSearch para buscar por termo
-                service.textSearch({
-                    location: currentUserPosition,
-                    radius: searchRadius,
-                    query: term
-                }, (results, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        // Processar resultados da busca por texto
-                        processClinicsResults(results);
-                    }
-                    
-                    // Incrementar contador de buscas concluídas
-                    completedSearches++;
-                    
-                    // Em seguida, usar nearbySearch para buscar por tipo
-                    service.nearbySearch({
-                        location: currentUserPosition,
-                        radius: searchRadius,
-                        type: ['veterinary_care']
-                    }, (results, status) => {
-                        if (status === google.maps.places.PlacesServiceStatus.OK) {
-                            // Processar resultados da busca próxima
-                            processClinicsResults(results);
-                        }
-                        
-                        // Incrementar contador de buscas concluídas
-                        completedSearches++;
-                        
-                        // Verificar se todas as buscas foram concluídas
-                        if (completedSearches >= totalSearches + 1) { // +1 para a busca nearbySearch
-                            // Esconder status de busca
-                            searchStatus.style.display = 'none';
-                            
-                            // Mostrar legenda
-                            document.querySelector('.map-legend').style.display = 'block';
-                            
-                            // Se não encontrou clínicas, mostrar mensagem
-                            if (clinicData.length === 0) {
-                                alert('Nenhuma clínica veterinária encontrada nas proximidades. Tente aumentar o raio de busca.');
-                            } else {
-                                // Ajustar o zoom para mostrar todas as clínicas
-                                adjustMapBounds();
-                                
-                                // Atualizar a legenda com o número de clínicas encontradas
-                                updateLegend();
-                            }
-                        }
-                    });
-                });
-            });
+            // Usar localização padrão
+            userLocation = { lat: -23.5505, lng: -46.6333 }; // São Paulo
+            addUserMarker(userLocation);
+            searchVeterinaryClinics(userLocation);
         }
-        
-        // Função para processar os resultados da busca por clínicas
-        function processClinicsResults(results) {
-            results.forEach(place => {
-                // Verificar se já temos esta clínica em nossos dados
-                const existingPlace = clinicData.find(p => p.place_id === place.place_id);
-                
-                // Se a clínica já existe, pular
-                if (existingPlace) return;
-                
-                // Calcular distância entre o usuário e a clínica
-                const distance = calculateDistance(
-                    currentUserPosition.lat, 
-                    currentUserPosition.lng,
-                    place.geometry.location.lat(),
-                    place.geometry.location.lng()
-                );
-                
-                // Criar o objeto de dados da clínica
-                const clinic = {
-                    place_id: place.place_id,
-                    name: place.name,
-                    location: {
-                        lat: place.geometry.location.lat(),
-                        lng: place.geometry.location.lng()
-                    },
-                    distance: distance,
-                    address: place.formatted_address || place.vicinity || 'Endereço não disponível',
-                    rating: place.rating || 0,
-                    user_ratings_total: place.user_ratings_total || 0,
-                    open_now: place.opening_hours ? place.opening_hours.isOpen() : null,
-                    marker: null
-                };
-                
-                // Adicionar a clínica aos dados
-                clinicData.push(clinic);
-                
-                // Criar marcador para a clínica
-                createClinicMarker(clinic);
-            });
-        }
-        
-        // Função para criar marcador para uma clínica
-        function createClinicMarker(clinic) {
-            // Criar marcador
-            const marker = new google.maps.Marker({
-                position: clinic.location,
+
+        function addUserMarker(location) {
+            // Remover marcador existente, se houver
+            if (userMarker) {
+                userMarker.setMap(null);
+            }
+            
+            // Criar novo marcador do usuário
+            userMarker = new google.maps.Marker({
+                position: location,
                 map: map,
-                title: clinic.name,
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: markerColors.nearbyClinic,
-                    fillOpacity: 1,
+                    fillColor: '#007bff',
+                    fillOpacity: 0.8,
                     strokeColor: '#FFFFFF',
                     strokeWeight: 2,
-                    scale: 8
+                    scale: 10
                 },
-                animation: google.maps.Animation.DROP
+                title: 'Sua localização',
+                zIndex: 10
             });
             
-            // Salvar referência ao marcador
-            clinic.marker = marker;
-            markers.push(marker);
-            
-            // Adicionar listener de clique
-            marker.addListener('click', () => {
-                // Obter mais detalhes sobre a clínica
-                const service = new google.maps.places.PlacesService(map);
-                service.getDetails({
-                    placeId: clinic.place_id,
-                    fields: [
-                        'formatted_phone_number', 
-                        'website', 
-                        'opening_hours', 
-                        'formatted_address', 
-                        'photos',
-                        'url'
-                    ]
-                }, (placeDetails, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        // Atualizar dados da clínica com os detalhes
-                        clinic.phone = placeDetails.formatted_phone_number;
-                        clinic.website = placeDetails.website;
-                        clinic.url = placeDetails.url;
-                        clinic.address = placeDetails.formatted_address || clinic.address;
-                        clinic.opening_hours = placeDetails.opening_hours;
-                        clinic.photos = placeDetails.photos;
-                        
-                        // Mostrar popup com informações da clínica
-                        showClinicInfo(clinic);
-                    } else {
-                        // Mostrar popup mesmo sem detalhes adicionais
-                        showClinicInfo(clinic);
-                    }
-                });
+            // Adicionar círculo de precisão
+            new google.maps.Circle({
+                map: map,
+                center: location,
+                radius: 200, // 200 metros
+                strokeColor: '#007bff',
+                strokeOpacity: 0.4,
+                strokeWeight: 2,
+                fillColor: '#007bff',
+                fillOpacity: 0.1
             });
+            
+            // Adicionar evento de clique ao marcador
+            userMarker.addListener('click', () => {
+                infoWindow.setContent('<div style="text-align: center; padding: 10px;"><strong>Você está aqui</strong></div>');
+                infoWindow.open(map, userMarker);
+            });
+            
+            return userMarker;
+        }
+
+        function searchVeterinaryClinics(location) {
+            // Limpar marcadores existentes
+            clearClinicMarkers();
+            
+            // Criar o serviço do Places
+            const service = new google.maps.places.PlacesService(map);
+            
+            // Realizar busca em duas etapas para obter mais resultados
+            searchNearbyVets(service, location);
         }
         
-        // Função para mostrar informações da clínica
-        function showClinicInfo(clinic) {
-            // Fechar janela de informação se estiver aberta
-            infoWindow.close();
+        function searchNearbyVets(service, location) {
+            // Buscar todas as clínicas (abertas e fechadas) em uma única requisição
+            const request = {
+                location: location,
+                radius: 25000, // 25 km
+                type: 'veterinary_care',
+                keyword: 'veterinário clínica veterinária hospital veterinario'
+            };
             
-            // Determinar status de abertura
-            let openStatus = '';
-            if (clinic.open_now !== null) {
-                openStatus = `
-                    <span class="clinic-status ${clinic.open_now ? 'status-open' : 'status-closed'}">
-                        ${clinic.open_now ? 'Aberto agora' : 'Fechado'}
-                    </span>
-                `;
-            }
-            
-            // Criar conteúdo HTML para avaliações
-            let ratingHtml = '';
-            if (clinic.rating > 0) {
-                ratingHtml = `
-                    <div class="clinic-info">
-                        <i class="fas fa-star"></i>
-                        ${clinic.rating.toFixed(1)} (${clinic.user_ratings_total} avaliações)
-                    </div>
-                `;
-            }
-            
-            // Criar conteúdo HTML para telefone
-            let phoneHtml = '';
-            if (clinic.phone) {
-                phoneHtml = `
-                    <div class="clinic-info">
-                        <i class="fas fa-phone"></i>
-                        ${clinic.phone}
-                    </div>
-                `;
-            }
-            
-            // Criar conteúdo HTML para endereço
-            let addressHtml = '';
-            if (clinic.address) {
-                addressHtml = `
-                    <div class="clinic-info">
-                        <i class="fas fa-map-marker-alt"></i>
-                        ${clinic.address}
-                    </div>
-                `;
-            }
-            
-            // Criar conteúdo HTML para distância
-            let distanceHtml = '';
-            if (clinic.distance) {
-                distanceHtml = `
-                    <div class="clinic-info">
-                        <i class="fas fa-route"></i>
-                        ${clinic.distance < 1 ? `${(clinic.distance * 1000).toFixed(0)} m` : `${clinic.distance.toFixed(1)} km`}
-                    </div>
-                `;
-            }
-            
-            // Criar conteúdo HTML para horário de funcionamento
-            let hoursHtml = '';
-            if (clinic.opening_hours && clinic.opening_hours.weekday_text) {
-                const today = new Date().getDay();
-                // Ajustar o índice para corresponder ao formato do Google (domingo = 0)
-                const todayIndex = today === 0 ? 6 : today - 1;
+            service.nearbySearch(request, (results, status) => {
+                document.getElementById('loadingIndicator').style.display = 'none';
                 
-                hoursHtml = `
-                    <div class="clinic-info">
-                        <i class="fas fa-clock"></i>
-                        ${clinic.opening_hours.weekday_text[todayIndex]}
+                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                    console.log("Total de clínicas encontradas:", results.length);
+                    
+                    // Fazer outra busca apenas para clínicas abertas para marcar o status
+                    const openRequest = {
+                        location: location,
+                        radius: 25000,
+                        type: 'veterinary_care',
+                        keyword: 'veterinário clínica veterinária hospital veterinario',
+                        openNow: true
+                    };
+                    
+                    service.nearbySearch(openRequest, (openResults, openStatus) => {
+                        let openClinics = [];
+                        
+                        if (openStatus === google.maps.places.PlacesServiceStatus.OK && openResults) {
+                            openClinics = openResults;
+                            console.log("Clínicas abertas encontradas:", openClinics.length);
+                        }
+                        
+                        // Marcar as clínicas como abertas ou fechadas
+                        const processedResults = results.map(clinic => {
+                            // Verificar se a clínica está na lista de abertas
+                            const isOpen = openClinics.some(openClinic => openClinic.place_id === clinic.place_id);
+                            return { ...clinic, is_open: isOpen };
+                        });
+                        
+                        // Processar todos os resultados
+                        processClinicResults(processedResults, location);
+                    });
+                } else {
+                    console.error('Erro na busca de clínicas veterinárias:', status);
+                    alert('Ocorreu um erro ao buscar clínicas veterinárias. Por favor, tente novamente mais tarde.');
+                }
+            });
+        }
+
+        function processClinicResults(results, userLocation) {
+            // Se não encontrou clínicas
+            if (results.length === 0) {
+                alert('Não encontramos clínicas veterinárias próximas a você.');
+                return;
+            }
+
+            // Ordenar resultados por distância (mais próximo primeiro)
+            results.sort((a, b) => {
+                const distanceA = google.maps.geometry.spherical.computeDistanceBetween(
+                    new google.maps.LatLng(userLocation.lat, userLocation.lng),
+                    a.geometry.location
+                );
+                const distanceB = google.maps.geometry.spherical.computeDistanceBetween(
+                    new google.maps.LatLng(userLocation.lat, userLocation.lng),
+                    b.geometry.location
+                );
+                return distanceA - distanceB;
+            });
+            
+            // Adicionar marcadores para cada clínica
+            results.forEach((place, index) => {
+                const isNearest = index === 0;
+                
+                // Verificar se está aberto com base nos horários
+                let isOpen = place.is_open;
+                
+                // Se for a clínica mais próxima, armazenar referência
+                if (isNearest) {
+                    nearestClinic = place;
+                }
+                
+                // Escolher a cor do marcador: vermelho (mais próxima), verde (aberta), laranja (fechada)
+                let markerColor = '#FF9800'; // laranja/fechado por padrão
+                
+                if (isNearest) {
+                    markerColor = '#FF0000'; // vermelho para a mais próxima
+                } else if (isOpen) {
+                    markerColor = '#4CAF50'; // verde para aberto
+                }
+                
+                // Criar marcador com cor diferente para a clínica mais próxima e status aberta/fechada
+                const marker = new google.maps.Marker({
+                    position: place.geometry.location,
+                    map: map,
+                    title: place.name + (isOpen ? ' (Aberto)' : ' (Fechado)'),
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: markerColor,
+                        fillOpacity: 0.8,
+                        strokeColor: '#FFFFFF',
+                        strokeWeight: 2,
+                        scale: isNearest ? 10 : 8
+                    },
+                    animation: isNearest ? google.maps.Animation.DROP : null,
+                    zIndex: isNearest ? 5 : (isOpen ? 2 : 1)
+                });
+                
+                // Adicionar evento de clique ao marcador
+                marker.addListener('click', () => {
+                    // Buscar detalhes completos da clínica
+                    const service = new google.maps.places.PlacesService(map);
+                    service.getDetails(
+                        { placeId: place.place_id, fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'website', 'rating'] },
+                        (placeDetails, status) => {
+                            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                                // Calcular distância
+                                const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                                    new google.maps.LatLng(userLocation.lat, userLocation.lng),
+                                    place.geometry.location
+                                );
+                                
+                                // Formatar distância
+                                const distanceFormatted = distance < 1000 ? 
+                                    `${Math.round(distance)}m` : 
+                                    `${(distance / 1000).toFixed(1)}km`;
+                                
+                                // Determinar se está aberto agora
+                                let isOpen = false;
+                                
+                                try {
+                                    const now = new Date();
+                                    const currentHour = now.getHours();
+                                    const currentMinute = now.getMinutes();
+                                    
+                                    // Verificar se há horário de funcionamento
+                                    if (placeDetails.opening_hours && placeDetails.opening_hours.weekday_text) {
+                                        const dayOfWeek = now.getDay(); // 0 = domingo, 1 = segunda, etc.
+                                        const currentDayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ajustar para o formato do Google (0 = segunda)
+                                        
+                                        // Obter texto do dia atual (ex: "segunda-feira: 9:00 – 18:00")
+                                        const dayHoursText = placeDetails.opening_hours.weekday_text[currentDayIndex];
+                                        console.log("Horário hoje:", dayHoursText);
+                                        
+                                        // Verificar se há padrões de texto que indicam 24 horas
+                                        if (dayHoursText.toLowerCase().includes("24 horas") || 
+                                            dayHoursText.toLowerCase().includes("24 hours") ||
+                                            dayHoursText.toLowerCase().includes("24h") ||
+                                            dayHoursText.toLowerCase().includes("aberto 24h") ||
+                                            dayHoursText.toLowerCase().includes("open 24") ||
+                                            dayHoursText.toLowerCase().includes("24/7") ||
+                                            // Verificar formato "00:00 – 23:59"
+                                            dayHoursText.match(/0?0:0?0\s*[–-]\s*23:59/) ||
+                                            // Verificar formato "00:00 – 00:00"
+                                            dayHoursText.match(/0?0:0?0\s*[–-]\s*0?0:0?0/) ||
+                                            // Verificar formato "12:00 AM – 11:59 PM"
+                                            dayHoursText.match(/12:00\s*AM\s*[–-]\s*11:59\s*PM/i)) {
+                                            
+                                            console.log("Detectado estabelecimento 24 horas");
+                                            isOpen = true;
+                                        }
+                                        // Verificar se contém "Fechado" explicitamente
+                                        else if (dayHoursText.toLowerCase().includes("fechado") || 
+                                            dayHoursText.toLowerCase().includes("closed")) {
+                                            isOpen = false;
+                                        } else {
+                                            // Extrair horários - lidar com formatos como "9:00 – 18:00" ou "09:00 – 19:30"
+                                            const timeMatch = dayHoursText.match(/(\d{1,2}):(\d{2})\s*[–-]\s*(\d{1,2}):(\d{2})/);
+                                            
+                                            if (timeMatch) {
+                                                const openHour = parseInt(timeMatch[1], 10);
+                                                const openMinute = parseInt(timeMatch[2], 10);
+                                                const closeHour = parseInt(timeMatch[3], 10);
+                                                const closeMinute = parseInt(timeMatch[4], 10);
+                                                
+                                                // Verificar se é um horário de 24 horas (abre às 0:00 e fecha às 0:00 do dia seguinte)
+                                                if (openHour === 0 && openMinute === 0 && closeHour === 0 && closeMinute === 0) {
+                                                    console.log("Detectado estabelecimento 24 horas (formato 00:00-00:00)");
+                                                    isOpen = true;
+                                                } else {
+                                                    // Horário atual em minutos desde meia-noite
+                                                    const currentTimeMinutes = currentHour * 60 + currentMinute;
+                                                    const openTimeMinutes = openHour * 60 + openMinute;
+                                                    const closeTimeMinutes = closeHour * 60 + closeMinute;
+                                                    
+                                                    // Verificar se horário atual está entre abertura e fechamento
+                                                    isOpen = currentTimeMinutes >= openTimeMinutes && currentTimeMinutes <= closeTimeMinutes;
+                                                    
+                                                    console.log(`Clínica ${placeDetails.name}: Horário: ${openHour}:${openMinute}-${closeHour}:${closeMinute}`);
+                                                    console.log(`Horário atual: ${currentHour}:${currentMinute} (${currentTimeMinutes} minutos)`);
+                                                    console.log(`Aberto: ${isOpen ? "Sim" : "Não"}`);
+                                                }
+                                            } else {
+                                                // Se não conseguir extrair horários, usar a API
+                                                isOpen = placeDetails.opening_hours.isOpen && placeDetails.opening_hours.isOpen();
+                                            }
+                                        }
+                                    } else if (place.is_open !== undefined) {
+                                        isOpen = place.is_open;
+                                    }
+                                } catch (error) {
+                                    console.error("Erro ao verificar horário de funcionamento:", error);
+                                    // Tentar usar diretamente a API como fallback
+                                    try {
+                                        if (placeDetails.opening_hours && placeDetails.opening_hours.isOpen) {
+                                            isOpen = placeDetails.opening_hours.isOpen();
+                                        }
+                                    } catch (e) {
+                                        console.error("Também falhou ao usar API diretamente:", e);
+                                    }
+                                }
+                                
+                                // Debugar no console
+                                console.log(`Status final para ${placeDetails.name}: ${isOpen ? "ABERTO" : "FECHADO"}`);
+                                
+                                // Formatar status de abertura
+                                let statusHtml = '';
+                                
+                                if (isOpen) {
+                                    statusHtml = `<span class="status-indicator status-open">Aberto</span>`;
+                                } else {
+                                    statusHtml = `<span class="status-indicator status-closed">Fechado</span>`;
+                                }
+                                
+                                // Criar conteúdo da infoWindow
+                                const content = `
+                    <div class="clinic-popup">
+                                        <div class="popup-title">
+                                            ${placeDetails.name || 'Clínica Veterinária'}
+                                            ${statusHtml}
+                                            <button onclick="infoWindow.close()" style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                        <div class="popup-info">
+                            <i class="fas fa-map-marker-alt"></i> 
+                                            <span>${placeDetails.formatted_address || 'Endereço não disponível'}</span>
+                        </div>
+                        <div class="popup-info">
+                            <i class="fas fa-route"></i> 
+                                            <span>Distância: ${distanceFormatted}</span>
+                        </div>
+                            <div class="popup-info">
+                                <i class="fas fa-phone"></i> 
+                                            <span>${placeDetails.formatted_phone_number || '<span class="unavailable-info">Telefone não disponível</span>'}</span>
+                            </div>
+                                        ${placeDetails.rating ? `
+                                        <div class="popup-info">
+                                            <i class="fas fa-star"></i> 
+                                            <span>Avaliação: ${placeDetails.rating} ⭐</span>
+                                        </div>` : ''}
+                                        ${placeDetails.opening_hours?.weekday_text ? `
+                                        <div class="popup-info">
+                                            <i class="fas fa-calendar-alt"></i> 
+                                            <span>Horário hoje: ${placeDetails.opening_hours.weekday_text[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1].split(': ')[1]}</span>
+                                        </div>` : ''}
+                        <div class="popup-buttons">
+                                            <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${place.geometry.location.lat()},${place.geometry.location.lng()}&travelmode=driving" 
+                               target="_blank" 
+                               class="popup-button">
+                               <i class="fas fa-directions"></i> Como chegar
+                            </a>
+                                            
+                                            ${placeDetails.formatted_phone_number ? 
+                                                `<a href="tel:${placeDetails.formatted_phone_number}" class="popup-button">
+                                    <i class="fas fa-phone"></i> Ligar
+                                                </a>` : 
+                                                `<button class="popup-button popup-button-disabled">
+                                                    <i class="fas fa-phone-slash"></i> Sem telefone
+                                                </button>`
+                                            }
+                        </div>
                     </div>
                 `;
-            }
-            
-            // Criar botões para ações
-            let buttonsHtml = '';
-            
-            // Botão para direções
-            const directionsButton = `
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${clinic.location.lat},${clinic.location.lng}&travelmode=driving" 
-                    target="_blank" class="clinic-button directions">
-                    <i class="fas fa-directions"></i>
-                    Direções
-                </a>
-            `;
-            
-            // Botão para ligar
-            const callButton = clinic.phone ? 
-                `<a href="tel:${clinic.phone}" class="clinic-button call">
-                    <i class="fas fa-phone"></i>
-                    Ligar
-                </a>` : 
-                `<button class="clinic-button" disabled style="background-color: #ccc; cursor: not-allowed;">
-                    <i class="fas fa-phone"></i>
-                    Sem telefone
-                </button>`;
-            
-            // Botão para site
-            const websiteButton = clinic.website ? 
-                `<a href="${clinic.website}" target="_blank" class="clinic-button">
-                    <i class="fas fa-globe"></i>
-                    Site
-                </a>` : 
-                `<button class="clinic-button" disabled style="background-color: #ccc; cursor: not-allowed;">
-                    <i class="fas fa-globe"></i>
-                    Sem site
-                </button>`;
-            
-            // Montar HTML dos botões
-            buttonsHtml = `
-                <div class="clinic-actions">
-                    ${directionsButton}
-                    ${callButton}
-                </div>
-                <div class="clinic-actions" style="margin-top: 8px;">
-                    ${websiteButton}
-                    <a href="${clinic.url}" target="_blank" class="clinic-button">
-                        <i class="fab fa-google"></i>
-                        Ver no Google
-                    </a>
-                </div>
-            `;
-            
-            // Montar conteúdo completo da janela de informação
-            const content = `
-                <div class="clinic-popup">
-                    <div class="clinic-title">${clinic.name} ${openStatus}</div>
-                    ${ratingHtml}
-                    ${addressHtml}
-                    ${distanceHtml}
-                    ${phoneHtml}
-                    ${hoursHtml}
-                    ${buttonsHtml}
-                </div>
-            `;
-            
-            // Configurar e abrir janela de informação
-            infoWindow.setContent(content);
-            infoWindow.open(map, clinic.marker);
-        }
-        
-        // Função para limpar todos os marcadores (exceto do usuário)
-        function clearMarkers() {
-            // Remover cada marcador do mapa
-            markers.forEach(marker => {
-                marker.setMap(null);
+
+                                // Exibir infoWindow
+                                infoWindow.setContent(content);
+                                infoWindow.open(map, marker);
+                            } else {
+                                console.error('Erro ao obter detalhes do local:', status);
+                                
+                                // Exibir infoWindow simplificada em caso de erro
+                                infoWindow.setContent(`
+                                    <div style="padding: 15px; text-align: center;">
+                                        <h3>${place.name}</h3>
+                                        <p>Clínica Veterinária</p>
+                                        <a href="https://www.google.com/maps/search/?api=1&query=${place.geometry.location.lat()},${place.geometry.location.lng()}"
+                                        target="_blank" style="color: #FF7F50;">
+                                            Ver no Google Maps
+                                        </a>
+                                    </div>
+                                `);
+                                infoWindow.open(map, marker);
+                            }
+                        }
+                    );
+                });
+                
+                // Adicionar marcador ao array
+                clinicMarkers.push(marker);
             });
             
-            // Limpar array de marcadores
-            markers = [];
-        }
-        
-        // Função para calcular distância entre dois pontos (Haversine formula)
-        function calculateDistance(lat1, lng1, lat2, lng2) {
-            const R = 6371; // Raio da Terra em km
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLng = (lng2 - lng1) * Math.PI / 180;
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLng/2) * Math.sin(dLng/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const distance = R * c; // Distância em km
-            return distance;
-        }
-        
-        // Função para ajustar os limites do mapa para mostrar todos os marcadores
-        function adjustMapBounds() {
-            // Criar objeto bounds
+            // Ajustar mapa para mostrar todos os marcadores
             const bounds = new google.maps.LatLngBounds();
+            bounds.extend(userLocation);
             
-            // Adicionar posição do usuário aos limites
-            if (currentUserPosition) {
-                bounds.extend(currentUserPosition);
+            // Limitar a quantidade de marcadores no bounds para não fazer zoom out demais
+            const maxMarkers = Math.min(clinicMarkers.length, 10);
+            for (let i = 0; i < maxMarkers; i++) {
+                bounds.extend(clinicMarkers[i].getPosition());
             }
             
-            // Adicionar posição de cada clínica aos limites
-            clinicData.forEach(clinic => {
-                bounds.extend(clinic.location);
-            });
-            
-            // Ajustar o mapa para mostrar todos os marcadores
             map.fitBounds(bounds);
             
-            // Se o zoom estiver muito alto (muito próximo), limitá-lo
-            const listener = google.maps.event.addListener(map, 'idle', function() {
+            // Garantir um nível de zoom razoável
+            const listener = google.maps.event.addListener(map, 'idle', () => {
                 if (map.getZoom() > 15) {
                     map.setZoom(15);
+                } else if (map.getZoom() < 10) {
+                    map.setZoom(10);
                 }
                 google.maps.event.removeListener(listener);
             });
-        }
-        
-        // Função para atualizar a legenda do mapa
-        function updateLegend() {
-            // Obter elemento da legenda
-            const legendElement = document.querySelector('.map-legend');
             
-            // Criar conteúdo HTML para a legenda
-            const legendHtml = `
-                <div class="legend-title">Legenda</div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: ${markerColors.user};"></div>
-                    <div class="legend-text">Sua localização</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: ${markerColors.nearbyClinic};"></div>
-                    <div class="legend-text">Clínicas (${clinicData.length})</div>
-                </div>
-            `;
-            
-            // Atualizar conteúdo da legenda
-            legendElement.innerHTML = legendHtml;
-            
-            // Mostrar a legenda
-            legendElement.style.display = 'block';
-        }
-        
-        // Função para mostrar o indicador de carregamento
-        function showLoadingIndicator() {
-            const loadingIndicator = document.createElement('div');
-            loadingIndicator.className = 'loading-indicator';
-            loadingIndicator.innerHTML = `
-                <div class="spinner"></div>
-                <p style="margin-top: 10px;">Carregando mapa...</p>
-            `;
-            
-            document.body.appendChild(loadingIndicator);
-        }
-        
-        // Função para esconder o indicador de carregamento
-        function hideLoadingIndicator() {
-            const loadingIndicator = document.querySelector('.loading-indicator');
-            if (loadingIndicator) {
-                loadingIndicator.remove();
+            // Atualizar legenda
+            const legendItem = document.querySelector('#nearestClinicLegend');
+            if (legendItem) {
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background-color: #FF0000;"></div>
+                    <span class="legend-text">Clínica mais próxima</span>
+                `;
             }
         }
-        
-        // Inicializar mapa quando a janela carregar
-        window.onload = function() {
-            // Esconder inicialmente os controles e a legenda
-            document.querySelector('.controls-container').style.display = 'none';
-            document.querySelector('.map-legend').style.display = 'none';
-        };
+
+        function clearClinicMarkers() {
+            // Limpar todos os marcadores existentes
+            clinicMarkers.forEach(marker => marker.setMap(null));
+            clinicMarkers = [];
+            nearestClinic = null;
+        }
+
+        function centerMapOnUserLocation() {
+            if (userMarker && map) {
+                map.setCenter(userMarker.getPosition());
+                map.setZoom(15);
+                
+                // Animação do marcador
+                userMarker.setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(() => {
+                    userMarker.setAnimation(null);
+                }, 1400);
+            } else {
+                alert('Não foi possível encontrar sua localização.');
+            }
+        }
+
+        function showNearestClinic() {
+            if (nearestClinic) {
+                // Encontrar o marcador da clínica mais próxima (primeiro da lista)
+                const nearestMarker = clinicMarkers[0];
+                if (nearestMarker) {
+                    // Centralizar mapa no marcador
+                    map.setCenter(nearestMarker.getPosition());
+                    map.setZoom(16);
+                    
+                    // Simular clique no marcador para mostrar infoWindow
+                    google.maps.event.trigger(nearestMarker, 'click');
+                    
+                    // Animação do marcador
+                    nearestMarker.setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(() => {
+                        nearestMarker.setAnimation(null);
+                    }, 1400);
+                }
+            } else {
+                alert('Não foi possível encontrar a clínica mais próxima.');
+            }
+        }
+
+        function refreshUserLocation() {
+            // Mostrar indicador de carregamento
+            document.getElementById('loadingIndicator').style.display = 'flex';
+            document.getElementById('loadingIndicator').innerHTML = '<div class="spinner"></div><p style="margin-top: 10px;">Atualizando sua localização...</p>';
+            
+            if (navigator.geolocation) {
+                const geoOptions = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                };
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // Atualizar a localização do usuário
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        console.log("Localização atualizada:", userLocation);
+                        
+                        // Centralizar mapa na nova localização
+                        map.setCenter(userLocation);
+                        map.setZoom(14);
+
+                        // Adicionar marcador do usuário na nova localização
+                        addUserMarker(userLocation);
+                        
+                        // Buscar clínicas veterinárias próximas à nova localização
+                        searchVeterinaryClinics(userLocation);
+                        
+                        // Exibir mensagem de sucesso
+                        alert('Sua localização foi atualizada com sucesso!');
+                    },
+                    (error) => {
+                        console.error('Erro ao atualizar localização:', error);
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                        
+                        let errorMessage = 'Erro desconhecido ao atualizar localização.';
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Permissão para geolocalização negada.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Informação de localização indisponível.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'Tempo esgotado ao obter sua localização.';
+                                break;
+                        }
+                        
+                        alert(errorMessage + ' Usando localização atual.');
+                    },
+                    geoOptions
+                );
+            } else {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                alert('Seu navegador não suporta geolocalização. Usando localização atual.');
+            }
+        }
     </script>
 </body>
 </html>

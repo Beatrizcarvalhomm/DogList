@@ -83,7 +83,13 @@
         // Função para carregar e filtrar os cães
         async function loadDogs(filters = {}) {
             const results = document.querySelector('.results');
-            results.innerHTML = '<div class="no-results">Carregando...</div>';
+            results.innerHTML = `
+                <div class="no-results">
+                    <div class="no-results-content">
+                        <i class="fas fa-dog loading-icon"></i>
+                        <p>Carregando...</p>
+                    </div>
+                </div>`;
             
             try {
                 // Obter localização (atual ou por endereço)
@@ -132,7 +138,13 @@
                 });
 
                 if (filteredDogs.length === 0) {
-                    results.innerHTML = '<div class="no-results">Nenhum cão encontrado com estes filtros</div>';
+                    results.innerHTML = `
+                        <div class="no-results">
+                            <div class="no-results-content">
+                                <i class="fas fa-dog"></i>
+                                <p>Nenhum cão encontrado com estes filtros</p>
+                            </div>
+                        </div>`;
                     return;
                 }
 
@@ -197,7 +209,12 @@
 
             } catch (error) {
                 console.error('Erro ao carregar os cães:', error);
-                results.innerHTML = `<div class="no-results">${error.message || 'Erro ao obter localização. Por favor, verifique o endereço inserido ou permita o acesso à localização.'}</div>`;
+                results.innerHTML = `<div class="no-results">
+                    <div class="no-results-content">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>${error.message || 'Erro ao obter localização. Por favor, verifique o endereço inserido ou permita o acesso à localização.'}</p>
+                    </div>
+                </div>`;
             }
         }
 
@@ -478,16 +495,65 @@
         }
 
         .no-results {
-            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
             text-align: center;
-            padding: 40px;
-            background: white;
-            border-radius: 20px;
-            color: #666;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border: 2px dashed #eee;
-            margin: 20px 0;
+            width: 100%;
+            min-height: 200px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin: 20px auto;
+            max-width: 500px;
+        }
+        
+        .no-results-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .no-results p {
+            font-size: 18px;
+            color: #555;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .no-results i {
+            font-size: 48px;
+            color: #FF7F50;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .loading-icon {
+            animation: spin 1.5s infinite linear;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -539,43 +605,39 @@
                 <div class="form-group">
                     <label for="idade">Idade</label>
                     <select id="idade" name="idade">
-                        <option value="">Todos</option>
+                        <option value="">Não sei</option>
                         <option value="0-5">0-5 anos</option>
                         <option value="5-10">5-10 anos</option>
                         <option value="10+">+10 anos</option>
-                        <option value="unknown">Não sei</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="sexo">Sexo</label>
                     <select id="sexo" name="sexo">
-                        <option value="">Todos</option>
+                        <option value="">Não sei</option>
                         <option value="male">Macho</option>
                         <option value="female">Fêmea</option>
-                        <option value="unknown">Não sei</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="castrado">Castrado</label>
                     <select id="castrado" name="castrado">
-                        <option value="">Todos</option>
+                        <option value="">Não sei</option>
                         <option value="yes">Sim</option>
                         <option value="no">Não</option>
-                        <option value="unknown">Não sei</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="agressivo">Agressividade</label>
                     <select id="agressivo" name="agressivo">
-                        <option value="">Todos</option>
+                        <option value="">Não sei</option>
                         <option value="none">Não é agressivo</option>
                         <option value="humans">Agressivo com pessoas</option>
                         <option value="animals">Agressivo com outros animais</option>
                         <option value="both">Agressivo com pessoas e animais</option>
-                        <option value="unknown">Não sei</option>
                     </select>
                 </div>
 
@@ -603,7 +665,28 @@
             resultsContainer.innerHTML = '';
 
             if (animals.length === 0) {
-                resultsContainer.innerHTML = '<div class="no-results">Nenhum animal encontrado com os critérios de busca.</div>';
+                // Check if filters are being used
+                const hasActiveFilters = document.getElementById('estado').value !== '' || 
+                                       document.getElementById('location').value !== '' ||
+                                       document.getElementById('raca').value !== '' ||
+                                       document.getElementById('idade').value !== '' ||
+                                       document.getElementById('sexo').value !== '' ||
+                                       document.getElementById('castrado').value !== '' ||
+                                       document.getElementById('agressivo').value !== '' ||
+                                       document.getElementById('porte').value !== '';
+                
+                const noResultsMessage = hasActiveFilters 
+                    ? 'Não existe nenhum cão com estes filtros' 
+                    : 'Não existe nenhum cão';
+                
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-content">
+                            <i class="fas fa-dog"></i>
+                            <p>${noResultsMessage}</p>
+                        </div>
+                    </div>
+                `;
                 return;
             }
 
