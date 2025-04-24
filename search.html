@@ -237,6 +237,52 @@
 
         // Carregar resultados iniciais
         loadDogs();
+
+        // Additional code to handle empty state styling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Apply additional styling to ensure centering
+            const setupEmptyState = () => {
+                const noResults = document.querySelector('.no-results');
+                if (noResults) {
+                    // Make sure the container is styled for centering
+                    noResults.style.display = 'flex';
+                    noResults.style.flexDirection = 'column';
+                    noResults.style.alignItems = 'center';
+                    noResults.style.justifyContent = 'center';
+                    
+                    // Style the content
+                    const content = noResults.querySelector('.no-results-content');
+                    if (content) {
+                        content.style.textAlign = 'center';
+                        content.style.width = '100%';
+                        
+                        // Ensure icon is centered
+                        const icon = content.querySelector('i');
+                        if (icon) {
+                            icon.style.fontSize = '60px';
+                            icon.style.color = '#FF7F50';
+                            icon.style.display = 'block';
+                            icon.style.margin = '0 auto 20px auto';
+                        }
+                        
+                        // Ensure text is centered
+                        const text = content.querySelector('p');
+                        if (text) {
+                            text.style.textAlign = 'center';
+                            text.style.width = '100%';
+                            text.style.margin = '20px auto 0 auto';
+                        }
+                    }
+                }
+            };
+            
+            // Run initially and after any search
+            setupEmptyState();
+            document.querySelector('.search-button').addEventListener('click', function() {
+                // Wait a bit for the results to update before styling
+                setTimeout(setupEmptyState, 100);
+            });
+        });
     </script>
     <style>
         * {
@@ -263,17 +309,19 @@
 
         .header {
             background-color: rgba(255, 255, 255, 0.95);
-            padding: 20px;
+            padding: 25px 30px;
             display: flex;
             align-items: center;
-            gap: 20px;
-            border-radius: 0 0 20px 20px;
+            justify-content: center;
+            gap: 30px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
-            z-index: 100;
-            margin: 0 20px 20px 20px;
+            z-index: 1000;
+            margin: 0 20px;
+            border-radius: 0 0 20px 20px;
+            animation: slideDown 0.5s ease-out;
         }
 
         .back-button {
@@ -287,17 +335,91 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            position: absolute;
+            left: 30px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle neutral shadow */
+            z-index: 1001; /* Ensure it's above other elements */
         }
 
         .back-button:hover {
-            background-color: #FFE4D6;
+            background-color: #FFFFFF;
             transform: translateX(-3px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .header h1 {
             font-size: 24px;
+            font-weight: 600;
             color: #333;
-            margin: 0;
+            letter-spacing: 0.5px;
+            text-align: center;
+            margin: 0 auto;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .header h1:hover {
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .header h1:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background-color: #FF7F50;
+            border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .header h1:hover:after {
+            width: 120px;
+            background-color: #FF6347;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                padding: 15px 20px;
+                gap: 15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+                margin-top: 25px; /* Espaço para o botão "voltar" */
+            }
+            
+            .back-button {
+                top: 15px;
+                left: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 15px 10px;
+                margin: 0 10px;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .back-button {
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 15px;
+            }
         }
 
         .search-container {
@@ -499,15 +621,16 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px 0;
+            padding: 40px 20px;
             text-align: center;
             width: 100%;
-            min-height: 200px;
+            min-height: 250px;
             background-color: rgba(255, 255, 255, 0.7);
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             margin: 20px auto;
             max-width: 500px;
+            position: relative;
         }
         
         .no-results-content {
@@ -515,13 +638,21 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            width: 100%;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
         
         .no-results p {
             font-size: 18px;
             color: #555;
-            margin-top: 10px;
+            margin-top: 15px;
             font-weight: 500;
+            text-align: center;
+            width: 100%;
         }
 
         .no-results i {
@@ -529,6 +660,13 @@
             color: #FF7F50;
             margin-bottom: 15px;
             animation: bounce 2s infinite;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .no-results {
+                min-height: 200px;
+            }
         }
 
         @keyframes bounce {
@@ -682,8 +820,8 @@
                 resultsContainer.innerHTML = `
                     <div class="no-results">
                         <div class="no-results-content">
-                            <i class="fas fa-dog"></i>
-                            <p>${noResultsMessage}</p>
+                            <i class="fas fa-dog" style="font-size: 60px; color: #FF7F50;"></i>
+                            <p style="margin-top: 20px; font-size: 18px;">${noResultsMessage}</p>
                         </div>
                     </div>
                 `;

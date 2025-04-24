@@ -55,7 +55,7 @@
             left: 20px;
             padding: 15px;
             border-radius: 15px;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.3);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             backdrop-filter: blur(10px);
@@ -64,7 +64,7 @@
         }
 
         .map-legend:hover {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.4);
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
@@ -323,7 +323,7 @@
                         
                         // Adicionar marcador do usuário
                         addUserMarker(userLocation);
-                        
+        
                         // Adicionar marcadores dos animais
                         addPetMarkers();
                         
@@ -333,7 +333,7 @@
                     (error) => {
                         console.error('Erro ao obter localização:', error);
                         document.getElementById('loadingIndicator').style.display = 'none';
-                        
+
                         // Mesmo sem localização, mostrar os marcadores de animais
                         addPetMarkers();
                     }
@@ -365,7 +365,7 @@
             controlText.style.padding = '8px';
             controlText.innerHTML = '<i class="fas fa-sync-alt"></i>';
             controlUI.appendChild(controlText);
-            
+
             // Evento de clique
             controlUI.addEventListener('click', function() {
                 addPetMarkers();
@@ -406,8 +406,8 @@
                 strokeWeight: 2,
                 fillColor: '#007bff',
                 fillOpacity: 0.1
-            });
-            
+        });
+
             // Adicionar evento de clique ao marcador
             userMarker.addListener('click', () => {
                 infoWindow.setContent('<div style="text-align: center; padding: 10px;"><strong>Você está aqui</strong></div>');

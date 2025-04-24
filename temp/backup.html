@@ -688,27 +688,14 @@
                 // Se for a clínica mais próxima, forçar como aberta
                 if (isNearest) {
                     isOpen = true;
-                } else if (place.opening_hours) {
-                    // Usar API do Google Places para verificar se está aberto
-                    isOpen = place.opening_hours.isOpen();
-                    
-                    // Formatar corretamente os horários
-                    if (place.opening_hours.weekday_text) {
-                        hoursHTML = place.opening_hours.weekday_text.map(hour => {
-                            const parts = hour.split(':');
-                            const dayPart = parts[0];
-                            const hoursPart = parts.slice(1).join(':').trim();
-                            
-                            return `
-                                <div class="working-hour">
-                                    <span class="day">${dayPart}</span>
-                                    <span class="hours">${hoursPart}</span>
-                                </div>
-                            `;
-                        }).join('');
-                    }
                 } else {
-                    // Verificar se o nome indica funcionamento 24 horas
+                    // Obter hora e dia atuais
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    const currentMinute = now.getMinutes();
+                    const day = now.getDay(); // 0 = domingo, 6 = sábado
+                    
+                    // Verificar se o nome da clínica indica funcionamento 24 horas
                     const nameIndicates24Hours = 
                         place.name.toLowerCase().includes('24h') || 
                         place.name.toLowerCase().includes('24 h') || 
@@ -719,69 +706,209 @@
                         place.name.toLowerCase().includes('emergência') ||
                         place.name.toLowerCase().includes('emergency');
                         
-                    // Lógica básica para horários
-                    const now = new Date();
-                    const day = now.getDay();
-                    const currentHour = now.getHours();
-                    
-                    if (nameIndicates24Hours) {
-                        isOpen = true;
-                        // Horários para clínica 24h
-                        const standardHours = [
-                            'Segunda-feira: 24 horas',
-                            'Terça-feira: 24 horas',
-                            'Quarta-feira: 24 horas',
-                            'Quinta-feira: 24 horas',
-                            'Sexta-feira: 24 horas',
-                            'Sábado: 24 horas',
-                            'Domingo: 24 horas'
-                        ];
-                        
-                        hoursHTML = standardHours.map(hour => {
-                            const parts = hour.split(':');
-                            const dayPart = parts[0];
-                            const hoursPart = parts.slice(1).join(':').trim();
+                        if (nameIndicates24Hours) {
+                            // Se o nome indica 24 horas, considerar como aberto
+                            isOpen = true;
+                            console.log("Clínica 24h detectada pelo nome:", place.name);
+                        } else if (place.opening_hours) {
+                            // Caso A: Usar API do Google Places para verificar se está aberto
+                            try {
+                                isOpen = place.opening_hours.isOpen();
+                            } catch (error) {
+                                console.error('Erro ao verificar status de abertura via API:', error);
+                                isOpen = false; // Assumir fechado se der erro
+                            }
                             
-                            return `
-                                <div class="working-hour">
-                                    <span class="day">${dayPart}</span>
-                                    <span class="hours">${hoursPart}</span>
-                                </div>
-                            `;
-                        }).join('');
+                            // Mas mesmo assim, vamos verificar manualmente o horário para garantir
+                            if (place.opening_hours.weekday_text) {
+                                // Formatar corretamente os horários
+                                hoursHTML = place.opening_hours.weekday_text.map(hour => {
+                                    let dayPart = '';
+                                    let hoursPart = '';
+                                    
+                                    // Verificar o formato da string para extrair corretamente dia e horário
+                                    if (hour.includes(':')) {
+                                        const colonIndex = hour.indexOf(':');
+                                        dayPart = hour.substring(0, colonIndex);
+                                        hoursPart = hour.substring(colonIndex + 1).trim();
+                                    } else if (hour.includes(' ')) {
+                                        const parts = hour.split(' ');
+                                        dayPart = parts[0];
+                                        hoursPart = parts.slice(1).join(' ');
+                                    } else {
+                                        dayPart = hour;
+                                        hoursPart = 'Horário não disponível';
+                                    }
+                                    
+                                    return `
+                                        <div class="working-hour">
+                                            <span class="day">${dayPart}</span>
+                                            <span class="hours">${hoursPart}</span>
+                                        </div>
+                                    `;
+                                }).join('');
+                                
+                                // Verificar se algum dos horários indica funcionamento 24 horas
+                                const has24HourDay = place.opening_hours.weekday_text.some(day => {
+                                    const lowerDay = day.toLowerCase();
+                                    return lowerDay.includes('24h') || 
+                                        lowerDay.includes('24 h') || 
+                                        lowerDay.includes('24 horas') || 
+                                        lowerDay.includes('24hrs') ||
+                                        lowerDay.includes('24/7') ||
+                                        (lowerDay.includes('00:00') && lowerDay.includes('23:59'));
+                                });
+                                
+                                if (has24HourDay) {
+                                    // Se tem dias 24 horas, considerar como aberto
+                                    isOpen = true;
+                                    console.log("Clínica 24h detectada pelos horários:", place.name);
+                                } else if (!isNearest) {
+                                    // Se não é uma clínica predefinida como aberta, verificar novamente o horário atual para o dia da semana
+                                    const apiDay = day === 0 ? 6 : day - 1; // Converter para o formato da API (0=segunda, 6=domingo)
+                                    
+                                    if (apiDay >= 0 && apiDay < place.opening_hours.weekday_text.length) {
+                                        const todayHours = place.opening_hours.weekday_text[apiDay];
+                                        
+                                        // Se diz fechado, então está fechado
+                                        if (todayHours.toLowerCase().includes('fechado')) {
+                                            isOpen = false;
+                                        } else {
+                                            // Verificar se é uma clínica 24 horas
+                                            const is24Hours = 
+                                                todayHours.toLowerCase().includes('24h') || 
+                                                todayHours.toLowerCase().includes('24 h') || 
+                                                todayHours.toLowerCase().includes('24 horas') || 
+                                                todayHours.toLowerCase().includes('24hrs') ||
+                                                todayHours.toLowerCase().includes('24/7') ||
+                                                (todayHours.includes('00:00') && todayHours.includes('23:59'));
+                                            
+                                            if (is24Hours) {
+                                                // Clínica 24 horas está sempre aberta
+                                                isOpen = true;
+                                            } else {
+                                                // Extrair horários do texto
+                                                let hoursPart = '';
+                                                
+                                                if (todayHours.includes(':')) {
+                                                    hoursPart = todayHours.substring(todayHours.indexOf(':') + 1).trim();
+                                                } else if (todayHours.includes(' ')) {
+                                                    const parts = todayHours.split(' ');
+                                                    hoursPart = parts.slice(1).join(' ');
+                                                }
+                                                
+                                                // Extrair horário de abertura e fechamento
+                                                let openingHour = 0, openingMinute = 0, closingHour = 0, closingMinute = 0;
+                                                
+                                                if (hoursPart) {
+                                                    // Diferentes formatos possíveis
+                                                    let [openingTime, closingTime] = ['', ''];
+                                                    
+                                                    if (hoursPart.includes('-')) {
+                                                        [openingTime, closingTime] = hoursPart.split('-').map(t => t.trim());
+                                                    } else if (hoursPart.includes('às')) {
+                                                        [openingTime, closingTime] = hoursPart.split('às').map(t => t.trim());
+                                                    } else if (hoursPart.includes('a')) {
+                                                        [openingTime, closingTime] = todayHours.split('a').map(t => t.trim());
+                                                    }
+                                                    
+                                                    if (openingTime && closingTime) {
+                                                        // Extrair horas e minutos
+                                                        // Processar o horário de abertura
+                                                        if (openingTime.includes(':')) {
+                                                            [openingHour, openingMinute] = openingTime.split(':').map(Number);
+                                                        } else {
+                                                            openingHour = parseInt(openingTime);
+                                                        }
+                                                        
+                                                        // Processar o horário de fechamento
+                                                        if (closingTime.includes(':')) {
+                                                            [closingHour, closingMinute] = closingTime.split(':').map(Number);
+                                                        } else {
+                                                            closingHour = parseInt(closingTime);
+                                                        }
+                                                        
+                                                        // Verificar se está realmente aberto com base na hora atual
+                                                        const isBeforeClosing = 
+                                                            (currentHour < closingHour) || 
+                                                            (currentHour === closingHour && currentMinute < closingMinute);
+                                                            
+                                                        const isAfterOpening = 
+                                                            (currentHour > openingHour) || 
+                                                            (currentHour === openingHour && currentMinute >= openingMinute);
+                                                        
+                                                        isOpen = isAfterOpening && isBeforeClosing;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     } else {
-                        // Verificar se está aberto com base no dia e hora
-                        if (day === 0) {
-                            isOpen = false; // Domingo fechado
-                        } else if (day === 6) {
-                            isOpen = currentHour >= 9 && currentHour < 14; // Sábado 9h-14h
+                        // Caso B: Não temos dados da API, usar lógica baseada no dia e hora
+                        // Verificar se o nome indica funcionamento 24 horas
+                        if (nameIndicates24Hours) {
+                            isOpen = true;
                         } else {
-                            isOpen = currentHour >= 8 && currentHour < 18; // Dias de semana 8h-18h
+                            if (day === 0) {
+                                isOpen = false; // Domingo fechado
+                            } else if (day === 6) {
+                                isOpen = currentHour >= 9 && currentHour < 14; // Sábado 9h-14h
+                            } else {
+                                isOpen = currentHour >= 8 && currentHour < 18; // Dias de semana 8h-18h
+                            }
                         }
                         
-                        // Horários padrão
-                        const standardHours = [
-                            'Segunda-feira: 8:00 - 18:00',
-                            'Terça-feira: 8:00 - 18:00',
-                            'Quarta-feira: 8:00 - 18:00',
-                            'Quinta-feira: 8:00 - 18:00',
-                            'Sexta-feira: 8:00 - 18:00',
-                            'Sábado: 9:00 - 14:00',
-                            'Domingo: Fechado'
-                        ];
-                        
-                        hoursHTML = standardHours.map(hour => {
-                            const parts = hour.split(':');
-                            const dayPart = parts[0];
-                            const hoursPart = parts.slice(1).join(':').trim();
+                        // Horários simulados quando a API não fornece
+                        if (nameIndicates24Hours) {
+                            const standardHours = [
+                                'Segunda-feira: 24 horas',
+                                'Terça-feira: 24 horas',
+                                'Quarta-feira: 24 horas',
+                                'Quinta-feira: 24 horas',
+                                'Sexta-feira: 24 horas',
+                                'Sábado: 24 horas',
+                                'Domingo: 24 horas'
+                            ];
                             
-                            return `
-                                <div class="working-hour">
-                                    <span class="day">${dayPart}</span>
-                                    <span class="hours">${hoursPart}</span>
-                                </div>
-                            `;
-                        }).join('');
+                            hoursHTML = standardHours.map(hour => {
+                                const parts = hour.split(':');
+                                const dayPart = parts[0];
+                                const hoursPart = parts.slice(1).join(':').trim();
+                                
+                                return `
+                                    <div class="working-hour">
+                                        <span class="day">${dayPart}</span>
+                                        <span class="hours">${hoursPart}</span>
+                                    </div>
+                                `;
+                            }).join('');
+                        } else {
+                            const standardHours = [
+                                'Segunda-feira: 8:00 - 18:00',
+                                'Terça-feira: 8:00 - 18:00',
+                                'Quarta-feira: 8:00 - 18:00',
+                                'Quinta-feira: 8:00 - 18:00',
+                                'Sexta-feira: 8:00 - 18:00',
+                                'Sábado: 9:00 - 14:00',
+                                'Domingo: Fechado'
+                            ];
+                            
+                            hoursHTML = standardHours.map(hour => {
+                                const parts = hour.split(':');
+                                const dayPart = parts[0];
+                                const hoursPart = parts.slice(1).join(':').trim();
+                                
+                                return `
+                                    <div class="working-hour">
+                                        <span class="day">${dayPart}</span>
+                                        <span class="hours">${hoursPart}</span>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
                     }
                 }
             } catch (error) {

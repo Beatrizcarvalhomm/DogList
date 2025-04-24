@@ -48,6 +48,7 @@
             z-index: 1000;
             margin: 0 20px;
             border-radius: 0 0 20px 20px;
+            justify-content: center;
         }
 
         .back-button {
@@ -61,11 +62,20 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.9);
+            position: absolute;
+            left: 30px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
         }
 
         .back-button:hover {
-            background-color: #FFE4D6;
+            background-color: #FFFFFF;
             transform: translateX(-3px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .title {
@@ -73,6 +83,35 @@
             font-weight: 600;
             color: #333;
             letter-spacing: 0.5px;
+            text-align: center;
+            width: calc(100% - 160px);
+            margin: 0 auto;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .title:hover {
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .title:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background-color: #FF7F50;
+            border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .title:hover:after {
+            width: 120px;
+            background-color: #FF6347;
         }
 
         .content {
@@ -359,26 +398,37 @@
             }
 
             .header {
-                margin: 0;
-                border-radius: 0;
+                flex-direction: column;
+                padding: 15px 20px;
+                gap: 15px;
             }
 
-            .navigation {
-                margin: 0;
-                border-radius: 0;
+            .title {
+                font-size: 20px;
+                margin-top: 25px;
             }
 
-            .user-info {
-                padding: 20px;
+            .back-button {
+                top: 15px;
+                left: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 15px 10px;
+                margin: 0 10px;
+            }
+            
+            .title {
+                font-size: 18px;
             }
 
-            .animal-button {
-                padding: 15px;
-                font-size: 14px;
-            }
-
-            .button-group {
-                justify-content: center;
+            .back-button {
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 15px;
             }
         }
     </style>
@@ -386,9 +436,7 @@
 <body>
     <div class="container">
         <header class="header">
-            <a href="home.html" class="back-button">
-                <i class="fas fa-arrow-left"></i>
-            </a>
+            <a href="home.html" class="back-button">←</a>
             <h1 class="title">Minha Conta</h1>
         </header>
 

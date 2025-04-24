@@ -988,12 +988,12 @@
             
             // Get breed value (might be empty now)
             const breedValue = document.getElementById('breedSearch').value.trim();
-            
+
             try {
                 let imageData = null;
                 // Process image only if one was selected
                 if (imageFile) {
-                    const compressedImage = await compressImage(imageFile);
+                const compressedImage = await compressImage(imageFile);
                     imageData = await blobToBase64(compressedImage);
                 }
                 
