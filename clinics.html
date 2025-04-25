@@ -30,7 +30,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background: #FFE4D6; /* Changed from gradient to solid color */
+            background-color: #FFE4D6;
         }
 
         .header {
@@ -48,6 +48,7 @@
             margin: 0 20px;
             border-radius: 0 0 20px 20px;
             animation: slideDown 0.5s ease-out;
+            position: relative;
         }
 
         @keyframes slideDown {
@@ -93,9 +94,10 @@
             letter-spacing: 0.5px;
             display: block;
             text-align: center;
-            width: 100%;
-            position: relative;
-            margin: 0 auto;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
             cursor: pointer;
             transition: color 0.3s ease;
         }
@@ -129,7 +131,7 @@
             min-height: 500px;
             background-color: #FFE4D6;
             border-radius: 20px;
-            margin: 20px;
+            margin: 20px auto;
             box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
             z-index: 1;
             position: relative;
@@ -175,23 +177,27 @@
             position: absolute;
             bottom: 40px;
             left: 40px;
-            padding: 10px;
-            border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+            background-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
             z-index: 1000;
             backdrop-filter: blur(8px);
+            min-width: 180px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
         }
 
         .map-legend:hover {
-            background-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.7);
+            transform: translateY(-3px);
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            margin: 10px 0;
-            font-size: 14px;
+            margin: 12px 0;
+            font-size: 15px;
             color: #333;
             padding: 8px 12px;
             transition: all 0.3s ease;
@@ -209,8 +215,8 @@
         }
 
         .legend-color {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             margin-right: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -223,6 +229,7 @@
 
         .legend-text {
             font-weight: 500;
+            font-size: 15px;
         }
 
         #nearestClinicLegend {
@@ -551,24 +558,106 @@
             .map-legend {
                 bottom: 30px;
                 left: 30px;
-                padding: 10px;
-                max-width: calc(100% - 30px);
-                background-color: rgba(255, 255, 255, 0.2);
+                padding: 12px;
+                border-radius: 15px;
+                max-width: calc(100% - 70px);
+                background-color: rgba(255, 255, 255, 0.5);
+                min-width: 160px;
             }
 
             .legend-item {
                 margin: 6px 0;
-                padding: 6px 8px;
+                padding: 5px 8px;
+                font-size: 13px;
             }
-
-            .header {
-                padding: 20px;
-                margin: 0 10px;
+            
+            .legend-color {
+                width: 14px;
+                height: 14px;
+                margin-right: 8px;
+            }
+            
+            .legend-text {
+                font-size: 13px;
             }
 
             #map {
-                margin: 15px;
+                width: calc(100% - 30px);
+                margin: 15px auto;
                 min-height: 400px;
+                display: block;
+            }
+        }
+
+        /* Ajustes adicionais para telas muito pequenas */
+        @media (max-width: 480px) {
+            .header {
+                padding: 8px 10px;
+                margin: 0 8px;
+                flex-direction: row;
+                gap: 5px;
+                min-height: 48px;
+            }
+            
+            .title {
+                font-size: 16px;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                margin: 0;
+            }
+            
+            .show-clinics-btn {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+            
+            .back-button {
+                font-size: 18px;
+                width: 30px;
+                height: 30px;
+                left: 10px;
+                top: 10px;
+            }
+            
+            .title:after {
+                bottom: -3px;
+                height: 1px;
+                width: 30px;
+            }
+            
+            .map-legend {
+                bottom: 25px;
+                left: 20px;
+                padding: 10px;
+                border-radius: 12px;
+                max-width: calc(100% - 50px);
+                min-width: 140px;
+                background-color: rgba(255, 255, 255, 0.5);
+            }
+            
+            .legend-item {
+                margin: 4px 0;
+                padding: 4px 6px;
+                font-size: 11px;
+            }
+            
+            .legend-color {
+                width: 12px;
+                height: 12px;
+                margin-right: 6px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+            
+            .legend-text {
+                font-size: 11px;
+            }
+            
+            #map {
+                width: calc(100% - 16px);
+                margin: 8px auto;
+                min-height: 350px;
+                border-radius: 15px;
             }
         }
 
@@ -1002,27 +1091,38 @@
         /* Ajustes responsivos para telas menores */
         @media (max-width: 768px) {
             .header {
-                flex-direction: column;
-                padding: 15px 20px;
-                gap: 15px;
+                flex-direction: row;
+                padding: 10px 15px;
+                gap: 8px;
+                justify-content: center;
+                height: auto;
+                position: relative;
             }
             
             .title {
                 font-size: 20px;
-                margin-top: 25px; /* Espaço para o botão "voltar" */
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                margin: 0;
+                text-align: center;
             }
             
             .show-clinics-btn {
-                position: static; /* Remove posicionamento absoluto */
-                margin-top: 10px;
-                right: auto;
-                width: 100%;
-                max-width: 200px;
+                position: absolute;
+                right: 15px;
+                padding: 6px 12px;
+                font-size: 12px;
+                max-width: none;
             }
             
             .back-button {
-                top: 15px;
-                left: 20px;
+                position: absolute;
+                top: 10px;
+                left: 15px;
+                width: 35px;
+                height: 35px;
+                font-size: 22px;
             }
             
             /* Outros ajustes responsivos existentes */
@@ -1038,38 +1138,105 @@
             .map-legend {
                 bottom: 30px;
                 left: 30px;
-            padding: 10px;
-                max-width: calc(100% - 30px);
-                background-color: rgba(255, 255, 255, 0.2);
+                padding: 12px;
+                border-radius: 15px;
+                max-width: calc(100% - 70px);
+                background-color: rgba(255, 255, 255, 0.5);
+                min-width: 160px;
             }
 
             .legend-item {
                 margin: 6px 0;
-                padding: 6px 8px;
+                padding: 5px 8px;
+                font-size: 13px;
+            }
+            
+            .legend-color {
+                width: 14px;
+                height: 14px;
+                margin-right: 8px;
+            }
+            
+            .legend-text {
+                font-size: 13px;
             }
 
             #map {
-                margin: 15px;
+                width: calc(100% - 30px);
+                margin: 15px auto;
                 min-height: 400px;
+                display: block;
             }
         }
 
         /* Ajustes adicionais para telas muito pequenas */
         @media (max-width: 480px) {
             .header {
-                padding: 15px 10px;
-                margin: 0 10px;
+                padding: 8px 10px;
+                margin: 0 8px;
+                flex-direction: row;
+                gap: 5px;
+                min-height: 48px;
             }
             
             .title {
-                font-size: 18px;
+                font-size: 16px;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                margin: 0;
+            }
+            
+            .show-clinics-btn {
+                font-size: 11px;
+                padding: 5px 10px;
             }
             
             .back-button {
-                font-size: 22px;
-                width: 35px;
-                height: 35px;
-                left: 15px;
+                font-size: 18px;
+                width: 30px;
+                height: 30px;
+                left: 10px;
+                top: 10px;
+            }
+            
+            .title:after {
+                bottom: -3px;
+                height: 1px;
+                width: 30px;
+            }
+            
+            .map-legend {
+                bottom: 25px;
+                left: 20px;
+                padding: 10px;
+                border-radius: 12px;
+                max-width: calc(100% - 50px);
+                min-width: 140px;
+            }
+            
+            .legend-item {
+                margin: 4px 0;
+                padding: 4px 6px;
+                font-size: 11px;
+            }
+            
+            .legend-color {
+                width: 12px;
+                height: 12px;
+                margin-right: 6px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+            
+            .legend-text {
+                font-size: 11px;
+            }
+            
+            #map {
+                width: calc(100% - 16px);
+                margin: 8px auto;
+                min-height: 350px;
+                border-radius: 15px;
             }
         }
 
@@ -1201,12 +1368,29 @@
 
         /* Garantir posicionamento correto do botão de fechar */
         .gm-ui-hover-effect {
-            top: 8px !important;
-            right: 8px !important;
-            opacity: 0.7 !important;
-            transition: opacity 0.2s ease !important;
-            z-index: 10 !important;
             position: absolute !important;
+            top: 2px !important;
+            left: 2px !important; /* Alterado de right para left */
+            width: 30px !important;
+            height: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background-color: transparent !important; /* Removido o fundo branco */
+            border-radius: 0 !important; /* Removido o border-radius */
+            box-shadow: none !important; /* Removido o box-shadow */
+            cursor: pointer !important;
+            z-index: 10 !important;
+            opacity: 1 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .gm-ui-hover-effect img {
+            width: 16px !important;
+            height: 16px !important;
+            margin: 0 !important;
+            pointer-events: none !important;
         }
 
         /* Override Google Maps InfoWindow styles */
@@ -1233,6 +1417,212 @@
             width: 20px !important;
             height: 20px !important;
         }
+        
+        /* Removendo os estilos do banner */
+        .location-banner {
+            display: none !important; /* Ocultar completamente o banner */
+        }
+
+        /* Adicionar estilos para o popup de clínica centralizado */
+        .clinic-details-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            width: 90%;
+            max-width: 450px;
+            z-index: 10001;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: none;
+            overflow: hidden;
+        }
+
+        .clinic-details-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            display: none;
+        }
+
+        .clinic-details-header {
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            position: relative;
+            justify-content: space-between; /* Ensure proper spacing between elements */
+        }
+
+        .clinic-details-close {
+            font-size: 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #555;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            margin-left: 10px; /* Add margin to separate from status */
+            position: static; /* Remove absolute positioning */
+            transform: none; /* Remove transform */
+        }
+
+        .clinic-details-close:hover {
+            background-color: rgba(0,0,0,0.05);
+            color: #000;
+        }
+
+        .clinic-details-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            flex: 1; /* Use flex instead of flex-grow */
+            padding-right: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .clinic-details-status {
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            margin-left: auto; /* Push to right, before the close button */
+            margin-right: 10px; /* Add space before close button */
+        }
+
+        .clinic-details-status.open {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .clinic-details-status.closed {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .clinic-details-body {
+            padding: 20px;
+        }
+
+        .clinic-details-row {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .clinic-details-row i {
+            color: #FF7F50;
+            margin-right: 15px;
+            min-width: 16px;
+            margin-top: 3px;
+            font-size: 16px;
+        }
+
+        .clinic-details-address, 
+        .clinic-details-distance,
+        .clinic-details-hours {
+            color: #444;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .clinic-details-button {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            background-color: #FF7F50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .clinic-details-button:hover {
+            background-color: #ff6a33;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 127, 80, 0.4);
+        }
+
+        .clinic-details-button i {
+            margin-right: 8px;
+        }
+
+        /* Estilos para o popup personalizado de "Você está aqui" */
+        .custom-location-popup {
+            position: absolute;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15);
+            min-width: 150px;
+            z-index: 9999;
+            transform: translate(-50%, -130%);
+            pointer-events: none;
+        }
+        
+        .custom-location-popup::before {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            transform: rotate(45deg);
+            z-index: -1;
+        }
+        
+        .custom-location-popup-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #0d6efd;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        
+        .custom-location-popup-icon {
+            color: #0d6efd;
+            font-size: 16px;
+            margin-left: 6px;
+            margin-right: 8px;
+        }
+        
+        .custom-location-popup-text {
+            color: #0d6efd;
+            font-weight: 500;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -1247,7 +1637,6 @@
         <div id="map"></div>
         <div id="loadingIndicator" class="loading-indicator">
             <div class="spinner"></div>
-            <p style="margin-top: 10px;">Buscando clínicas veterinárias...</p>
         </div>
 
         <!-- Popup for clinics list -->
@@ -1264,7 +1653,7 @@
         <div class="map-legend">
             <div class="legend-item clickable" id="myLocationLegend" onclick="centerMapOnUserLocation()">
                 <div class="legend-color" style="background-color: #007bff;"></div>
-                <span class="legend-text">Sua localização</span>
+                <span class="legend-text">Você está aqui</span>
             </div>
             <div class="legend-item clickable" id="nearestClinicLegend" onclick="showNearestClinic()">
                 <div class="legend-color" style="background-color: #FF0000;"></div>
@@ -1284,6 +1673,7 @@
                 </div>
                 <span class="legend-text">Atualizar localização</span>
             </div>
+            <!-- Removed "Ver na rua" legend item but kept Street View functionality -->
         </div>
     </div>
 
@@ -1304,133 +1694,210 @@
         </div>
     </div>
 
+    <!-- No final do body, adicione esse div para o popup personalizado -->
+    <div id="customLocationPopup" class="custom-location-popup" style="display: none;">
+        <div class="custom-location-popup-bar"></div>
+        <i class="fas fa-map-marker-alt custom-location-popup-icon"></i>
+        <span class="custom-location-popup-text">Você está aqui</span>
+    </div>
+
     <!-- Script do Google Maps -->
     <script>
-        // Primeiro definimos todas as funções do mapa
-        function initMap() {
-            console.log("Initializing map...");
-            mapInitialized = true;
-            
-            // Criando infoWindow que será reutilizada
-            infoWindow = new google.maps.InfoWindow({
-                disableAutoPan: false,
-                pixelOffset: new google.maps.Size(0, -70), // Much higher above marker
-                maxWidth: 350
-            });
-            
-            // Estilizar container da InfoWindow
-            google.maps.event.addListener(infoWindow, 'domready', function() {
-                // Force custom styling on the InfoWindow
-                const iwOuter = document.querySelector('.gm-style-iw');
-                if (iwOuter) {
-                    // Override container styles
-                    iwOuter.style.cssText = 'padding: 0 !important; margin: 0 !important; background: transparent !important; transform: translate(0, -50px) !important;';
-                    
-                    // Remove default pointer/tail
-                    const iwBackground = iwOuter.previousElementSibling;
-                    if (iwBackground) {
-                        const children = iwBackground.children;
-                        for (let i = 0; i < children.length; i++) {
-                            children[i].style.display = 'none';
-                        }
-                    }
-                    
-                    // Clear internal container padding
-                    const iwInner = iwOuter.querySelector('.gm-style-iw-d');
-                    if (iwInner) {
-                        iwInner.style.cssText = 'overflow: hidden !important; padding: 0 !important; margin: 0 !important;';
-                    }
-                    
-                    // Style popup container
-                    const popupElement = iwOuter.querySelector('.clinic-popup');
-                    if (popupElement) {
-                        popupElement.style.overflow = 'hidden';
-                        popupElement.style.borderRadius = '12px';
-                        popupElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-                    }
-                    
-                    // Fix close button position (important!)
-                    const closeBtn = iwOuter.nextElementSibling;
-                    if (closeBtn) {
-                        closeBtn.className += ' custom-close-button';
-                        closeBtn.style.cssText = 'top: 5px !important; right: 5px !important; position: absolute !important; z-index: 9999 !important; opacity: 1 !important; transform: translate(-10px, 10px) !important;';
-                        
-                        // Add custom icon
-                        const img = closeBtn.querySelector('img');
-                        if (img) {
-                            img.style.cssText = 'width: 20px !important; height: 20px !important;';
-                        }
+        // Adicionar esta função no topo do script
+        function removeThreeDotMenu() {
+            // Selecionar todos os botões com três pontos
+            const menuButtons = document.querySelectorAll('button');
+            menuButtons.forEach(button => {
+                if (button.textContent.includes('⋮') || button.innerText.includes('⋮') || 
+                    button.innerHTML.includes('⋮') || button.getAttribute('title') === 'Menu') {
+                    button.style.display = 'none';
+                    // Se possível, também remover o elemento pai
+                    if (button.parentElement) {
+                        button.parentElement.style.display = 'none';
                     }
                 }
             });
 
-            try {
-                // Inicializar o mapa
+            // Remover painéis de contexto do mapa
+            const contextPanels = document.querySelectorAll('.gm-style-iw-t, .gm-style-mtc, .gm-control-active');
+            contextPanels.forEach(panel => {
+                panel.style.display = 'none';
+            });
+
+            // Remover botões de fechar
+            const closeButtons = document.querySelectorAll('.gm-ui-hover-effect, .gm-style-cc');
+            closeButtons.forEach(button => {
+                button.style.display = 'none';
+            });
+        }
+
+        // Primeiro definimos todas as funções do mapa
+        function initMap() {
+            // Criar infoWindow reutilizável
+            infoWindow = new google.maps.InfoWindow({ 
+                maxWidth: 300,
+                disableAutoPan: false
+            });
+            
+            // Inicializar o mapa com centro em uma localização padrão
+            const defaultCenter = { lat: -23.5505, lng: -46.6333 }; // São Paulo (ou outra localização padrão)
                 map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 13,
-                    center: { lat: -23.5505, lng: -46.6333 }, // São Paulo como default
+                center: defaultCenter,
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
                     mapTypeControl: true,
                     mapTypeControlOptions: {
                         style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
                         position: google.maps.ControlPosition.TOP_RIGHT
                     },
-                    streetViewControl: false,
+                streetViewControl: true,
+                streetViewControlOptions: {
+                    position: google.maps.ControlPosition.RIGHT_BOTTOM
+                },
                     fullscreenControl: true,
                     zoomControl: true
                 });
                 
-                console.log("Map created successfully");
-
-                // Obter localização do usuário com alta precisão
+            // Aplicar estilos aos infowindows quando forem criados
+            google.maps.event.addListener(infoWindow, 'domready', function() {
+                styleInfoWindow();
+            });
+            
+            // Marcar que o mapa foi inicializado
+            mapInitialized = true;
+            
+            // Verificar se temos coordenadas salvas
+            const savedLocation = getSavedLocation();
+            
+            if (savedLocation) {
+                // Usar localização salva sem solicitar permissão
+                userLocation = savedLocation;
+                addUserMarker(savedLocation);
+                searchVeterinaryClinics(savedLocation);
+            } else {
+                // Tentar obter a localização atual sem mostrar banner
                 if (navigator.geolocation) {
-                    console.log("Getting user location...");
-                    const geoOptions = {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    };
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            // Sucesso na obtenção da localização
+                            const pos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            saveLocation(pos); // Salvar para uso futuro
+                            userLocation = pos;
+                            addUserMarker(pos);
+                            searchVeterinaryClinics(pos);
+                        },
+                        function(error) {
+                            // Em caso de erro, usar a localização padrão
+                            console.log("Erro na geolocalização: ", error);
+                            userLocation = defaultCenter;
+                            searchVeterinaryClinics(defaultCenter);
+                        }
+                    );
+                } else {
+                    // Navegador não suporta geolocalização
+                    console.log("Navegador não suporta geolocalização");
+                    userLocation = defaultCenter;
+                    searchVeterinaryClinics(defaultCenter);
+                }
+            }
+            
+            // Esconder indicador de carregamento
+            document.getElementById('loadingIndicator').style.display = 'none';
+            
+            // Remover elementos de UI indesejados depois que o mapa carregar
+            google.maps.event.addListenerOnce(map, 'idle', function() {
+                // Remover menus de três pontos e outros elementos UI
+                removeThreeDotMenu();
+                
+                // Configurar um observador para remover continuamente o menu
+                const observer = new MutationObserver(function(mutations) {
+                    removeThreeDotMenu();
+                });
+                
+                // Observar o corpo do documento para mudanças
+                observer.observe(document.body, { 
+                    childList: true, 
+                    subtree: true 
+                });
+            });
+        }
+        
+        // Função para salvar localização no localStorage
+        function saveLocation(location) {
+            localStorage.setItem('userLocation', JSON.stringify(location));
+        }
+        
+        // Função para obter localização salva
+        function getSavedLocation() {
+            const savedLocation = localStorage.getItem('userLocation');
+            return savedLocation ? JSON.parse(savedLocation) : null;
+        }
+        
+        function requestUserLocation() {
+            if (navigator.geolocation) {
+                document.getElementById('loadingIndicator').style.display = 'flex';
                     
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
-                            userLocation = {
+                        const location = {
                                 lat: position.coords.latitude,
                                 lng: position.coords.longitude
                             };
                             
-                            console.log("User location obtained:", userLocation);
+                        // Salvar localização para uso futuro
+                        saveUserLocation(location);
+                        
+                        // Atualizar localização do usuário
+                        userLocation = location;
                             
                             // Centralizar mapa na localização do usuário
-                            map.setCenter(userLocation);
+                        map.setCenter(location);
 
                             // Adicionar marcador do usuário
-                            addUserMarker(userLocation);
-                            
-                            // Buscar clínicas veterinárias próximas
-                            searchVeterinaryClinics(userLocation);
+                        addUserMarker(location);
+                        
+                        // Buscar clínicas próximas
+                        searchVeterinaryClinics(location);
+                        
+                        document.getElementById('loadingIndicator').style.display = 'none';
                         },
                         (error) => {
-                            console.error('Erro ao obter localização:', error);
+                        document.getElementById('loadingIndicator').style.display = 'none';
                             handleLocationError(error);
                         },
-                        geoOptions
+                    { timeout: 10000, maximumAge: 600000 }
                     );
                 } else {
-                    console.error('Geolocalização não é suportada por este navegador.');
-                    document.getElementById('loadingIndicator').style.display = 'none';
-                    alert('Seu navegador não suporta geolocalização. Usando localização padrão.');
-                    
-                    // Usar localização padrão
-                    userLocation = { lat: -23.5505, lng: -46.6333 }; // São Paulo
-                    addUserMarker(userLocation);
-                    searchVeterinaryClinics(userLocation);
-                }
-            } catch (error) {
-                console.error("Error initializing map:", error);
-                document.getElementById('loadingIndicator').style.display = 'none';
-                alert('Ocorreu um erro ao inicializar o mapa. Por favor, recarregue a página.');
+                alert('Seu navegador não suporta geolocalização.');
             }
         }
+        
+        function handleLocationError(error) {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+            
+            let errorMessage = 'Erro desconhecido ao obter localização.';
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Permissão para geolocalização negada. Usando localização padrão.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Informação de localização indisponível. Usando localização padrão.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Tempo esgotado ao obter sua localização. Usando localização padrão.';
+                    break;
+            }
+            
+            alert(errorMessage);
+            
+            // Não precisamos definir uma localização padrão aqui, pois já fizemos isso no início
+        }
+
+        // ... manter o resto do código existente ...
     </script>
 
     <!-- Carregue a API do Google Maps separadamente para garantir melhor desempenho -->
@@ -1440,7 +1907,8 @@
     </script>
     
     <script>
-        // Função para lidar com erros de carregamento da API
+        // ... existing variables ...
+        
         function googleMapsError() {
             document.getElementById('loadingIndicator').style.display = 'none';
             showCustomAlert('Erro', 'Não foi possível carregar o Google Maps. Verifique sua conexão de internet.');
@@ -1587,7 +2055,7 @@
                     strokeWeight: 2,
                     scale: 10
                 },
-                title: 'Sua localização',
+                title: 'Você está aqui',
                 zIndex: 10
             });
             
@@ -1605,8 +2073,24 @@
             
             // Adicionar evento de clique ao marcador
             userMarker.addListener('click', () => {
-                infoWindow.setContent('<div style="text-align: center; padding: 10px;"><strong>Você está aqui</strong></div>');
+                // Fechar qualquer infowindow aberta anteriormente
+                if (infoWindow) {
+                    infoWindow.close();
+                }
+                
+                infoWindow.setContent(`
+                    <div style="text-align: center; padding: 12px 15px; position: relative; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-left: 4px solid #007bff;">
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333; font-family: Arial, sans-serif;">
+                            <i class="fas fa-street-view" style="color: #007bff; margin-right: 5px;"></i>
+                            Você está aqui
+                        </p>
+                    </div>
+                `);
+                
                 infoWindow.open(map, userMarker);
+                
+                // Adicionar um pequeno atraso para aplicar os estilos após a renderização do infowindow
+                setTimeout(styleInfoWindow, 10);
             });
             
             return userMarker;
@@ -2122,90 +2606,8 @@
                     
                     // Adicionar evento de clique ao marcador
                     marker.addListener('click', () => {
-                        // Criar conteúdo do popup com minimal structure for better rendering
-                        infoWindow.setContent(`
-                    <div class="clinic-popup">
-                            <div class="popup-title">
-                                <div>${clinic.name}</div>
-                                <span class="status-indicator ${isOpen ? 'status-open' : 'status-closed'}">
-                                    <i class="fas fa-${isOpen ? 'check-circle' : 'times-circle'}"></i>
-                                    ${isOpen ? 'Aberto' : 'Fechado'}
-                                </span>
-                            </div>
-                        <div class="popup-info">
-                            <i class="fas fa-map-marker-alt"></i> 
-                            <span>${clinic.formatted_address || clinic.vicinity}</span>
-                        </div>
-                        <div class="popup-info">
-                            <i class="fas fa-route"></i> 
-                            <span>Distância: ${formattedDistance}</span>
-                        </div>
-                            <div class="popup-info">
-                            <i class="fas fa-clock"></i>
-                            <span>${clinic.weekday_text ? clinic.weekday_text[new Date().getDay()] : 'quinta-feira: Aberto 24 horas'}</span>
-                            </div>
-                        <div class="popup-buttons">
-                            <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${clinic.geometry.location.lat()},${clinic.geometry.location.lng()}&travelmode=driving" 
-                               target="_blank" 
-                               class="popup-button">
-                               <i class="fas fa-directions"></i> Como chegar
-                            </a>
-                        </div>
-                    </div>`);
-
-                        // Aplicar correções depois que o popup for aberto
-                        infoWindow.open(map, marker);
-                        
-                        // Força a correção do estilo com múltiplas tentativas
-                        const fixInfoWindow = () => {
-                            const iwOuter = document.querySelector('.gm-style-iw');
-                            if (iwOuter) {
-                                // Override container styles
-                                iwOuter.style.cssText = 'padding: 0 !important; margin: 0 !important; background: transparent !important; transform: translate(0, -50px) !important;';
-                                
-                                // Remove default pointer/tail
-                                const iwBackground = iwOuter.previousElementSibling;
-                                if (iwBackground) {
-                                    const children = iwBackground.children;
-                                    for (let i = 0; i < children.length; i++) {
-                                        children[i].style.display = 'none';
-                                    }
-                                }
-                                
-                                // Clear internal container padding
-                                const iwInner = iwOuter.querySelector('.gm-style-iw-d');
-                                if (iwInner) {
-                                    iwInner.style.cssText = 'overflow: hidden !important; padding: 0 !important; margin: 0 !important;';
-                                }
-                                
-                                // Style popup container
-                                const popupElement = iwOuter.querySelector('.clinic-popup');
-                                if (popupElement) {
-                                    popupElement.style.overflow = 'hidden';
-                                    popupElement.style.borderRadius = '12px';
-                                    popupElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-                                }
-                                
-                                // Fix close button position (important!)
-                                const closeBtn = iwOuter.nextElementSibling;
-                                if (closeBtn) {
-                                    closeBtn.className += ' custom-close-button';
-                                    closeBtn.style.cssText = 'top: 5px !important; right: 5px !important; position: absolute !important; z-index: 9999 !important; opacity: 1 !important; transform: translate(-10px, 10px) !important;';
-                                    
-                                    // Add custom icon
-                                    const img = closeBtn.querySelector('img');
-                                    if (img) {
-                                        img.style.cssText = 'width: 20px !important; height: 20px !important;';
-                                    }
-                                }
-                            }
-                        };
-                        
-                        // Tentar corrigir em intervalos diferentes para garantir
-                        setTimeout(fixInfoWindow, 10);
-                        setTimeout(fixInfoWindow, 50);
-                        setTimeout(fixInfoWindow, 100);
-                        setTimeout(fixInfoWindow, 300);
+                        // Em vez de usar o infoWindow, chamar nossa função de popup centralizado
+                        showClinicDetailsPopup(clinic, formattedDistance);
                     });
                     
                     // Adicionar marcador ao array
@@ -2233,18 +2635,200 @@
             nearestClinic = null;
         }
 
-        function centerMapOnUserLocation() {
-            if (userMarker && map) {
-                map.setCenter(userMarker.getPosition());
-                map.setZoom(15);
+        // Adicionar a função styleInfoWindow primeiro, exatamente como está na home.html
+        function styleInfoWindow() {
+            google.maps.event.addListener(infoWindow, 'domready', function() {
+                const iwOuter = document.querySelector('.gm-style-iw');
+                if (iwOuter) {
+                    iwOuter.style.padding = '0';
+                    iwOuter.style.borderRadius = '10px';
+                    iwOuter.style.overflow = 'hidden';
+                    iwOuter.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
+                }
                 
-                // Animação do marcador
+                // Remover o fundo branco padrão
+                const iwBackground = iwOuter.previousElementSibling;
+                if (iwBackground) {
+                    // Ajustar sombra
+                    const iwShadow = iwBackground.querySelector('.gm-style-iw-t');
+                    if (iwShadow) {
+                        iwShadow.style.backgroundColor = 'transparent';
+                    }
+                }
+                
+                // Estilizar botão de fechar
+                const closeButton = document.querySelector('.gm-ui-hover-effect');
+                if (closeButton) {
+                    // Corrigir bug fixando posição e tamanho
+                    closeButton.style.position = 'absolute';
+                    closeButton.style.top = '2px';
+                    closeButton.style.right = '2px';
+                    closeButton.style.display = 'flex';
+                    closeButton.style.alignItems = 'center';
+                    closeButton.style.justifyContent = 'center';
+                    closeButton.style.width = '30px';
+                    closeButton.style.height = '30px';
+                    closeButton.style.padding = '0 !important';
+                    closeButton.style.margin = '0';
+                    closeButton.style.backgroundColor = 'white';
+                    closeButton.style.borderRadius = '50%';
+                    closeButton.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+                    closeButton.style.cursor = 'pointer';
+                    closeButton.style.zIndex = '10';
+                    closeButton.style.opacity = '1';
+                    
+                    // Ajustar posição do X dentro do botão
+                    const img = closeButton.querySelector('img');
+                    if (img) {
+                        img.style.width = '16px';
+                        img.style.height = '16px';
+                        img.style.margin = '0';
+                        img.style.pointerEvents = 'none'; // Garantir que o clique passe para o botão
+                        img.setAttribute('aria-hidden', 'true');
+                    }
+                    
+                    closeButton.addEventListener('mouseover', function() {
+                        this.style.backgroundColor = '#FF7F50';
+                        this.style.transform = 'rotate(90deg)';
+                        const closeIcon = this.querySelector('img');
+                        if (closeIcon) {
+                            closeIcon.style.filter = 'invert(100%)';
+                        }
+                    });
+                    
+                    closeButton.addEventListener('mouseout', function() {
+                        this.style.backgroundColor = 'white';
+                        this.style.transform = 'rotate(0deg)';
+                        const closeIcon = this.querySelector('img');
+                        if (closeIcon) {
+                            closeIcon.style.filter = 'none';
+                        }
+                    });
+                }
+                
+                // Remover seta do InfoWindow
+                const iwArrow = iwBackground ? iwBackground.querySelectorAll('div') : null;
+                if (iwArrow && iwArrow.length >= 3) {
+                    iwArrow[0].style.display = 'none';
+                    iwArrow[1].style.display = 'none';
+                    iwArrow[2].style.display = 'none';
+                    iwArrow[3].style.display = 'none';
+                }
+            });
+        }
+
+        // Agora substituir a função centerMapOnUserLocation pela versão da home.html
+        function centerMapOnUserLocation() {
+            // Obter a localização salva ou a atual do userMarker
+            const userLoc = userMarker ? userMarker.getPosition() : getSavedLocation();
+            
+            if (userLoc) {
+                // Centralizar mapa na localização
+                map.setCenter(userLoc);
+                
+                // Se não houver marcador, adicioná-lo
+                if (!userMarker) {
+                    addUserMarker(userLoc);
+                } else {
+                    // Animar marcador existente
                 userMarker.setAnimation(google.maps.Animation.BOUNCE);
                 setTimeout(() => {
                     userMarker.setAnimation(null);
                 }, 1400);
+                }
+                
+                // Animar a transição com zoom mais próximo
+                map.setZoom(18);
+                
+                // Remover classe active ou destacada após o clique
+                const legendItem = document.getElementById('myLocationLegend');
+                if (legendItem) {
+                    legendItem.classList.remove('active');
+                    
+                    // Prevenir comportamento de sticky selection
+                    setTimeout(() => {
+                        // Forçar blur para remover o foco
+                        legendItem.blur();
+                        
+                        // Aplicar estilo temporário e depois remover
+                        legendItem.style.backgroundColor = 'rgba(255, 127, 80, 0.1)';
+                        
+                        // Voltar ao estilo normal após um curto delay
+                        setTimeout(() => {
+                            legendItem.style.backgroundColor = '';
+                        }, 300);
+                    }, 100);
+                }
+                
+                // Fechar qualquer infowindow aberta anteriormente
+                if (infoWindow) {
+                    infoWindow.close();
+                }
+                
+                // Criar um div personalizado para o popup sem botão fechar
+                const customPopupContent = `
+                    <div class="custom-popup" style="
+                        padding: 12px 15px; 
+                        text-align: center;
+                        position: relative; 
+                        border-radius: 10px; 
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.1); 
+                        background: linear-gradient(135deg, #f8f9fa, #e9ecef); 
+                        border-left: 4px solid #007bff;
+                        min-width: 120px;">
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333; font-family: Arial, sans-serif;">
+                            <i class="fas fa-street-view" style="color: #007bff; margin-right: 5px;"></i>
+                            Você está aqui
+                        </p>
+                    </div>
+                `;
+                
+                // Configurar o infoWindow com opções para ocultar o botão de fechar
+                const customInfo = new google.maps.InfoWindow({
+                    content: customPopupContent,
+                    pixelOffset: new google.maps.Size(0, -10),
+                    disableAutoPan: false
+                });
+                
+                // Abrir o infoWindow personalizado
+                customInfo.open(map, userMarker);
+                
+                // Adicionar listener de clique no mapa para fechar o infoWindow
+                google.maps.event.addListenerOnce(map, 'click', function() {
+                    customInfo.close();
+                });
+                
+                // Fechar o infoWindow quando o mapa é movido ou arrastado
+                google.maps.event.addListenerOnce(map, 'dragstart', function() {
+                    customInfo.close();
+                });
+                
+                // Fechar o infoWindow quando o zoom é alterado
+                google.maps.event.addListenerOnce(map, 'zoom_changed', function() {
+                    customInfo.close();
+                });
+                
+                // Aplicar estilos adicionais para esconder o botão de fechar depois que o InfoWindow é renderizado
+                setTimeout(() => {
+                    const closeButtons = document.querySelectorAll('.gm-ui-hover-effect');
+                    closeButtons.forEach(button => {
+                        button.style.display = 'none';
+                    });
+                    
+                    // Remover as setas do InfoWindow
+                    const iwBackground = document.querySelector('.gm-style-iw').previousElementSibling;
+                    if (iwBackground) {
+                        const arrowElements = iwBackground.querySelectorAll('div');
+                        if (arrowElements && arrowElements.length >= 4) {
+                            for (let i = 0; i < 4; i++) {
+                                arrowElements[i].style.display = 'none';
+                            }
+                        }
+                    }
+                }, 50);
             } else {
-                alert('Não foi possível encontrar sua localização.');
+                // Se não tiver localização, solicitar
+                refreshUserLocation();
             }
         }
 
@@ -2671,6 +3255,241 @@
                     }
                 }, 500);
             }, 3000);
+        }
+
+        // Função para estilizar infowindows
+        function styleInfoWindow() {
+            const iwOuter = document.querySelector('.gm-style-iw');
+            if (iwOuter) {
+                iwOuter.style.padding = '0';
+                iwOuter.style.borderRadius = '10px';
+                iwOuter.style.overflow = 'hidden';
+                iwOuter.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
+            }
+            
+            // Remover seta do InfoWindow
+            const iwBackground = iwOuter ? iwOuter.previousElementSibling : null;
+            if (iwBackground) {
+                const arrowElements = iwBackground.querySelectorAll('div');
+                if (arrowElements && arrowElements.length >= 4) {
+                    for (let i = 0; i < 4; i++) {
+                        arrowElements[i].style.display = 'none';
+                    }
+                }
+            }
+            
+            // Estilizar botão de fechar
+            const closeButton = document.querySelector('.gm-ui-hover-effect');
+            if (closeButton) {
+                closeButton.style.position = 'absolute';
+                closeButton.style.top = '5px';
+                closeButton.style.left = '5px'; // Alterado de right para left
+                closeButton.style.right = 'auto'; // Garantir que right não influencie
+                closeButton.style.width = '24px';
+                closeButton.style.height = '24px';
+                closeButton.style.display = 'flex';
+                closeButton.style.alignItems = 'center';
+                closeButton.style.justifyContent = 'center';
+                closeButton.style.backgroundColor = 'transparent'; // Sem fundo
+                closeButton.style.borderRadius = '0';
+                closeButton.style.boxShadow = 'none';
+                closeButton.style.opacity = '1';
+                closeButton.style.padding = '0';
+                closeButton.style.margin = '0';
+                
+                // Substituir o ícone X padrão por um X textual
+                const img = closeButton.querySelector('img');
+                if (img) {
+                    img.style.display = 'none'; // Esconder a imagem original
+                    
+                    // Se não existe já um X textual, criar um
+                    if (!closeButton.querySelector('.text-x')) {
+                        const textX = document.createElement('span');
+                        textX.className = 'text-x';
+                        textX.textContent = '✕'; // Símbolo X unicode
+                        textX.style.fontSize = '16px';
+                        textX.style.fontWeight = 'bold';
+                        textX.style.color = '#333'; // Cor mais escura para o X
+                        textX.style.lineHeight = '1';
+                        textX.style.pointerEvents = 'none';
+                        closeButton.appendChild(textX);
+                    }
+                }
+                
+                // Remover efeitos hover que modificam muito a aparência
+                closeButton.onmouseover = null;
+                closeButton.onmouseout = null;
+                
+                closeButton.addEventListener('mouseover', function() {
+                    const textX = this.querySelector('.text-x');
+                    if (textX) textX.style.color = '#FF7F50'; // Apenas muda a cor ao passar o mouse
+                });
+                
+                closeButton.addEventListener('mouseout', function() {
+                    const textX = this.querySelector('.text-x');
+                    if (textX) textX.style.color = '#333';
+                });
+            }
+        }
+
+        // Adicionar elementos do popup centralizado no DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            // Criar o overlay para o fundo escuro
+            const overlay = document.createElement('div');
+            overlay.className = 'clinic-details-overlay';
+            overlay.id = 'clinicDetailsOverlay';
+            document.body.appendChild(overlay);
+
+            // Criar o container do popup
+            const popup = document.createElement('div');
+            popup.className = 'clinic-details-popup';
+            popup.id = 'clinicDetailsPopup';
+            document.body.appendChild(popup);
+
+            // Adicionar evento de clique ao overlay para fechar o popup
+            overlay.addEventListener('click', closeClinicDetailsPopup);
+        });
+
+        // Função para mostrar o popup de detalhes da clínica
+        function showClinicDetailsPopup(clinic, formattedDistance) {
+            const popup = document.getElementById('clinicDetailsPopup');
+            const overlay = document.getElementById('clinicDetailsOverlay');
+            
+            if (!popup || !overlay) {
+                console.error('Elementos do popup não encontrados');
+                return;
+            }
+            
+            // Se o popup já estiver aberto
+            if (popup.style.display === 'block') {
+                popup.style.display = 'none';
+                overlay.style.display = 'none';
+            }
+            
+            // Preparar o conteúdo do popup
+            const isOpen = clinic.is_open;
+            
+            popup.innerHTML = `
+                <div class="clinic-details-header">
+                    <h3>${clinic.name}</h3>
+                    <span class="clinic-details-status ${isOpen ? 'open' : 'closed'}">
+                        ${isOpen ? 'Aberto' : 'Fechado'}
+                    </span>
+                    <button class="clinic-details-close" onclick="closeClinicDetailsPopup()">✕</button>
+                </div>
+                <div class="clinic-details-body">
+                    <div class="clinic-details-row">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div class="clinic-details-address">${clinic.formatted_address || clinic.vicinity}</div>
+                    </div>
+                    <div class="clinic-details-row">
+                        <i class="fas fa-route"></i>
+                        <div class="clinic-details-distance">Distância: ${formattedDistance}</div>
+                    </div>
+                    <div class="clinic-details-row">
+                        <i class="fas fa-clock"></i>
+                        <div class="clinic-details-hours">
+                            ${(clinic.weekday_text && clinic.weekday_text.length > 0) ? 
+                              clinic.weekday_text[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] : 
+                              'Horário não disponível'}
+                        </div>
+                    </div>
+                    <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${clinic.geometry.location.lat()},${clinic.geometry.location.lng()}&travelmode=driving" 
+                       target="_blank" 
+                       class="clinic-details-button">
+                       <i class="fas fa-directions"></i> Como chegar
+                    </a>
+                </div>
+            `;
+            
+            // Mostrar o popup e o overlay
+            popup.style.display = 'block';
+            overlay.style.display = 'block';
+        }
+
+        // Função para fechar o popup de detalhes da clínica
+        function closeClinicDetailsPopup() {
+            const popup = document.getElementById('clinicDetailsPopup');
+            const overlay = document.getElementById('clinicDetailsOverlay');
+            
+            if (popup) popup.style.display = 'none';
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        // Função para ativar/desativar o Street View
+        function toggleStreetView() {
+            // Obter localização atual ou do marcador do usuário
+            const position = userMarker ? userMarker.getPosition() : map.getCenter();
+            
+            // Criar um ponto de visualização de rua próximo à posição atual
+            const panorama = map.getStreetView();
+            
+            if (panorama.getVisible()) {
+                // Se já estiver ativo, desativar
+                panorama.setVisible(false);
+            } else {
+                // Configurar o panorama e ativar
+                panorama.setPosition(position);
+                panorama.setPov({
+                    heading: 265,
+                    pitch: 0
+                });
+                panorama.setVisible(true);
+            }
+        }
+
+        // Adicione logo após a função addUserMarker ou antes do fechamento do script
+        function styleInfoWindow() {
+            setTimeout(() => {
+                try {
+                    // Remover a seta do InfoWindow
+                    const arrows = document.querySelectorAll('.gm-style-iw-t::after');
+                    arrows.forEach(arrow => {
+                        if (arrow) arrow.style.display = 'none';
+                    });
+                    
+                    // Estilizar o container principal
+                    const containers = document.querySelectorAll('.gm-style-iw-c');
+                    containers.forEach(container => {
+                        container.style.padding = '0';
+                        container.style.borderRadius = '8px';
+                        container.style.overflow = 'hidden';
+                        container.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+                        
+                        // Remover margens extras
+                        container.style.marginTop = '0';
+                        container.style.marginBottom = '0';
+                    });
+                    
+                    // Estilizar os containers internos
+                    const innerContainers = document.querySelectorAll('.gm-style-iw-d');
+                    innerContainers.forEach(innerContainer => {
+                        innerContainer.style.overflow = 'hidden';
+                        innerContainer.style.paddingRight = '0px !important';
+                        innerContainer.style.paddingBottom = '0px !important';
+                        innerContainer.style.maxWidth = '100%';
+                        
+                        // Remover scrollbars
+                        innerContainer.style.scrollbarWidth = 'none';
+                        innerContainer.style.msOverflowStyle = 'none';
+                    });
+                    
+                    // Adicionar CSS para esconder scrollbars em todos os navegadores
+                    const style = document.createElement('style');
+                    style.textContent = `.gm-style-iw-d::-webkit-scrollbar { display: none; }`;
+                    document.head.appendChild(style);
+                    
+                    // Estilizar o botão de fechar de forma simples
+                    const closeButtons = document.querySelectorAll('button.gm-ui-hover-effect');
+                    closeButtons.forEach(button => {
+                        button.style.top = '1px';
+                        button.style.right = '1px';
+                        button.style.zIndex = '10';
+                    });
+                } catch (error) {
+                    console.error('Erro ao estilizar InfoWindow:', error);
+                }
+            }, 50);
         }
     </script>
 </body>

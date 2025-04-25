@@ -23,7 +23,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #FFE4D6 0%, #fff 100%);
+            background-color: #FFE4D6;
             min-height: 100vh;
             color: #333;
         }
@@ -33,11 +33,12 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            background-color: #FFE4D6;
         }
 
         .header {
             background-color: rgba(255, 255, 255, 0.95);
-            padding: 25px 30px;
+            padding: 15px 30px;
             display: flex;
             align-items: center;
             gap: 30px;
@@ -49,6 +50,7 @@
             margin: 0 20px;
             border-radius: 0 0 20px 20px;
             justify-content: center;
+            position: relative;
         }
 
         .back-button {
@@ -62,19 +64,21 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
             position: absolute;
-            left: 30px;
+            left: 15px;
+            top: 50%; /* Keep vertical centering */
+            transform: translateY(-50%); /* Keep vertical centering */
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             border: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            z-index: 1001;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle neutral shadow */
+            z-index: 1001; /* Ensure it's above other elements */
         }
 
         .back-button:hover {
             background-color: #FFFFFF;
-            transform: translateX(-3px);
+            transform: translateY(-50%) translateX(-3px); /* Combined transform to keep vertical centering while adding horizontal movement */
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
@@ -311,6 +315,7 @@
             z-index: 1001;
             justify-content: center;
             align-items: center;
+            padding: 15px;
         }
 
         .modal-content {
@@ -321,6 +326,8 @@
             max-width: 500px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             animation: slideIn 0.3s ease;
+            overflow-y: auto;
+            max-height: 90vh;
         }
 
         .modal-title {
@@ -398,37 +405,130 @@
             }
 
             .header {
-                flex-direction: column;
                 padding: 15px 20px;
-                gap: 15px;
+                margin: 0 10px;
+                flex-direction: row;
+                position: relative;
             }
 
             .title {
                 font-size: 20px;
-                margin-top: 25px;
+                margin: 0;
+                padding: 0;
+                width: auto;
             }
 
             .back-button {
-                top: 15px;
-                left: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                left: 10px;
+                position: absolute;
+            }
+            
+            .user-info {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .button {
+                width: 100%;
+            }
+            
+            .animal-management {
+                grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 480px) {
+            body, html {
+                padding: 0;
+                margin: 0;
+            }
+            
+            .container {
+                padding: 0;
+                margin: 0;
+            }
+            
             .header {
-                padding: 15px 10px;
-                margin: 0 10px;
+                padding: 10px 0;
+                margin: 0;
+                border-radius: 0;
+                position: relative;
             }
             
             .title {
                 font-size: 18px;
+                text-align: center;
             }
 
             .back-button {
-                font-size: 22px;
+                font-size: 20px;
                 width: 35px;
                 height: 35px;
-                left: 15px;
+                left: 10px;
+            }
+            
+            .content {
+                padding: 10px;
+            }
+            
+            .user-info {
+                padding: 15px;
+                border-radius: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .input-group {
+                margin-bottom: 15px;
+            }
+            
+            .input-label {
+                font-size: 13px;
+                margin-bottom: 5px;
+            }
+            
+            .input-field {
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .button {
+                padding: 12px 20px;
+                font-size: 14px;
+                min-width: auto;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                width: 95%;
+                max-width: 95%;
+            }
+            
+            .modal-title {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+            
+            .modal-button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .modal-buttons {
+                gap: 10px;
+                margin-top: 20px;
+            }
+            
+            .animal-button {
+                padding: 15px;
+                font-size: 15px;
+                margin-bottom: 5px;
             }
         }
     </style>

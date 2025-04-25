@@ -18,6 +18,10 @@
             background-color: #FFE4D6;
             min-height: 100vh;
             color: #333;
+            margin-top: 0;
+            padding-top: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
@@ -25,11 +29,13 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            padding-top: 0;
+            margin-top: 0;
         }
 
         .header {
             background-color: rgba(255, 255, 255, 0.95);
-            padding: 25px 30px;
+            padding: 8px 30px;
             display: flex;
             align-items: center;
             gap: 30px;
@@ -38,8 +44,11 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            margin: 0 20px;
+            margin: 0;
+            margin-top: 0;
             border-radius: 0 0 20px 20px;
+            justify-content: center;
+            position: relative;
         }
 
         .back-button {
@@ -53,6 +62,10 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .back-button:hover {
@@ -65,6 +78,36 @@
             font-weight: 600;
             color: #333;
             letter-spacing: 0.5px;
+            text-align: center;
+            width: calc(100% - 160px);
+            margin: 0 auto;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding-top: 0;
+        }
+
+        .title:hover {
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .title:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background-color: #FF7F50;
+            border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .title:hover:after {
+            width: 120px;
+            background-color: #FF6347;
         }
 
         .content {
@@ -165,6 +208,7 @@
             .header {
                 margin: 0;
                 border-radius: 0;
+                padding: 8px 15px;
             }
 
             .content {
@@ -173,6 +217,87 @@
 
             .terms-section {
                 padding: 20px;
+                margin-bottom: 15px;
+            }
+            
+            .title {
+                font-size: 20px;
+                width: auto;
+                margin-left: 25px;
+            }
+
+            .back-button {
+                top: 50%;
+                transform: translateY(-50%);
+                left: 10px;
+                position: absolute;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body, html {
+                padding: 0;
+                margin: 0;
+            }
+            
+            .container {
+                padding: 0;
+                margin: 0;
+            }
+            
+            .header {
+                padding: 10px 0;
+                margin: 0;
+                border-radius: 0;
+                flex-direction: row;
+                justify-content: center;
+                position: relative;
+                width: 100%;
+            }
+            
+            .title {
+                font-size: 18px;
+                margin: 0;
+                padding: 0;
+                width: auto;
+                text-align: center;
+            }
+
+            .back-button {
+                font-size: 20px;
+                width: 35px;
+                height: 35px;
+                left: 10px;
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .content {
+                padding: 10px;
+            }
+            
+            .terms-section {
+                padding: 15px;
+                margin-bottom: 10px;
+                border-radius: 15px;
+            }
+            
+            .terms-section h2 {
+                font-size: 17px;
+                margin-bottom: 15px;
+            }
+            
+            .terms-list li {
+                font-size: 14px;
+                padding: 8px 0;
+            }
+            
+            .accept-button {
+                padding: 12px 20px;
+                font-size: 15px;
+                margin: 20px auto;
+                width: 90%;
             }
         }
     </style>
@@ -193,29 +318,29 @@
                 <ul class="terms-list">
                     <li><i class="fas fa-paw"></i> Ajudar a localizar animais perdidos</li>
                     <li><i class="fas fa-search"></i> Reportar animais encontrados</li>
-                    <li><i class="fas fa-clinic-medical"></i> Compartilhar localização de clínicas veterinárias</li>
+                    <li><i class="fas fa-clinic-medical"></i> Partilhar localização de clínicas veterinárias</li>
                     <li><i class="fas fa-users"></i> Criar uma rede de apoio para animais perdidos</li>
                 </ul>
             </div>
 
             <div class="terms-section">
                 <h2><i class="fas fa-shield-alt"></i> 2. Uso Responsável</h2>
-                <p>Ao utilizar o Doglist, você concorda em:</p>
+                <p>Ao utilizar o Doglist, concordas em:</p>
                 <ul class="terms-list">
                     <li><i class="fas fa-check-circle"></i> Fornecer informações verdadeiras sobre animais perdidos/encontrados</li>
-                    <li><i class="fas fa-ban"></i> Não usar a plataforma para fins comerciais</li>
-                    <li><i class="fas fa-user-shield"></i> Respeitar a privacidade de outros usuários</li>
+                    <li><i class="fas fa-ban"></i> Não utilizar a plataforma para fins comerciais</li>
+                    <li><i class="fas fa-user-shield"></i> Respeitar a privacidade de outros utilizadores</li>
                     <li><i class="fas fa-sync-alt"></i> Manter as informações de localização das clínicas atualizadas</li>
                 </ul>
             </div>
 
             <div class="terms-section">
                 <h2><i class="fas fa-lock"></i> 3. Privacidade e Dados</h2>
-                <p>Coletamos apenas dados essenciais para:</p>
+                <p>Recolhemos apenas dados essenciais para:</p>
                 <ul class="terms-list">
-                    <li><i class="fas fa-id-card"></i> Identificação do usuário</li>
-                    <li><i class="fas fa-map-marker-alt"></i> Localização aproximada para busca de animais</li>
-                    <li><i class="fas fa-comments"></i> Contato para comunicação entre usuários</li>
+                    <li><i class="fas fa-id-card"></i> Identificação do utilizador</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Localização aproximada para procura de animais</li>
+                    <li><i class="fas fa-comments"></i> Contacto para comunicação entre utilizadores</li>
                     <li><i class="fas fa-map"></i> Mapeamento de clínicas veterinárias</li>
                 </ul>
             </div>
@@ -224,10 +349,10 @@
                 <h2><i class="fas fa-exclamation-triangle"></i> 4. Responsabilidades</h2>
                 <p>O Doglist não se responsabiliza por:</p>
                 <ul class="terms-list">
-                    <li><i class="fas fa-info-circle"></i> Veracidade das informações postadas por usuários</li>
-                    <li><i class="fas fa-handshake"></i> Negociações ou acordos entre usuários</li>
+                    <li><i class="fas fa-info-circle"></i> Veracidade das informações publicadas por utilizadores</li>
+                    <li><i class="fas fa-handshake"></i> Negociações ou acordos entre utilizadores</li>
                     <li><i class="fas fa-hospital"></i> Qualidade dos serviços veterinários indicados</li>
-                    <li><i class="fas fa-dollar-sign"></i> Custos relacionados a resgates ou tratamentos</li>
+                    <li><i class="fas fa-dollar-sign"></i> Custos relacionados com resgates ou tratamentos</li>
                 </ul>
             </div>
 
@@ -240,9 +365,12 @@
             // Definir flag de que os termos foram aceitos
             localStorage.setItem('termsAccepted', 'true');
             
+            // Não limpar os dados temporários do formulário quando redirecionar
+            // Manter os dados salvos pela função saveFormDataAndRedirectToTerms()
+            
             // Redirecionar de volta para a página de registro
             window.location.href = 'register.html';
         }
     </script>
 </body>
-</html>
+</html> 

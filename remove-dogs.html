@@ -17,7 +17,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #FFE4D6 0%, #fff 100%);
+            background-color: #FFE4D6;
             min-height: 100vh;
             color: #333;
         }
@@ -27,7 +27,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative;
+            background-color: #FFE4D6;
         }
 
         .header {
@@ -43,6 +43,7 @@
             z-index: 1000;
             margin: 0 20px;
             border-radius: 0 0 20px 20px;
+            position: relative;
         }
 
         .back-button {
@@ -57,6 +58,9 @@
             border-radius: 50%;
             transition: all 0.3s ease;
             will-change: transform;
+            position: absolute;
+            left: 30px;
+            z-index: 1;
         }
 
         .back-button:hover {
@@ -69,6 +73,37 @@
             font-weight: 600;
             color: #333;
             letter-spacing: 0.5px;
+            display: block;
+            text-align: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .title:hover {
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .title:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background-color: #FF7F50;
+            border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .title:hover:after {
+            width: 120px;
+            background-color: #FF6347;
         }
 
         .content {
@@ -324,7 +359,7 @@
                             <div class="dog-details">
                                 <div class="dog-location">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    <span>${dog.location && dog.location.address ? dog.location.address : dog.local || 'Local não especificado'}</span>
+                                    <span>${dog.endereco || (dog.location && typeof dog.location === 'object' ? dog.location.address : (typeof dog.location === 'string' ? dog.location : null)) || dog.local || 'Local não especificado'}</span>
                                 </div>
                                 <div class="dog-breed">
                                     <i class="fas fa-dog"></i>

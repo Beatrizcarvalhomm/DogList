@@ -24,7 +24,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background: linear-gradient(135deg, #FFE4D6 0%, #fff 100%);
+            background-color: #FFE4D6;
         }
 
         .header {
@@ -373,7 +373,7 @@
                 document.getElementById('animalAge').textContent = translateAge(dog.idade || dog.age) || dog.idade || dog.age || 'Não especificado';
                 document.getElementById('animalNeutered').textContent = translateNeutered(dog.castrado || dog.neutered) || dog.castrado || dog.neutered || 'Não especificado';
                 document.getElementById('animalAggressive').textContent = translateAggressive(dog.agressivo || dog.aggressive) || dog.agressivo || dog.aggressive || 'Não especificado';
-                document.getElementById('animalLocation').textContent = (dog.location?.address || dog.local || dog.location) || 'Não especificado';
+                document.getElementById('animalLocation').textContent = dog.endereco || (dog.location && typeof dog.location === 'object' ? dog.location.address : (typeof dog.location === 'string' ? dog.location : null)) || dog.local || 'Local não especificado';
                 document.getElementById('animalStatus').textContent = translateStatus(dog.estado || dog.status) || dog.estado || dog.status || 'Não especificado';
                 document.getElementById('animalContact').textContent = dog.contacto || dog.contact || 'Não especificado';
                 document.getElementById('animalDate').textContent = formatDate(dog.date || dog.dataAdicao) || 'Não especificado';

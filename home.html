@@ -37,7 +37,7 @@
         .content {
             flex: 1;
             padding: 20px;
-            background-color: #FFE4D6;
+            background-color: transparent;
             overflow-y: auto;
         }
 
@@ -46,61 +46,72 @@
             width: 100%;
             background: #f0f0f0;
             z-index: 1;
-            height: calc(100vh - 80px); /* Explicit height for faster rendering */
+            height: calc(100vh - 80px);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            overflow: hidden;
         }
 
         .map-legend {
             position: absolute;
-            bottom: 120px;
+            bottom: 180px;
             left: 20px;
-            padding: 15px;
-            border-radius: 15px;
-            background-color: rgba(255, 255, 255, 0.3);
+            padding: 12px;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.65);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             z-index: 1000;
-            backdrop-filter: blur(10px);
+            min-width: 180px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
             transition: all 0.3s ease;
-            min-width: 150px;
         }
 
         .map-legend:hover {
-            background-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            background-color: rgba(255, 255, 255, 0.8);
         }
 
         .legend-item {
             display: flex;
             align-items: center;
             margin: 10px 0;
-            font-size: 0.9rem;
-            color: #000;
-            padding: 8px;
-            transition: transform 0.2s ease;
-            border-radius: 10px;
+            font-size: 15px;
+            color: #333;
+            padding: 6px 10px;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            background-color: transparent;
         }
 
         .legend-color {
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             margin-right: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
 
         .legend-text {
-            font-size: 16px;
-            color: #333;
             font-weight: 500;
+            font-size: 15px;
+        }
+
+        #legendVoceEstaAqui {
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        #legendVoceEstaAqui:hover {
+            background-color: rgba(255, 127, 80, 0.08);
+            border-left: 3px solid rgba(255, 127, 80, 0.8);
         }
 
         .navigation {
-            background-color: #FFE4D6;
-            padding: 20px 15px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 15px;
             position: fixed;
             bottom: 0;
             left: 0;
@@ -108,54 +119,73 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1);
             z-index: 9999;
             backdrop-filter: blur(10px);
-            margin: 0 15px 15px;
-            width: calc(100% - 30px);
-            border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            margin: 0 20px 20px;
+            width: calc(100% - 40px);
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }
 
         .nav-item {
             color: #FF7F50;
             text-decoration: none;
-            font-size: 22px;
-            padding: 15px;
-            border-radius: 18px;
+            font-size: 26px;
+            padding: 18px;
+            border-radius: 22px;
             transition: all 0.3s ease;
-            width: 60px;
-            height: 60px;
+            width: 75px;
+            height: 75px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 8px;
+            margin: 0 10px;
             position: relative;
             z-index: 10000;
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            will-change: transform;
-        }
-
-        .nav-item:hover, .nav-item:active {
-            color: #FF6B3D;
-            background-color: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 4px 12px rgba(255, 127, 80, 0.15);
-        }
-
-        .nav-item.active {
-            color: #FF6B3D;
-            background: rgba(255, 127, 80, 0.1);
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.15);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
         }
 
         .nav-item:before {
-            display: none;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FF7F50, #FF6347);
+            opacity: 0;
+            border-radius: 22px;
+            transition: opacity 0.3s ease;
+            z-index: -1;
         }
 
-        .nav-item:after {
-            display: none;
+        .nav-item:hover:before, .nav-item:active:before {
+            opacity: 0.15;
+        }
+
+        .nav-item:hover, .nav-item:active {
+            color: #FF6347;
+            background-color: #fff;
+            box-shadow: 0 8px 20px rgba(255, 127, 80, 0.25);
+            transform: translateY(-5px);
+        }
+
+        .nav-item.active {
+            color: white;
+            background: linear-gradient(135deg, #FF7F50, #FF6347);
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 127, 80, 0.3);
+        }
+
+        .nav-item i {
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover i {
+            color: #FF6347;
         }
         
         .loading-indicator {
@@ -163,54 +193,221 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
             z-index: 1001;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
         .loading-indicator i {
             color: #FF7F50;
             animation: spin 1s linear infinite;
+            font-size: 22px;
+        }
+        
+        .loading-indicator span {
+            font-weight: 500;
+            color: #333;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Removendo estilos do banner */
+        .location-banner {
+            display: none !important;
+        }
+        
+        /* Ajustes responsivos para telas menores */
+        @media (max-width: 768px) {
+            .map-legend {
+                bottom: 100px;
+                left: 20px;
+                padding: 10px;
+                max-width: calc(100% - 40px);
+                background-color: rgba(255, 255, 255, 0.85);
+                border-radius: 10px;
+                min-width: 150px;
+            }
+            
+            .legend-item {
+                margin: 8px 0;
+                padding: 5px 8px;
+                font-size: 14px;
+                background-color: transparent;
+            }
+            
+            .legend-color {
+                width: 24px;
+                height: 24px;
+                margin-right: 10px;
+            }
+            
+            .legend-text {
+                font-size: 14px;
+            }
+            
+            .legend-color i {
+                font-size: 14px !important;
+            }
+            
+            .nav-item {
+                width: 60px;
+                height: 60px;
+                font-size: 22px;
+                padding: 12px;
+            }
+            
+            .navigation {
+                padding: 12px;
+                margin: 0 15px 15px;
+                width: calc(100% - 30px);
+            }
+        }
+        
+        /* Ajustes adicionais para telas muito pequenas */
+        @media (max-width: 480px) {
+            .map-legend {
+                bottom: 90px;
+                left: 15px;
+                padding: 8px;
+                max-width: calc(100% - 30px);
+                border-radius: 8px;
+                background-color: rgba(255, 255, 255, 0.85);
+            }
+            
+            .legend-item {
+                margin: 6px 0;
+                padding: 4px 8px;
+                font-size: 13px;
+                background-color: transparent;
+            }
+            
+            .legend-color {
+                width: 22px;
+                height: 22px;
+                margin-right: 8px;
+            }
+            
+            .legend-text {
+                font-size: 13px;
+            }
+            
+            .legend-color i {
+                font-size: 12px !important;
+            }
+            
+            .nav-item {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                padding: 10px;
+                border-radius: 18px;
+            }
+            
+            .navigation {
+                padding: 10px;
+                border-radius: 25px;
+            }
+        }
+
+        .add-dog-btn {
+            position: absolute;
+            right: 20px;
+            bottom: 200px;
+            background: linear-gradient(135deg, #FF7F50, #FF6347);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.4);
+            border: none;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            text-decoration: none;
+        }
+        
+        .add-dog-btn:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 127, 80, 0.5);
+        }
+        
+        .add-dog-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Additional responsive adjustments for the add-dog button */
+        @media (min-width: 769px) {
+            .add-dog-btn {
+                bottom: 170px; /* Moved lower from 200px */
+                right: 35px; /* Moved to the left (increased right margin) */
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .add-dog-btn {
+                bottom: 170px; /* Slightly adjusted for tablets */
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .add-dog-btn {
+                bottom: 110px; /* Moved lower from 150px */
+                right: 15px;
+                width: 42px;
+                height: 42px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="map"></div>
-        <div class="loading-indicator" id="loadingIndicator">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>Carregando mapa...</span>
+        <div class="loading-indicator" id="loadingIndicator" style="display: none;">
+            <i class="fas fa-spinner"></i>
+            <span>Carregando...</span>
         </div>
 
+        <a href="add-dog.html" class="add-dog-btn">
+            <i class="fas fa-plus"></i>
+        </a>
+
         <div class="map-legend">
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff0000; opacity: 0.7;">
-                    <i class="fas fa-paw" style="color: white; font-size: 16px;"></i>
+            <div class="legend-item" id="legendProcurados">
+                <div class="legend-color" style="background-color: #ff0000; opacity: 1;">
+                    <i class="fas fa-paw" style="color: white; font-size: 14px;"></i>
                 </div>
                 <span class="legend-text">Procurados</span>
             </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #00ff00; opacity: 0.7;">
-                    <i class="fas fa-paw" style="color: white; font-size: 16px;"></i>
+            <div class="legend-item" id="legendEncontrados">
+                <div class="legend-color" style="background-color: #00ff00; opacity: 1;">
+                    <i class="fas fa-paw" style="color: white; font-size: 14px;"></i>
                 </div>
                 <span class="legend-text">Encontrados</span>
             </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #007bff; opacity: 0.7;">
-                    <i class="fas fa-map-marker-alt" style="color: white; font-size: 16px;"></i>
+            <div class="legend-item" id="legendVoceEstaAqui" onclick="centerMapOnUserLocation()">
+                <div class="legend-color" style="background-color: #007bff; opacity: 1;">
+                    <i class="fas fa-map-marker-alt" style="color: white; font-size: 14px;"></i>
                 </div>
                 <span class="legend-text">Você está aqui</span>
+            </div>
+            <div class="legend-item" id="diagButton" style="cursor: pointer; border: 2px solid #FF7F50; margin-top: 15px;">
+                <div class="legend-color" style="background-color: #FF7F50; opacity: 1;">
+                    <i class="fas fa-sync" style="color: white; font-size: 14px;"></i>
+                </div>
+                <span class="legend-text">Recarregar Cães</span>
             </div>
         </div>
 
@@ -234,117 +431,225 @@
         let userMarker;
         let petMarkers = [];
         let infoWindow;
+        let geocoder;
+        let currentOpenInfoWindow = null;
         
         function initMap() {
-            // Criar infoWindow reutilizável
-            infoWindow = new google.maps.InfoWindow({
-                maxWidth: 300
-            });
+            try {
+                console.log("Iniciando função initMap");
+                // Mostrar indicador de carregamento
+                document.getElementById('loadingIndicator').style.display = 'flex';
             
-            // Inicializar o mapa
+                // Carregar mapa
             map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 13,
-                center: { lat: 38.7223, lng: -9.1393 }, // Lisboa como default
-                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    center: { lat: -23.550520, lng: -46.633308 }, // São Paulo
+                    zoom: 12,
                 mapTypeControl: true,
                 mapTypeControlOptions: {
-                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                    position: google.maps.ControlPosition.TOP_RIGHT,
-                    mapTypeIds: [
-                        google.maps.MapTypeId.ROADMAP,
-                        google.maps.MapTypeId.SATELLITE,
-                        google.maps.MapTypeId.HYBRID,
-                        google.maps.MapTypeId.TERRAIN
-                    ]
+                        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+                        position: google.maps.ControlPosition.TOP_RIGHT
                 },
-                streetViewControl: false,
                 fullscreenControl: true,
-                zoomControl: true
-            });
-            
-            // Estilizar janela de informações
-            google.maps.event.addListener(infoWindow, 'domready', function() {
-                const iwOuter = document.querySelector('.gm-style-iw');
-                if (iwOuter) {
-                    iwOuter.style.padding = '0';
-                    iwOuter.style.borderRadius = '10px';
-                    iwOuter.style.overflow = 'hidden';
-                    iwOuter.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
-                }
-                
-                // Estilizar botão de fechar
-                const closeButton = document.querySelector('.gm-ui-hover-effect');
-                if (closeButton) {
-                    closeButton.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                    closeButton.style.borderRadius = '50%';
-                    closeButton.style.width = '30px';
-                    closeButton.style.height = '30px';
-                    closeButton.style.top = '8px';
-                    closeButton.style.right = '8px';
-                    closeButton.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
-                    
-                    closeButton.addEventListener('mouseover', function() {
-                        this.style.backgroundColor = '#FF7F50';
-                        this.style.transform = 'rotate(90deg)';
-                        const closeIcon = this.querySelector('img');
-                        if (closeIcon) {
-                            closeIcon.style.filter = 'invert(100%)';
-                        }
-                    });
-                    
-                    closeButton.addEventListener('mouseout', function() {
-                        this.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                        this.style.transform = 'rotate(0deg)';
-                        const closeIcon = this.querySelector('img');
-                        if (closeIcon) {
-                            closeIcon.style.filter = 'none';
-                        }
-                    });
-                }
-            });
-
-            // Adicionar botão de atualização
-            const refreshControlDiv = document.createElement('div');
-            const refreshControl = createRefreshControl(refreshControlDiv);
-            refreshControlDiv.index = 1;
-            map.controls[google.maps.ControlPosition.TOP_LEFT].push(refreshControlDiv);
-            
-            // Obter localização do usuário
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        
-                        // Centralizar mapa na localização do usuário
-                        map.setCenter(userLocation);
-                        
-                        // Adicionar marcador do usuário
-                        addUserMarker(userLocation);
-        
-                        // Adicionar marcadores dos animais
-                        addPetMarkers();
-                        
-                        // Esconder indicador de carregamento
-                        document.getElementById('loadingIndicator').style.display = 'none';
+                    fullscreenControlOptions: {
+                        position: google.maps.ControlPosition.RIGHT_TOP
                     },
-                    (error) => {
-                        console.error('Erro ao obter localização:', error);
-                        document.getElementById('loadingIndicator').style.display = 'none';
-
-                        // Mesmo sem localização, mostrar os marcadores de animais
-                        addPetMarkers();
+                    streetViewControl: true,
+                    streetViewControlOptions: {
+                        position: google.maps.ControlPosition.RIGHT_TOP
+                    },
+                    zoomControl: true,
+                    zoomControlOptions: {
+                        position: google.maps.ControlPosition.RIGHT_TOP
                     }
-                );
-            } else {
-                console.error('Geolocalização não é suportada por este navegador.');
-                document.getElementById('loadingIndicator').style.display = 'none';
+                });
                 
-                // Mesmo sem localização, mostrar os marcadores de animais
-                addPetMarkers();
+                console.log("Mapa inicializado, configurando infoWindow");
+                
+                // Criar infowindow para uso global
+                infoWindow = new google.maps.InfoWindow({
+                    maxWidth: 300,
+                    disableAutoPan: false
+                });
+                
+                console.log("Adicionando controles ao mapa");
+                
+                // Adicionar controle de localização
+                const locationControlDiv = document.createElement('div');
+                locationControlDiv.index = 1;
+                createLocationControl(locationControlDiv);
+                map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(locationControlDiv);
+                
+                // Adicionar controle de atualização
+                const refreshControlDiv = document.createElement('div');
+                refreshControlDiv.index = 1;
+                createRefreshControl(refreshControlDiv);
+                map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(refreshControlDiv);
+                
+                // Inicializar o tema de mapa padrão
+                const savedMapType = localStorage.getItem('mapType') || 'roadmap';
+                map.setMapTypeId(savedMapType);
+                
+                console.log("Verificando localização salva");
+                
+                // Tentar obter localização salva
+                const savedLocation = getSavedLocation();
+                if (savedLocation) {
+                    console.log("Localização salva encontrada:", savedLocation);
+                    // Centralizar mapa na localização salva
+                    map.setCenter(savedLocation);
+                    
+                    // Adicionar marcador do usuário
+                    addUserMarker(savedLocation);
+                } else {
+                    console.log("Nenhuma localização salva, tentando obter localização atual");
+                    // Tentar obter localização do usuário
+                    requestUserLocation();
+                }
+                
+                console.log("Configurando evento idle para o mapa");
+                
+                // Evento para marcar como finalizado o carregamento do mapa
+                google.maps.event.addListenerOnce(map, 'idle', function() {
+                    console.log("Mapa carregado e pronto");
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    
+                    // Estilizar infowindow uma vez que o mapa esteja carregado
+                    if (typeof styleInfoWindow === 'function') {
+                        styleInfoWindow();
+                }
+                
+                    console.log("Carregando cães...");
+                    
+                    // Mostrar coordenadas para debugging
+                    console.log("Centro do mapa:", map.getCenter().lat(), map.getCenter().lng());
+                    
+                    // Adicionar evento para mostrar coordenadas do mapa no console
+                    map.addListener('click', function(event) {
+                        const clickPos = event.latLng;
+                        console.log(`Coordenadas do clique: ${clickPos.lat()}, ${clickPos.lng()}`);
+                    });
+                    
+                    // Verificar se há algum cão no localStorage
+                    const allDogsData = localStorage.getItem('allDogs');
+                    if (allDogsData) {
+                        try {
+                            const allDogs = JSON.parse(allDogsData);
+                            console.log(`Encontrados ${allDogs.length} cães no localStorage:`, allDogs);
+                        } catch (error) {
+                            console.error("Erro ao analisar dados de cães:", error);
+                        }
+                    } else {
+                        console.log("Nenhum dado de cães encontrado no localStorage");
+                    }
+                    
+                    // Carregar todos os cães quando o mapa estiver pronto
+                    loadAllDogs();
+                });
+                
+                console.log("Função initMap concluída com sucesso");
+            } catch (error) {
+                console.error("ERRO ao inicializar o mapa:", error);
+                alert("Ocorreu um erro ao inicializar o mapa. Por favor, tente recarregar a página.");
             }
+        }
+        
+        function styleInfoWindow() {
+            setTimeout(() => {
+                try {
+                    // Remover a seta do InfoWindow
+                    const arrows = document.querySelectorAll('.gm-style-iw-t::after');
+                    arrows.forEach(arrow => {
+                        if (arrow) arrow.style.display = 'none';
+                    });
+                    
+                    // Estilizar o container principal
+                    const containers = document.querySelectorAll('.gm-style-iw-c');
+                    containers.forEach(container => {
+                        container.style.padding = '0';
+                        container.style.borderRadius = '8px';
+                        container.style.overflow = 'hidden';
+                        container.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+                    
+                        // Remover margens extras
+                        container.style.marginTop = '0';
+                        container.style.marginBottom = '0';
+                    });
+                    
+                    // Estilizar os containers internos
+                    const innerContainers = document.querySelectorAll('.gm-style-iw-d');
+                    innerContainers.forEach(innerContainer => {
+                        innerContainer.style.overflow = 'hidden';
+                        innerContainer.style.paddingRight = '0px !important';
+                        innerContainer.style.paddingBottom = '0px !important';
+                        innerContainer.style.maxWidth = '100%';
+                        
+                        // Remover scrollbars
+                        innerContainer.style.scrollbarWidth = 'none';
+                        innerContainer.style.msOverflowStyle = 'none';
+            });
+
+                    // Adicionar CSS para esconder scrollbars em todos os navegadores
+                    const style = document.createElement('style');
+                    style.textContent = `.gm-style-iw-d::-webkit-scrollbar { display: none; }`;
+                    document.head.appendChild(style);
+                    
+                    // Estilizar o botão de fechar de forma simples
+                    const closeButtons = document.querySelectorAll('button.gm-ui-hover-effect');
+                    closeButtons.forEach(button => {
+                        button.style.top = '1px';
+                        button.style.right = '1px';
+                        button.style.zIndex = '10';
+                    });
+                } catch (error) {
+                    console.error('Erro ao estilizar InfoWindow:', error);
+                }
+            }, 50);
+        }
+        
+        function getSavedLocation() {
+            const savedLat = localStorage.getItem('userLocationLat');
+            const savedLng = localStorage.getItem('userLocationLng');
+            
+            if (savedLat && savedLng) {
+                return {
+                    lat: parseFloat(savedLat),
+                    lng: parseFloat(savedLng)
+                };
+            }
+            
+            return null;
+        }
+        
+        function saveUserLocation(location) {
+            localStorage.setItem('userLocationLat', location.lat);
+            localStorage.setItem('userLocationLng', location.lng);
+        }
+        
+        function createLocationControl(controlDiv) {
+            // Estilo do botão de localização
+            const controlUI = document.createElement('div');
+            controlUI.style.backgroundColor = '#fff';
+            controlUI.style.border = 'none';
+            controlUI.style.borderRadius = '4px';
+            controlUI.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            controlUI.style.cursor = 'pointer';
+            controlUI.style.margin = '10px';
+            controlUI.style.textAlign = 'center';
+            controlUI.title = 'Atualizar minha localização';
+            controlDiv.appendChild(controlUI);
+            
+            // Ícone de localização
+            const controlText = document.createElement('div');
+            controlText.style.padding = '8px';
+            controlText.innerHTML = '<i class="fas fa-location-arrow"></i>';
+            controlUI.appendChild(controlText);
+                
+            // Evento de clique - permite ao usuário atualizar manualmente a localização
+            controlUI.addEventListener('click', function() {
+                requestUserLocation();
+            });
+            
+            return controlUI;
         }
         
         function createRefreshControl(controlDiv) {
@@ -410,8 +715,24 @@
 
             // Adicionar evento de clique ao marcador
             userMarker.addListener('click', () => {
-                infoWindow.setContent('<div style="text-align: center; padding: 10px;"><strong>Você está aqui</strong></div>');
+                // Fechar qualquer infowindow aberta anteriormente
+                if (infoWindow) {
+                    infoWindow.close();
+                }
+                
+                infoWindow.setContent(`
+                    <div style="text-align: center; padding: 12px 15px; position: relative; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-left: 4px solid #007bff;">
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333; font-family: Arial, sans-serif;">
+                            <i class="fas fa-street-view" style="color: #007bff; margin-right: 5px;"></i>
+                            Você está aqui
+                        </p>
+                    </div>
+                `);
+                
                 infoWindow.open(map, userMarker);
+                
+                // Adicionar um pequeno atraso para aplicar os estilos após a renderização do infowindow
+                setTimeout(styleInfoWindow, 10);
             });
             
             return userMarker;
@@ -422,59 +743,268 @@
             clearPetMarkers();
             
             const allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
+            console.log(`Carregando ${allDogs.length} cães:`, allDogs);
             
-            // Processar em lotes para melhor performance
-            const processBatch = (startIdx, batchSize) => {
-                const endIdx = Math.min(startIdx + batchSize, allDogs.length);
-                
-                for (let i = startIdx; i < endIdx; i++) {
-                    const dog = allDogs[i];
+            if (allDogs.length === 0) {
+                console.log('Nenhum cão cadastrado para exibir no mapa');
+                return;
+            }
+            
+            // Processar cada cão para adicionar ao mapa
+            let processedCount = 0;
+            let geocodeCount = 0;
+            
+            allDogs.forEach((dog, index) => {
+                try {
+                    console.log(`Processando cão ${index+1}/${allDogs.length}:`, dog);
+                    
+                    // Verificar se o cão tem coordenadas válidas
                     if (dog.location && dog.location.lat && dog.location.lng) {
-                        const isProcurado = dog.estado === 'procurado';
-                        const marker = new google.maps.Marker({
-                            position: new google.maps.LatLng(dog.location.lat, dog.location.lng),
-                            map: map,
-                            icon: {
+                        console.log(`Adicionando cão ao mapa: ${dog.nome || dog.raca || 'Sem nome'}, localização: ${dog.location.lat}, ${dog.location.lng}`);
+                        const marker = addDogMarker(dog);
+                        if (marker) {
+                            processedCount++;
+                        } else {
+                            console.error('Falha ao adicionar marcador para o cão:', dog);
+                        }
+                    } else if (dog.endereco) {
+                        // Se não tem coordenadas mas tem endereço, tentar geocodificar
+                        console.log(`Tentando geocodificar endereço: ${dog.endereco}`);
+                        geocodeCount++;
+                        geocodeAddress(dog.endereco, (location) => {
+                            if (location) {
+                                // Atualizar o cão com as novas coordenadas
+                                dog.location = location;
+                                // Salvar no localStorage
+                                updateDogLocation(dog);
+                                // Adicionar marcador
+                                console.log(`Adicionando cão ao mapa após geocodificação: ${dog.nome || dog.raca || 'Sem nome'}`);
+                                const marker = addDogMarker(dog);
+                                if (marker) {
+                                    processedCount++;
+                                }
+                            } else {
+                                console.error(`Falha ao geocodificar endereço: ${dog.endereco}`);
+                            }
+                        });
+                    } else {
+                        console.error('Cachorro sem localização ou endereço:', dog);
+                    }
+                } catch (error) {
+                    console.error('Erro ao processar marcador do cão:', error, dog);
+                }
+            });
+            
+            console.log(`Processados ${processedCount} cães de ${allDogs.length} total. Geocodificando ${geocodeCount} endereços.`);
+            
+            // Se nenhum cão foi processado com sucesso e não estamos geocodificando nenhum
+            if (processedCount === 0 && geocodeCount === 0) {
+                console.log('Nenhum cão tem localização válida para exibir no mapa');
+            }
+        }
+        
+        function addDogMarker(dog) {
+            try {
+                // Log detalhado para diagnóstico
+                console.log('Tentando adicionar marcador para:', dog);
+                
+                // Verificar e normalizar a localização
+                let lat, lng;
+                
+                if (dog.location) {
+                    // Verificar se location é um objeto com lat/lng
+                    if (typeof dog.location === 'object') {
+                        if (dog.location.lat !== undefined && dog.location.lng !== undefined) {
+                            // Formatar lat/lng
+                            lat = parseFloat(dog.location.lat);
+                            lng = parseFloat(dog.location.lng);
+                        } else if (dog.location.latitude !== undefined && dog.location.longitude !== undefined) {
+                            // Formato alternativo com latitude/longitude
+                            lat = parseFloat(dog.location.latitude);
+                            lng = parseFloat(dog.location.longitude);
+                        }
+                    } else if (typeof dog.location === 'string') {
+                        // Tentar extrair coordenadas de uma string
+                        try {
+                            const locationObj = JSON.parse(dog.location);
+                            lat = parseFloat(locationObj.lat || locationObj.latitude);
+                            lng = parseFloat(locationObj.lng || locationObj.longitude);
+                        } catch (e) {
+                            console.error('Falha ao converter location string para objeto:', e);
+                        }
+                    }
+                } else if (dog.lat !== undefined && dog.lng !== undefined) {
+                    // Coordenadas diretamente no objeto do cão
+                    lat = parseFloat(dog.lat);
+                    lng = parseFloat(dog.lng);
+                } else if (dog.latitude !== undefined && dog.longitude !== undefined) {
+                    // Formato alternativo diretamente no objeto do cão
+                    lat = parseFloat(dog.latitude);
+                    lng = parseFloat(dog.longitude);
+                }
+                
+                if (isNaN(lat) || isNaN(lng)) {
+                    console.error('Coordenadas inválidas após tentativa de normalização:', {lat, lng, dog});
+                    
+                    // SOLUÇÃO DE EMERGÊNCIA: Se não conseguirmos extrair coordenadas, usar São Paulo como padrão
+                    console.log('Usando coordenadas de São Paulo como fallback');
+                    lat = -23.550520;
+                    lng = -46.633308;
+                }
+                
+                console.log(`Criando marcador em ${lat}, ${lng} para ${dog.nome || dog.raca || 'Sem nome'}`);
+                
+                // Definir cor e texto de status com base no estado do cachorro
+                const statusColor = dog.estado === 'procurado' ? '#ff6b6b' : '#4ecdc4';
+                const statusText = dog.estado === 'procurado' ? 'Procurado' : 'Encontrado';
+                
+                // Define o ícone com base no estado do cachorro
+                const pawIconPath = dog.estado === 'procurado' ? 
+                    'M12,4C7.58,4 4,7.58 4,12C4,16.42 7.58,20 12,20C16.42,20 20,16.42 20,12C20,7.58 16.42,4 12,4M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M10,17L5,12L6.41,10.59L10,14.17L17.59,6.58L19,8L10,17Z' : 
+                    'M12,4C7.58,4 4,7.58 4,12C4,16.42 7.58,20 12,20C16.42,20 20,16.42 20,12C20,7.58 16.42,4 12,4M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M10,17L5,12L6.41,10.59L10,14.17L17.59,6.58L19,8L10,17Z';
+                
+                // Criar um ícone SVG personalizado com base no estado
+                const pawColor = dog.estado === 'procurado' ? '#ff0000' : '#00ff00';
+                
+                const svgMarker = {
                                 path: google.maps.SymbolPath.CIRCLE,
-                                fillColor: isProcurado ? '#ff0000' : '#00ff00',
-                                fillOpacity: 0.7,
-                                strokeColor: '#FFFFFF',
-                                strokeWeight: 2,
+                    fillColor: pawColor,
+                    fillOpacity: 1,
+                    strokeWeight: 1,
+                    strokeColor: '#ffffff',
                                 scale: 10
-                            },
-                            title: dog.raca || 'Cachorro',
-                            zIndex: 5
+                };
+                
+                // Criar o marcador com o ícone customizado
+                const marker = new google.maps.Marker({
+                    position: { lat: lat, lng: lng },
+                    map: map,
+                    icon: svgMarker,
+                    title: dog.nome || dog.raca || 'Cachorro sem nome',
+                    animation: google.maps.Animation.DROP
                         });
                         
-                        // Adicionar evento de clique ao marcador
-                        marker.addListener('click', () => {
-                            const content = `
-                                <div style="text-align: center; padding: 15px;">
-                                    <img src="${dog.image || 'Images/DogList-Logo.png'}" style="width: 100px; height: 100px; object-fit: cover; object-position: center; border-radius: 10px; margin: 0 auto 10px; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                    <p style="color: #666; margin: 4px 0;"><i class="fas fa-dog"></i> ${dog.raca || 'Raça não especificada'}</p>
-                                    <p style="color: #666; margin: 4px 0;"><i class="fas fa-info-circle"></i> ${dog.estado || 'Status não especificado'}</p>
-                                    <button onclick="window.location.href='animal-details.html?id=${dog.id}'" style="background: #FF7F50; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; margin-top: 10px; transition: all 0.3s ease;">Ver Detalhes</button>
+                // Criar o conteúdo da InfoWindow com estilo melhorado
+                const contentString = `
+                    <div style="width: 220px; padding: 0; margin: 0; overflow: hidden; position: relative; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); background-color: white;">
+                        <div style="height: 8px; background-color: ${dog.estado === 'procurado' ? '#ff0000' : '#00cc00'}; width: 100%;"></div>
+                        <div style="padding: 12px; position: relative;">
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <span style="display: inline-block; padding: 3px 12px; background-color: ${dog.estado === 'procurado' ? '#ff0000' : '#00cc00'}; color: white; border-radius: 15px; font-size: 13px; font-weight: bold;">
+                                    ${dog.estado === 'procurado' ? 'Procurado' : 'Encontrado'}
+                                </span>
+                            </div>
+                            <div style="margin-bottom: 10px; text-align: center;">
+                                <img src="${dog.image || 'Images/dog-placeholder.jpg'}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;" onerror="this.src='Images/dog-placeholder.jpg'">
+                            </div>
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #333;">${dog.raca || 'Não especificada'}</h3>
+                            </div>
+                            <div style="margin-bottom: 15px; font-size: 13px; color: #666; display: flex; align-items: center;">
+                                <i class="fas fa-map-marker-alt" style="color: #ff6b38; margin-right: 5px;"></i>
+                                <span>${dog.endereco || 'Localização não especificada'}</span>
+                            </div>
+                            <div style="display: flex; justify-content: center; margin-top: 10px;">
+                                <button onclick="location.href='animal-details.html?id=${dog.id}'" style="background-color: #ff7f50; color: white; padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; width: 100%; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                    <i class="fas fa-paw" style="margin-right: 5px;"></i>Ver Detalhes
+                                </button>
+                            </div>
+                        </div>
                                 </div>
                             `;
                             
-                            infoWindow.setContent(content);
-                            infoWindow.open(map, marker);
-                        });
-                        
-                        petMarkers.push(marker);
-                    }
-                }
+                // Usar configurações adicionais para evitar problemas com o InfoWindow
+                const infoWindow = new google.maps.InfoWindow({
+                    content: contentString,
+                    maxWidth: 240,
+                    pixelOffset: new google.maps.Size(0, 0),
+                    disableAutoPan: false
+                });
                 
-                // Processar próximo lote se necessário
-                if (endIdx < allDogs.length) {
+                // Adicionar evento para aplicar estilos após abrir
+                google.maps.event.addListener(infoWindow, 'domready', function() {
+                    styleInfoWindow();
+                });
+                
+                // Armazenar o infoWindow no marcador para referência futura
+                marker.infoWindow = infoWindow;
+                
+                // Adicionar o marcador ao array
+                        petMarkers.push(marker);
+                
+                // Adicionar evento de clique para abrir o InfoWindow
+                marker.addListener('click', function() {
+                    // Fechar qualquer InfoWindow aberto
+                    if (currentOpenInfoWindow) {
+                        currentOpenInfoWindow.close();
+                    }
+                    
+                    // Abrir o novo InfoWindow
+                    infoWindow.open(map, marker);
+                    currentOpenInfoWindow = infoWindow;
+                    
+                    // Animar o marcador quando clicado
+                    if (marker.getAnimation() !== null) {
+                        marker.setAnimation(null);
+                    } else {
+                        marker.setAnimation(google.maps.Animation.BOUNCE);
                     setTimeout(() => {
-                        processBatch(endIdx, batchSize);
-                    }, 10); // Pequeno atraso para evitar bloqueio da UI
-                }
-            };
+                            marker.setAnimation(null);
+                        }, 750);
+                    }
+                    
+                    // Estilizar o InfoWindow após abertura
+                    setTimeout(styleInfoWindow, 10);
+                });
+                
+                console.log('Marcador criado com sucesso:', marker);
+                
+                return marker;
+            } catch (error) {
+                console.error('Erro ao criar marcador para o cão:', error, dog);
+                return null;
+            }
+        }
+        
+        // Função melhorada para geocodificação
+        function geocodeAddress(address, callback) {
+            const geocoder = new google.maps.Geocoder();
             
-            // Iniciar processamento em lotes - 50 cães por vez
-            processBatch(0, 50);
+            geocoder.geocode({ 
+                'address': address,
+                'region': 'pt', // Preferência para Portugal
+                'componentRestrictions': { country: 'PT' } // Restringir a Portugal (opcional)
+            }, function(results, status) {
+                if (status === google.maps.GeocoderStatus.OK && results[0]) {
+                    // Verificar se o resultado é preciso
+                    const locationTypes = results[0].geometry.location_type;
+                    const isAccurate = locationTypes === google.maps.GeocoderLocationType.ROOFTOP || 
+                                     locationTypes === google.maps.GeocoderLocationType.RANGE_INTERPOLATED;
+                    
+                    const location = {
+                        lat: results[0].geometry.location.lat(),
+                        lng: results[0].geometry.location.lng(),
+                        precision: isAccurate ? 'high' : 'approximate'
+                    };
+                    
+                    console.log(`Geocoded ${address} to ${location.lat},${location.lng} (precision: ${location.precision})`);
+                    callback(location);
+                } else {
+                    console.error('Geocodificação falhou para o endereço: ' + address + ' - Status: ' + status);
+                    callback(null);
+                }
+            });
+        }
+        
+        // Função para atualizar a localização do cachorro no localStorage
+        function updateDogLocation(updatedDog) {
+            const allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
+            
+            const index = allDogs.findIndex(dog => dog.id === updatedDog.id);
+            if (index !== -1) {
+                allDogs[index] = updatedDog;
+                localStorage.setItem('allDogs', JSON.stringify(allDogs));
+            }
         }
 
         function clearPetMarkers() {
@@ -482,6 +1012,345 @@
             petMarkers.forEach(marker => marker.setMap(null));
             petMarkers = [];
         }
+
+        function showNoDogNotification() {
+            // Função desativada a pedido do usuário
+            console.log('Notificação de "Nenhum animal cadastrado" desativada');
+            // Não mostrar nenhuma notificação
+            return;
+            
+            // Código abaixo não será executado
+            /*
+            const notificationEl = document.createElement('div');
+            notificationEl.id = 'no-dogs-notification';
+            notificationEl.style.position = 'absolute';
+            notificationEl.style.top = '20px';
+            notificationEl.style.left = '50%';
+            notificationEl.style.transform = 'translateX(-50%)';
+            notificationEl.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+            notificationEl.style.padding = '15px 20px';
+            notificationEl.style.borderRadius = '10px';
+            notificationEl.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
+            notificationEl.style.zIndex = '1000';
+            notificationEl.style.maxWidth = '90%';
+            notificationEl.style.textAlign = 'center';
+            notificationEl.style.fontWeight = '500';
+            notificationEl.style.fontSize = '15px';
+            notificationEl.style.color = '#333';
+            notificationEl.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+            
+            notificationEl.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-paw" style="color: #FF7F50; font-size: 18px;"></i>
+                        <span>Nenhum animal cadastrado para exibir no mapa</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 5px;">
+                        <button id="add-test-dog-btn" style="background: #FF7F50; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">
+                            <i class="fas fa-plus" style="margin-right: 5px;"></i>Adicionar teste
+                        </button>
+                        <a href="add-dog.html" style="background: #4285F4; color: white; border: none; padding: 8px 12px; border-radius: 5px; text-decoration: none; display: flex; align-items: center;">
+                            <i class="fas fa-paw" style="margin-right: 5px;"></i>Adicionar animal
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            // Verificar se a notificação já existe
+            if (!document.getElementById('no-dogs-notification')) {
+                document.body.appendChild(notificationEl);
+                
+                // Adicionar evento de clique ao botão
+                document.getElementById('add-test-dog-btn').addEventListener('click', function() {
+                    addTestDog();
+                    // Remover a notificação
+                    const notification = document.getElementById('no-dogs-notification');
+                    if (notification) {
+                        notification.remove();
+                    }
+                });
+                
+                // Auto-remover após 15 segundos
+                setTimeout(() => {
+                    const notification = document.getElementById('no-dogs-notification');
+                    if (notification) {
+                        notification.style.opacity = '0';
+                        notification.style.transition = 'opacity 0.5s ease';
+                        setTimeout(() => notification.remove(), 500);
+                    }
+                }, 15000);
+            }
+            */
+        }
+
+        function loadAllDogs() {
+            // Obter todos os cães do localStorage
+            try {
+                // Diagnóstico: mostrar todas as chaves no localStorage
+                console.log('Chaves disponíveis no localStorage:', Object.keys(localStorage));
+                
+                const allDogsData = localStorage.getItem('allDogs');
+                if (!allDogsData) {
+                    console.log('Nenhum dado de cães encontrado no localStorage');
+                    return;
+                }
+                
+                let allDogs = JSON.parse(allDogsData);
+                console.log(`Carregando ${allDogs.length} cães na inicialização:`, allDogs);
+                
+                // Verificar e corrigir a estrutura dos dados, se necessário
+                allDogs = allDogs.map(dog => {
+                    // Criar um objeto temporário corrigido
+                    const fixedDog = { ...dog };
+                    
+                    // Garantir que o cão tenha um ID
+                    if (!fixedDog.id) {
+                        fixedDog.id = 'dog-' + new Date().getTime() + Math.random().toString(36).substr(2, 5);
+                        console.log('ID gerado para cão sem ID:', fixedDog.id);
+                    }
+                    
+                    // Garantir que o objeto location existe e está no formato correto
+                    if (!fixedDog.location) {
+                        // Tentar obter localização de outras propriedades
+                        if (fixedDog.latitude && fixedDog.longitude) {
+                            fixedDog.location = {
+                                lat: parseFloat(fixedDog.latitude),
+                                lng: parseFloat(fixedDog.longitude)
+                            };
+                            console.log('Localização criada a partir de latitude/longitude:', fixedDog.location);
+                        } else if (fixedDog.lat && fixedDog.lng) {
+                            fixedDog.location = {
+                                lat: parseFloat(fixedDog.lat),
+                                lng: parseFloat(fixedDog.lng)
+                            };
+                            console.log('Localização criada a partir de lat/lng:', fixedDog.location);
+                        } else if (typeof fixedDog.location === 'string') {
+                            // Se a localização for uma string, tentar converter para objeto
+                            try {
+                                const locationObj = JSON.parse(fixedDog.location);
+                                fixedDog.location = locationObj;
+                                console.log('Localização convertida de string para objeto:', fixedDog.location);
+                            } catch (e) {
+                                console.log('Falha ao converter string de localização para objeto:', e);
+                            }
+                        } else if (fixedDog.coordinates) {
+                            // Tentar extrair de um objeto coordinates
+                            fixedDog.location = {
+                                lat: parseFloat(fixedDog.coordinates.lat || fixedDog.coordinates.latitude),
+                                lng: parseFloat(fixedDog.coordinates.lng || fixedDog.coordinates.longitude)
+                            };
+                            console.log('Localização extraída de coordinates:', fixedDog.location);
+                        }
+                    }
+                    
+                    // Se ainda não tiver localização mas tiver endereco, manter para geocodificar depois
+                    if (!fixedDog.location && fixedDog.endereco) {
+                        console.log(`Cão sem coordenadas, mas com endereço: ${fixedDog.endereco}`);
+                    } else if (!fixedDog.location) {
+                        console.log('Cão sem dados de localização:', fixedDog);
+                    }
+                    
+                    // Garantir que estado seja válido (procurado ou encontrado)
+                    if (!fixedDog.estado) {
+                        fixedDog.estado = fixedDog.status || 'procurado';
+                        console.log('Estado padrão definido:', fixedDog.estado);
+                    }
+                    
+                    return fixedDog;
+                });
+                
+                // Salvar os dados corrigidos no localStorage
+                localStorage.setItem('allDogs', JSON.stringify(allDogs));
+                
+                if (allDogs.length === 0) {
+                    console.log('Nenhum cão cadastrado para exibir no mapa na inicialização');
+                    return;
+                }
+                
+                // Adicionar todos os cães ao mapa
+                addPetMarkers();
+            } catch (error) {
+                console.error('Erro ao carregar cães do localStorage:', error);
+            }
+        }
+
+        function centerMapOnUserLocation() {
+            const savedLocation = getSavedLocation();
+            
+            if (savedLocation) {
+                // Centralizar mapa na localização salva
+                map.setCenter(savedLocation);
+                
+                // Se não houver marcador, adicioná-lo
+                if (!userMarker) {
+                    addUserMarker(savedLocation);
+                } else {
+                    // Animar marcador existente
+                    userMarker.setAnimation(google.maps.Animation.BOUNCE);
+                    setTimeout(() => {
+                        userMarker.setAnimation(null);
+                    }, 1400);
+                }
+                
+                // Animar a transição com zoom mais próximo
+                map.setZoom(18);
+                
+                // Remover classe active ou destacada após o clique
+                document.getElementById('legendVoceEstaAqui').classList.remove('active');
+                
+                // Prevenir comportamento de sticky selection
+                setTimeout(() => {
+                    // Forçar blur para remover o foco
+                    document.getElementById('legendVoceEstaAqui').blur();
+                    
+                    // Aplicar estilo temporário e depois remover
+                    const legendItem = document.getElementById('legendVoceEstaAqui');
+                    legendItem.style.backgroundColor = 'rgba(255, 127, 80, 0.1)';
+                    
+                    // Voltar ao estilo normal após um curto delay
+                    setTimeout(() => {
+                        legendItem.style.backgroundColor = '';
+                    }, 300);
+                }, 100);
+                
+                // Fechar qualquer infowindow aberta anteriormente
+                if (infoWindow) {
+                    infoWindow.close();
+                }
+                
+                // Criar um div personalizado para o popup sem botão fechar
+                const customPopupContent = `
+                    <div class="custom-popup" style="
+                        padding: 12px 15px; 
+                        text-align: center;
+                        position: relative; 
+                        border-radius: 10px; 
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.1); 
+                        background: linear-gradient(135deg, #f8f9fa, #e9ecef); 
+                        border-left: 4px solid #007bff;
+                        min-width: 120px;">
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333; font-family: Arial, sans-serif;">
+                            <i class="fas fa-street-view" style="color: #007bff; margin-right: 5px;"></i>
+                            Você está aqui
+                        </p>
+                    </div>
+                `;
+                
+                // Configurar o infoWindow com opções para ocultar o botão de fechar
+                const customInfo = new google.maps.InfoWindow({
+                    content: customPopupContent,
+                    pixelOffset: new google.maps.Size(0, -10),
+                    disableAutoPan: false
+                });
+                
+                // Abrir o infoWindow personalizado
+                customInfo.open(map, userMarker);
+                
+                // Adicionar listener de clique no mapa para fechar o infoWindow
+                google.maps.event.addListenerOnce(map, 'click', function() {
+                    customInfo.close();
+                });
+                
+                // Fechar o infoWindow quando o mapa é movido ou arrastado
+                google.maps.event.addListenerOnce(map, 'dragstart', function() {
+                    customInfo.close();
+                });
+                
+                // Fechar o infoWindow quando o zoom é alterado
+                google.maps.event.addListenerOnce(map, 'zoom_changed', function() {
+                    customInfo.close();
+                });
+                
+                // Aplicar estilos adicionais para esconder o botão de fechar depois que o InfoWindow é renderizado
+                setTimeout(() => {
+                    const closeButtons = document.querySelectorAll('.gm-ui-hover-effect');
+                    closeButtons.forEach(button => {
+                        button.style.display = 'none';
+                    });
+                    
+                    // Remover as setas do InfoWindow
+                    const iwBackground = document.querySelector('.gm-style-iw').previousElementSibling;
+                    if (iwBackground) {
+                        const arrowElements = iwBackground.querySelectorAll('div');
+                        if (arrowElements && arrowElements.length >= 4) {
+                            for (let i = 0; i < 4; i++) {
+                                arrowElements[i].style.display = 'none';
+                            }
+                        }
+                    }
+                }, 50);
+            } else {
+                // Se não tiver localização salva, solicitar
+                requestUserLocation();
+            }
+        }
+
+        function requestUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        // Salvar localização para uso futuro
+                        saveUserLocation(userLocation);
+                        
+                        // Centralizar mapa na localização do usuário
+                        map.setCenter(userLocation);
+                        map.setZoom(15);
+                        
+                        // Adicionar marcador do usuário
+                        addUserMarker(userLocation);
+                    },
+                    (error) => {
+                        console.error('Erro ao obter localização:', error);
+                        alert('Não foi possível obter sua localização. Verifique as permissões do seu navegador.');
+                    },
+                    { timeout: 10000, maximumAge: 600000 }
+                );
+            } else {
+                alert('Seu navegador não suporta geolocalização.');
+            }
+        }
+
+        // Adicionar evento de clique em cada item da legenda para evitar que permaneçam selecionados
+        document.addEventListener('DOMContentLoaded', function() {
+            // Itens da legenda
+            const legendItems = document.querySelectorAll('.legend-item');
+            
+            legendItems.forEach(item => {
+                // Adicionar evento para remover foco após clique
+                item.addEventListener('click', function() {
+                    // Pequeno atraso para garantir que a ação ocorra primeiro
+                    setTimeout(() => {
+                        this.blur();
+                    }, 100);
+                });
+            });
+            
+            // Adicionar evento para o botão de diagnóstico
+            document.getElementById('diagButton').addEventListener('click', function() {
+                console.log('=== DIAGNÓSTICO DE CÃES ===');
+                // Limpar marcadores atuais
+                clearPetMarkers();
+                
+                // Mostrar todas as chaves no localStorage
+                console.log('Todas as chaves no localStorage:', Object.keys(localStorage));
+                
+                // Recarregar os cães
+                console.log('Recarregando todos os cães no mapa...');
+                loadAllDogs();
+                
+                // Feedback visual temporário para o usuário
+                const button = this;
+                button.style.backgroundColor = 'rgba(255, 127, 80, 0.3)';
+                setTimeout(() => {
+                    button.style.backgroundColor = '';
+                }, 500);
+            });
+        });
     </script>
 </body>
 </html>

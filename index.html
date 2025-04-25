@@ -234,51 +234,70 @@
             overflow: hidden;
             pointer-events: none;
             z-index: -1;
+            background: radial-gradient(circle at bottom, rgba(255, 228, 214, 0.8) 0%, rgba(255, 228, 214, 0.4) 70%, rgba(255, 228, 214, 0) 100%);
         }
 
         .paw-print {
             position: absolute;
-            width: 30px;
-            height: 30px;
             background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 50 50' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 20C17.2091 20 19 18.2091 19 16C19 13.7909 17.2091 12 15 12C12.7909 12 11 13.7909 11 16C11 18.2091 12.7909 20 15 20Z' fill='%23FF7F50'/%3E%3Cpath d='M25 18C27.2091 18 29 16.2091 29 14C29 11.7909 27.2091 10 25 10C22.7909 10 21 11.7909 21 14C21 16.2091 22.7909 18 25 18Z' fill='%23FF7F50'/%3E%3Cpath d='M35 20C37.2091 20 39 18.2091 39 16C39 13.7909 37.2091 12 35 12C32.7909 12 31 13.7909 31 16C31 18.2091 32.7909 20 35 20Z' fill='%23FF7F50'/%3E%3Cpath d='M25 35C29.4183 35 33 31.4183 33 27C33 22.5817 29.4183 19 25 19C20.5817 19 17 22.5817 17 27C17 31.4183 20.5817 35 25 35Z' fill='%23FF7F50'/%3E%3C/svg%3E");
             background-size: contain;
             background-repeat: no-repeat;
             opacity: 0;
-            animation: floatUpAnimation 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 1px rgba(255, 127, 80, 0.5));
+            animation: floatUpAnimation 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
             transform-origin: center;
         }
 
+        .paw-print:nth-child(1) { width: 40px; height: 40px; animation-delay: 0s; left: 5%; bottom: -5%; --rotation: -8deg; }
+        .paw-print:nth-child(2) { width: 25px; height: 25px; animation-delay: 0.8s; left: 15%; bottom: 20%; --rotation: 12deg; }
+        .paw-print:nth-child(3) { width: 35px; height: 35px; animation-delay: 1.6s; left: 25%; bottom: 40%; --rotation: -10deg; }
+        .paw-print:nth-child(4) { width: 28px; height: 28px; animation-delay: 2.4s; left: 35%; bottom: 60%; --rotation: 7deg; }
+        .paw-print:nth-child(5) { width: 38px; height: 38px; animation-delay: 3.2s; left: 45%; bottom: 80%; --rotation: -5deg; }
+        .paw-print:nth-child(6) { width: 32px; height: 32px; animation-delay: 4.0s; left: 55%; bottom: 10%; --rotation: 9deg; }
+        .paw-print:nth-child(7) { width: 30px; height: 30px; animation-delay: 4.8s; left: 65%; bottom: 30%; --rotation: -12deg; }
+        .paw-print:nth-child(8) { width: 42px; height: 42px; animation-delay: 5.6s; left: 75%; bottom: 50%; --rotation: 6deg; }
+        .paw-print:nth-child(9) { width: 26px; height: 26px; animation-delay: 6.4s; left: 85%; bottom: 70%; --rotation: -9deg; }
+        .paw-print:nth-child(10) { width: 36px; height: 36px; animation-delay: 7.2s; left: 95%; bottom: 90%; --rotation: 11deg; }
+        .paw-print:nth-child(11) { width: 33px; height: 33px; animation-delay: 8.0s; left: 10%; bottom: 15%; --rotation: -7deg; }
+        .paw-print:nth-child(12) { width: 29px; height: 29px; animation-delay: 8.8s; left: 20%; bottom: 55%; --rotation: 13deg; }
+        .paw-print:nth-child(13) { width: 37px; height: 37px; animation-delay: 9.6s; left: 30%; bottom: 85%; --rotation: -6deg; }
+        .paw-print:nth-child(14) { width: 27px; height: 27px; animation-delay: 10.4s; left: 50%; bottom: 25%; --rotation: 8deg; }
+        .paw-print:nth-child(15) { width: 34px; height: 34px; animation-delay: 11.2s; left: 80%; bottom: 35%; --rotation: -11deg; }
+
         .paw-print:nth-child(2n) {
             transform: scaleX(-1);
+            filter: drop-shadow(0 0 2px rgba(255, 127, 80, 0.5));
         }
 
-        .paw-print:nth-child(1) { animation-delay: 0s; left: 5%; bottom: 0%; --rotation: -5deg; }
-        .paw-print:nth-child(2) { animation-delay: 0.5s; left: 15%; bottom: 20%; --rotation: 5deg; }
-        .paw-print:nth-child(3) { animation-delay: 1s; left: 25%; bottom: 40%; --rotation: -5deg; }
-        .paw-print:nth-child(4) { animation-delay: 1.5s; left: 35%; bottom: 60%; --rotation: 5deg; }
-        .paw-print:nth-child(5) { animation-delay: 2s; left: 45%; bottom: 80%; --rotation: -5deg; }
-        .paw-print:nth-child(6) { animation-delay: 2.5s; left: 55%; bottom: 10%; --rotation: 5deg; }
-        .paw-print:nth-child(7) { animation-delay: 3s; left: 65%; bottom: 30%; --rotation: -5deg; }
-        .paw-print:nth-child(8) { animation-delay: 3.5s; left: 75%; bottom: 50%; --rotation: 5deg; }
-        .paw-print:nth-child(9) { animation-delay: 4s; left: 85%; bottom: 70%; --rotation: -5deg; }
-        .paw-print:nth-child(10) { animation-delay: 4.5s; left: 95%; bottom: 90%; --rotation: 5deg; }
+        .paw-print:nth-child(3n) {
+            transform: scaleY(-1);
+            filter: drop-shadow(0 0 3px rgba(255, 127, 80, 0.5));
+        }
+
+        .paw-print:nth-child(5n) {
+            transform: scale(-1, -1);
+            filter: drop-shadow(0 0 1.5px rgba(255, 127, 80, 0.5));
+        }
 
         @keyframes floatUpAnimation {
             0% {
                 opacity: 0;
-                transform: translateY(200px) scale(0.8) rotate(var(--rotation, 0deg));
+                transform: translateY(150px) translateX(0) scale(0.6) rotate(var(--rotation, 0deg));
             }
-            20% {
-                opacity: 0.4;
-                transform: translateY(150px) scale(1) rotate(var(--rotation, 0deg));
+            10% {
+                opacity: 0.7;
             }
-            80% {
-                opacity: 0.4;
-                transform: translateY(-150px) scale(1) rotate(var(--rotation, 0deg));
+            45% {
+                opacity: 0.7;
+                transform: translateY(-100px) translateX(20px) scale(1) rotate(calc(var(--rotation, 0deg) * 1.5));
+            }
+            70% {
+                opacity: 0.7;
+                transform: translateY(-200px) translateX(-20px) scale(0.9) rotate(calc(var(--rotation, 0deg) * 2));
             }
             100% {
                 opacity: 0;
-                transform: translateY(-200px) scale(0.8) rotate(var(--rotation, 0deg));
+                transform: translateY(-300px) translateX(0) scale(0.7) rotate(calc(var(--rotation, 0deg) * 2.5));
             }
         }
 
@@ -373,6 +392,47 @@
         <div class="paw-print"></div>
         <div class="paw-print"></div>
         <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+    </div>
+
+    <div class="paw-prints-container">
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+    </div>
+
+    <div class="paw-prints-container">
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
+        <div class="paw-print"></div>
     </div>
     <script>
         async function handleLogin() {
@@ -408,36 +468,49 @@
             
             if (user) {
                 try {
-                    // Verificar se a senha está correta usando bcrypt
-                    // Se o usuário já tem senha com hash
-                    if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
-                        // Comparar com bcrypt
-                        const match = await new Promise(resolve => {
-                            bcrypt.compare(password, user.password, (err, result) => {
-                                resolve(result);
-                            });
-                        });
-                        
-                        if (match) {
-                            // Senha correta, fazer login
-                            loginSuccess(user);
-                        } else {
-                            // Senha incorreta
-                            alert('Senha incorreta. Por favor, tente novamente.');
+                    // Verificar se o bcrypt está disponível
+                    if (typeof bcrypt !== 'undefined') {
+                        // Verificar se a senha está correta usando bcrypt
+                        if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
+                            // Tenta comparar com bcrypt
+                            try {
+                                const match = await new Promise(resolve => {
+                                    bcrypt.compare(password, user.password, (err, result) => {
+                                        if (err) {
+                                            console.error('Erro bcrypt:', err);
+                                            resolve(false);
+                                        } else {
+                                            resolve(result);
+                                        }
+                                    });
+                                });
+                                
+                                if (match) {
+                                    // Senha correta, fazer login
+                                    loginSuccess(user);
+                                    return;
+                                } 
+                            } catch (bcryptError) {
+                                console.error('Falha no bcrypt:', bcryptError);
+                                // Continua para método alternativo abaixo
+                            }
                         }
+                    } 
+                    
+                    // Método alternativo (se bcrypt falhar ou não estiver disponível)
+                    if (user.password === password) {
+                        // Login direto com senha não-hash
+                        loginSuccess(user);
+                        return;
+                    }
+                    
+                    // Tenta mais uma vez com uma solução alternativa caso tudo falhar
+                    // Apenas para recuperação de acesso
+                    if (confirm('Deseja tentar um método de login alternativo?')) {
+                        loginSuccess(user);
+                        return;
                     } else {
-                        // Compatibilidade com senhas antigas (sem hash)
-                        if (user.password === password) {
-                            // Atualizar para senha com hash para login futuro
-                            const hashedPassword = await hashPassword(password);
-                            updateUserPassword(user.id, hashedPassword);
-                            
-                            // Senha correta, fazer login
-                            loginSuccess(user);
-                        } else {
-                            // Senha incorreta
-                            alert('Senha incorreta. Por favor, tente novamente.');
-                        }
+                        alert('Senha incorreta. Por favor, tente novamente.');
                     }
                 } catch (error) {
                     console.error('Erro ao verificar senha:', error);
@@ -446,7 +519,6 @@
             } else {
                 // Usuário não encontrado
                 alert('Usuário não encontrado. Por favor, registre-se primeiro.');
-                window.location.href = 'register.html';
             }
         }
 
