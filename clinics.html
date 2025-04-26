@@ -3386,9 +3386,16 @@
             // Adicionar todos os horários de funcionamento em uma lista
             let allHoursHTML = '';
             if (clinic.weekday_text && clinic.weekday_text.length > 0) {
-                allHoursHTML = '<div class="all-hours-container">';
-                allHoursHTML += '<h4>Horários de Funcionamento:</h4>';
-                allHoursHTML += '<ul class="hours-list">';
+                allHoursHTML = `
+                    <div class="clinic-details-row">
+                        <i class="fas fa-clock"></i>
+                        <div class="clinic-details-hours">
+                            ${hoursText}
+                            <button class="hours-toggle-btn" onclick="toggleHoursDisplay(event)">
+                                <i class="fas fa-chevron-down"></i> Ver todos os horários
+                            </button>
+                            <div class="all-hours-container" style="display: none;">
+                                <ul class="hours-list">`;
                 
                 clinic.weekday_text.forEach(dayHour => {
                     const parts = dayHour.split(':');
@@ -3407,7 +3414,19 @@
                     }
                 });
                 
-                allHoursHTML += '</ul></div>';
+                allHoursHTML += `
+                                </ul>
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                allHoursHTML = `
+                    <div class="clinic-details-row">
+                        <i class="fas fa-clock"></i>
+                        <div class="clinic-details-hours">
+                            ${hoursText}
+                        </div>
+                    </div>`;
             }
             
             popup.innerHTML = `
@@ -3427,12 +3446,6 @@
                         <i class="fas fa-route"></i>
                         <div class="clinic-details-distance">Distância: ${formattedDistance}</div>
                     </div>
-                    <div class="clinic-details-row">
-                        <i class="fas fa-clock"></i>
-                        <div class="clinic-details-hours">
-                            ${hoursText}
-                        </div>
-                    </div>
                     ${allHoursHTML}
                     <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${clinic.geometry.location.lat()},${clinic.geometry.location.lng()}&travelmode=driving" 
                        target="_blank" 
@@ -3445,25 +3458,45 @@
             // Adicionar CSS para a lista de horários
             const style = document.createElement('style');
             style.textContent = `
+                .hours-toggle-btn {
+                    background: none;
+                    border: none;
+                    color: #FF7F50;
+                    font-size: 12px;
+                    padding: 4px 8px;
+                    margin-top: 5px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    transition: all 0.2s ease;
+                }
+                
+                .hours-toggle-btn:hover {
+                    color: #ff6b3d;
+                    text-decoration: underline;
+                }
+                
                 .all-hours-container {
-                    margin-top: 15px;
+                    margin-top: 10px;
                     border-top: 1px solid #eee;
                     padding-top: 10px;
                 }
-                .all-hours-container h4 {
-                    margin: 0 0 8px 0;
-                    font-size: 14px;
-                    color: #333;
-                }
+                
                 .hours-list {
                     list-style: none;
                     padding: 0;
                     margin: 0;
                     font-size: 13px;
                 }
+                
                 .hours-list li {
                     padding: 3px 0;
                     color: #555;
+                }
+                
+                .hours-toggle-btn.active i {
+                    transform: rotate(180deg);
                 }
             `;
             document.head.appendChild(style);
@@ -3471,6 +3504,26 @@
             // Mostrar o popup e o overlay
             popup.style.display = 'block';
             overlay.style.display = 'block';
+        }
+        
+        // Função para alternar a exibição dos horários
+        function toggleHoursDisplay(event) {
+            const button = event.currentTarget;
+            const hoursContainer = button.nextElementSibling;
+            
+            // Alternar exibição
+            if (hoursContainer.style.display === 'none' || !hoursContainer.style.display) {
+                hoursContainer.style.display = 'block';
+                button.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar horários';
+                button.classList.add('active');
+            } else {
+                hoursContainer.style.display = 'none';
+                button.innerHTML = '<i class="fas fa-chevron-down"></i> Ver todos os horários';
+                button.classList.remove('active');
+            }
+            
+            // Evitar que o clique feche o popup
+            event.stopPropagation();
         }
 
         // Função para fechar o popup de detalhes da clínica
