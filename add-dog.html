@@ -1194,7 +1194,7 @@
                 try {
                     localStorage.setItem('allDogs', JSON.stringify(allDogs));
                     alert('Animal adicionado com sucesso!');
-                    window.location.href = 'account.html';
+                    window.location.href = 'home.html';
                 } catch (error) {
                     if (error.name === 'QuotaExceededError') {
                         alert('Não foi possível guardar. Armazenamento cheio. Por favor, remova alguns itens antigos.');
@@ -1327,7 +1327,7 @@
                 // Se não houver telefone do utilizador, mostrar um alerta
                 alert('Por favor, atualize o seu perfil com um número de telefone para adicionar animais.');
                 // Redirecionar para a página de conta
-                window.location.href = 'account.html';
+                window.location.href = 'home.html';
             }
         });
 
