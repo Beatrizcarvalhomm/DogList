@@ -497,6 +497,13 @@
             const isNearest = urlParams.get('nearest') === 'true';
             
             loadClinicDetails(isNearest);
+            
+            // Adicionar a data atual correta no console
+            const now = new Date();
+            const weekDays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+            const currentDay = weekDays[now.getDay()];
+            console.log("Data atual:", now);
+            console.log("Dia da semana:", currentDay, "- número do dia:", now.getDay());
         };
 
         function loadClinicDetails(isNearest = false) {
@@ -556,6 +563,11 @@
             const hour = now.getHours();
             const minute = now.getMinutes();
             const day = now.getDay(); // 0 = domingo, 6 = sábado
+            
+            // Criar array correto de dias da semana
+            const weekDays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+            const currentDay = weekDays[day];
+            console.log("Dia atual (mock):", currentDay, "- número do dia:", day);
             
             // Gerar aleatoriamente se a clínica trabalha 24 horas (para demonstração)
             const is24Hours = Math.random() > 0.7;  // 30% de chance de ser 24 horas
@@ -692,6 +704,13 @@
                     // Usar API do Google Places para verificar se está aberto
                     isOpen = place.opening_hours.isOpen();
                     
+                    // Obter data e dia corretos
+                    const now = new Date();
+                    const day = now.getDay(); // 0 = domingo, 6 = sábado
+                    const weekDays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+                    const currentDay = weekDays[day];
+                    console.log("Dia atual (details):", currentDay, "- número do dia:", day);
+                    
                     // Formatar corretamente os horários
                     if (place.opening_hours.weekday_text) {
                         hoursHTML = place.opening_hours.weekday_text.map(hour => {
@@ -699,16 +718,20 @@
                             const dayPart = parts[0];
                             const hoursPart = parts.slice(1).join(':').trim();
                             
+                            // Destacar o dia atual
+                            const isCurrentDay = dayPart.toLowerCase() === currentDay.toLowerCase();
+                            const dayStyle = isCurrentDay ? 'font-weight: bold; color: #FF7F50;' : '';
+                            
                             return `
                                 <div class="working-hour">
-                                    <span class="day">${dayPart}</span>
+                                    <span class="day" style="${dayStyle}">${dayPart}</span>
                                     <span class="hours">${hoursPart}</span>
                                 </div>
                             `;
                         }).join('');
                     }
                 } else {
-                    // Verificar se o nome indica funcionamento 24 horas
+                    // Verificar se o nome da clínica indica funcionamento 24 horas
                     const nameIndicates24Hours = 
                         place.name.toLowerCase().includes('24h') || 
                         place.name.toLowerCase().includes('24 h') || 
@@ -719,10 +742,12 @@
                         place.name.toLowerCase().includes('emergência') ||
                         place.name.toLowerCase().includes('emergency');
                         
-                    // Lógica básica para horários
+                    // Obter data e dia atuais
                     const now = new Date();
-                    const day = now.getDay();
-                    const currentHour = now.getHours();
+                    const day = now.getDay(); // 0 = domingo, 6 = sábado
+                    const weekDays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+                    const currentDay = weekDays[day];
+                    console.log("Dia atual (else):", currentDay, "- número do dia:", day);
                     
                     if (nameIndicates24Hours) {
                         isOpen = true;
@@ -742,9 +767,13 @@
                             const dayPart = parts[0];
                             const hoursPart = parts.slice(1).join(':').trim();
                             
+                            // Destacar o dia atual
+                            const isCurrentDay = dayPart.toLowerCase() === currentDay.toLowerCase();
+                            const dayStyle = isCurrentDay ? 'font-weight: bold; color: #FF7F50;' : '';
+                            
                             return `
                                 <div class="working-hour">
-                                    <span class="day">${dayPart}</span>
+                                    <span class="day" style="${dayStyle}">${dayPart}</span>
                                     <span class="hours">${hoursPart}</span>
                                 </div>
                             `;
@@ -754,9 +783,9 @@
                         if (day === 0) {
                             isOpen = false; // Domingo fechado
                         } else if (day === 6) {
-                            isOpen = currentHour >= 9 && currentHour < 14; // Sábado 9h-14h
+                            isOpen = now.getHours() >= 9 && now.getHours() < 14; // Sábado 9h-14h
                         } else {
-                            isOpen = currentHour >= 8 && currentHour < 18; // Dias de semana 8h-18h
+                            isOpen = now.getHours() >= 8 && now.getHours() < 18; // Dias de semana 8h-18h
                         }
                         
                         // Horários padrão
@@ -775,9 +804,13 @@
                             const dayPart = parts[0];
                             const hoursPart = parts.slice(1).join(':').trim();
                             
+                            // Destacar o dia atual
+                            const isCurrentDay = dayPart.toLowerCase() === currentDay.toLowerCase();
+                            const dayStyle = isCurrentDay ? 'font-weight: bold; color: #FF7F50;' : '';
+                            
                             return `
                                 <div class="working-hour">
-                                    <span class="day">${dayPart}</span>
+                                    <span class="day" style="${dayStyle}">${dayPart}</span>
                                     <span class="hours">${hoursPart}</span>
                                 </div>
                             `;

@@ -562,43 +562,87 @@
                         if (arrow) arrow.style.display = 'none';
                     });
                     
-                    // Estilizar o container principal
+                    // Estilizar o container principal com estilos mais agressivos
                     const containers = document.querySelectorAll('.gm-style-iw-c');
                     containers.forEach(container => {
-                        container.style.padding = '0';
+                        container.style.padding = '0 !important';
                         container.style.borderRadius = '8px';
                         container.style.overflow = 'hidden';
                         container.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
-                    
-                        // Remover margens extras
-                        container.style.marginTop = '0';
-                        container.style.marginBottom = '0';
+                        
+                        // Remover margens extras com !important
+                        container.style.marginTop = '0 !important';
+                        container.style.marginBottom = '0 !important';
+                        container.style.marginRight = '0 !important';
+                        container.style.marginLeft = '0 !important';
                     });
                     
-                    // Estilizar os containers internos
+                    // Estilizar os containers internos com estilos mais agressivos
                     const innerContainers = document.querySelectorAll('.gm-style-iw-d');
                     innerContainers.forEach(innerContainer => {
-                        innerContainer.style.overflow = 'hidden';
-                        innerContainer.style.paddingRight = '0px !important';
-                        innerContainer.style.paddingBottom = '0px !important';
-                        innerContainer.style.maxWidth = '100%';
+                        innerContainer.style.overflow = 'hidden !important';
+                        innerContainer.style.padding = '0 !important';
+                        innerContainer.style.margin = '0 !important';
+                        innerContainer.style.maxWidth = '100% !important';
+                        innerContainer.style.maxHeight = 'none !important';
                         
                         // Remover scrollbars
                         innerContainer.style.scrollbarWidth = 'none';
                         innerContainer.style.msOverflowStyle = 'none';
-            });
+                    });
 
-                    // Adicionar CSS para esconder scrollbars em todos os navegadores
+                    // Ajustar conteúdo dentro do info window
+                    const infoContents = document.querySelectorAll('.dog-info-content');
+                    infoContents.forEach(content => {
+                        if (content) {
+                            content.style.margin = '0 !important';
+                            content.style.padding = '0 !important';
+                        }
+                    });
+
+                    // Adicionar CSS para esconder scrollbars e remover todos os espaços
                     const style = document.createElement('style');
-                    style.textContent = `.gm-style-iw-d::-webkit-scrollbar { display: none; }`;
+                    style.textContent = `
+                        .gm-style-iw-d::-webkit-scrollbar { display: none; }
+                        .gm-style-iw { padding: 0 !important; margin: 0 !important; }
+                        .gm-style-iw-a { margin: 0 !important; }
+                        .gm-style-iw * { margin-top: 0 !important; padding-top: 0 !important; }
+                        .gm-style-iw-c { padding-top: 0 !important; margin-top: 0 !important; }
+                        .gm-style-iw-t { margin-top: 0 !important; padding-top: 0 !important; }
+                    `;
                     document.head.appendChild(style);
                     
-                    // Estilizar o botão de fechar de forma simples
+                    // Estilizar o botão de fechar
                     const closeButtons = document.querySelectorAll('button.gm-ui-hover-effect');
                     closeButtons.forEach(button => {
-                        button.style.top = '1px';
-                        button.style.right = '1px';
+                        button.style.top = '1px !important';
+                        button.style.right = '1px !important';
                         button.style.zIndex = '10';
+                    });
+
+                    // Ajustar diretamente o wrapper externo do InfoWindow 
+                    const iwOuters = document.querySelectorAll('.gm-style-iw-t');
+                    iwOuters.forEach(outer => {
+                        if (outer) {
+                            outer.style.padding = '0 !important';
+                            outer.style.margin = '0 !important';
+                        }
+                    });
+
+                    // Encontrar e corrigir qualquer elemento pai com padding ou margin
+                    const parentContainers = document.querySelectorAll('.gm-style-iw-c');
+                    parentContainers.forEach(parent => {
+                        // Obter todos os elementos pais 
+                        let currentElement = parent;
+                        for (let i = 0; i < 5 && currentElement.parentElement; i++) {
+                            currentElement = currentElement.parentElement;
+                            if (currentElement) {
+                                currentElement.style.padding = '0 !important';
+                                currentElement.style.paddingTop = '0 !important';
+                                currentElement.style.margin = '0 !important';
+                                currentElement.style.marginTop = '0 !important'; 
+                            }
+                        }
                     });
                 } catch (error) {
                     console.error('Erro ao estilizar InfoWindow:', error);
@@ -692,10 +736,10 @@
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
                     fillColor: '#007bff',
-                    fillOpacity: 0.7,
+                    fillOpacity: 0.9,
                     strokeColor: '#FFFFFF',
                     strokeWeight: 2,
-                    scale: 10
+                    scale: 8
                 },
                 title: 'Sua localização',
                 zIndex: 10
@@ -705,36 +749,19 @@
             new google.maps.Circle({
                 map: map,
                 center: location,
-                radius: 200, // 200 metros
+                radius: 150, // 150 metros
                 strokeColor: '#007bff',
                 strokeOpacity: 0.3,
-                strokeWeight: 2,
+                strokeWeight: 1,
                 fillColor: '#007bff',
-                fillOpacity: 0.1
-        });
+                fillOpacity: 0.08
+            });
 
             // Adicionar evento de clique ao marcador
             userMarker.addListener('click', () => {
-                // Fechar qualquer infowindow aberta anteriormente
-                if (infoWindow) {
-                    infoWindow.close();
-                }
-                
-                infoWindow.setContent(`
-                    <div style="text-align: center; padding: 12px 15px; position: relative; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-left: 4px solid #007bff;">
-                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333; font-family: Arial, sans-serif;">
-                            <i class="fas fa-street-view" style="color: #007bff; margin-right: 5px;"></i>
-                            Você está aqui
-                        </p>
-                    </div>
-                `);
-                
-                infoWindow.open(map, userMarker);
-                
-                // Adicionar um pequeno atraso para aplicar os estilos após a renderização do infowindow
-                setTimeout(styleInfoWindow, 10);
+                showLocationPopup(userMarker);
             });
-            
+
             return userMarker;
         }
         
@@ -886,32 +913,31 @@
                         
                 // Criar o conteúdo da InfoWindow com estilo melhorado
                 const contentString = `
-                    <div style="width: 220px; padding: 0; margin: 0; overflow: hidden; position: relative; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); background-color: white;">
-                        <div style="height: 8px; background-color: ${dog.estado === 'procurado' ? '#ff0000' : '#00cc00'}; width: 100%;"></div>
-                        <div style="padding: 12px; position: relative;">
-                            <div style="text-align: center; margin-bottom: 10px;">
+                    <div class="dog-info-content" style="width: 220px; padding: 0; margin: 0; overflow: hidden; position: relative; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); background-color: white;">
+                        <div style="padding: 15px 12px 20px; position: relative; margin: 0;">
+                            <div style="text-align: center; margin-bottom: 12px; margin-top: -5px; padding-top: 0;">
                                 <span style="display: inline-block; padding: 3px 12px; background-color: ${dog.estado === 'procurado' ? '#ff0000' : '#00cc00'}; color: white; border-radius: 15px; font-size: 13px; font-weight: bold;">
                                     ${dog.estado === 'procurado' ? 'Procurado' : 'Encontrado'}
                                 </span>
                             </div>
-                            <div style="margin-bottom: 10px; text-align: center;">
+                            <div style="margin-bottom: 10px; text-align: center; margin-top: 0;">
                                 <img src="${dog.image || 'Images/dog-placeholder.jpg'}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;" onerror="this.src='Images/dog-placeholder.jpg'">
                             </div>
-                            <div style="text-align: center; margin-bottom: 10px;">
+                            <div style="text-align: center; margin-bottom: 10px; margin-top: 0;">
                                 <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #333;">${dog.raca || 'Não especificada'}</h3>
                             </div>
-                            <div style="margin-bottom: 15px; font-size: 13px; color: #666; display: flex; align-items: center;">
+                            <div style="margin-bottom: 15px; font-size: 13px; color: #666; display: flex; align-items: center; margin-top: 0;">
                                 <i class="fas fa-map-marker-alt" style="color: #ff6b38; margin-right: 5px;"></i>
                                 <span>${dog.endereco || 'Localização não especificada'}</span>
                             </div>
-                            <div style="display: flex; justify-content: center; margin-top: 10px;">
-                                <button onclick="location.href='animal-details.html?id=${dog.id}'" style="background-color: #ff7f50; color: white; padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; width: 100%; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                                    <i class="fas fa-paw" style="margin-right: 5px;"></i>Ver Detalhes
+                            <div style="display: flex; justify-content: center; margin-top: 10px; margin-bottom: 8px; padding-bottom: 5px;">
+                                <button onclick="location.href='animal-details.html?id=${dog.id}'" style="background: linear-gradient(135deg, #FF7F50, #FF6347); color: white; padding: 8px 15px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; width: 85%; text-align: center; box-shadow: 0 3px 8px rgba(255, 99, 71, 0.25); min-height: 36px; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                    <i class="fas fa-paw" style="margin-right: 6px; font-size: 13px;"></i>Ver Detalhes
                                 </button>
                             </div>
                         </div>
-                                </div>
-                            `;
+                    </div>
+                `;
                             
                 // Usar configurações adicionais para evitar problemas com o InfoWindow
                 const infoWindow = new google.maps.InfoWindow({
@@ -1205,7 +1231,7 @@
                     
                     // Aplicar estilo temporário e depois remover
                     const legendItem = document.getElementById('legendVoceEstaAqui');
-                    legendItem.style.backgroundColor = 'rgba(255, 127, 80, 0.1)';
+                    legendItem.style.backgroundColor = 'rgba(255, 127, 80, 0.08)';
                     
                     // Voltar ao estilo normal após um curto delay
                     setTimeout(() => {
@@ -1213,72 +1239,8 @@
                     }, 300);
                 }, 100);
                 
-                // Fechar qualquer infowindow aberta anteriormente
-                if (infoWindow) {
-                    infoWindow.close();
-                }
-                
-                // Criar um div personalizado para o popup sem botão fechar
-                const customPopupContent = `
-                    <div class="custom-popup" style="
-                        padding: 12px 15px; 
-                        text-align: center;
-                        position: relative; 
-                        border-radius: 10px; 
-                        box-shadow: 0 3px 10px rgba(0,0,0,0.1); 
-                        background: linear-gradient(135deg, #f8f9fa, #e9ecef); 
-                        border-left: 4px solid #007bff;
-                        min-width: 120px;">
-                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333; font-family: Arial, sans-serif;">
-                            <i class="fas fa-street-view" style="color: #007bff; margin-right: 5px;"></i>
-                            Você está aqui
-                        </p>
-                    </div>
-                `;
-                
-                // Configurar o infoWindow com opções para ocultar o botão de fechar
-                const customInfo = new google.maps.InfoWindow({
-                    content: customPopupContent,
-                    pixelOffset: new google.maps.Size(0, -10),
-                    disableAutoPan: false
-                });
-                
-                // Abrir o infoWindow personalizado
-                customInfo.open(map, userMarker);
-                
-                // Adicionar listener de clique no mapa para fechar o infoWindow
-                google.maps.event.addListenerOnce(map, 'click', function() {
-                    customInfo.close();
-                });
-                
-                // Fechar o infoWindow quando o mapa é movido ou arrastado
-                google.maps.event.addListenerOnce(map, 'dragstart', function() {
-                    customInfo.close();
-                });
-                
-                // Fechar o infoWindow quando o zoom é alterado
-                google.maps.event.addListenerOnce(map, 'zoom_changed', function() {
-                    customInfo.close();
-                });
-                
-                // Aplicar estilos adicionais para esconder o botão de fechar depois que o InfoWindow é renderizado
-                setTimeout(() => {
-                    const closeButtons = document.querySelectorAll('.gm-ui-hover-effect');
-                    closeButtons.forEach(button => {
-                        button.style.display = 'none';
-                    });
-                    
-                    // Remover as setas do InfoWindow
-                    const iwBackground = document.querySelector('.gm-style-iw').previousElementSibling;
-                    if (iwBackground) {
-                        const arrowElements = iwBackground.querySelectorAll('div');
-                        if (arrowElements && arrowElements.length >= 4) {
-                            for (let i = 0; i < 4; i++) {
-                                arrowElements[i].style.display = 'none';
-                            }
-                        }
-                    }
-                }, 50);
+                // Mostrar popup de localização
+                showLocationPopup(userMarker);
             } else {
                 // Se não tiver localização salva, solicitar
                 requestUserLocation();
@@ -1351,6 +1313,48 @@
                 }, 500);
             });
         });
+
+        function showLocationPopup(marker) {
+            // Fechar qualquer infowindow aberta anteriormente
+            if (infoWindow) {
+                infoWindow.close();
+            }
+            
+            // Abordagem simples e confiável
+            const tempPopup = document.createElement('div');
+            tempPopup.style.cssText = `
+                position: fixed;
+                top: 45%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                padding: 10px 15px;
+                border-radius: 20px;
+                border: 2px solid rgba(0, 123, 255, 0.5);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                font-family: Arial, sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                color: #333;
+            `;
+            
+            tempPopup.innerHTML = `
+                <i class="fas fa-location-arrow" style="color: #007bff; margin-right: 8px;"></i>
+                Você está aqui
+            `;
+            
+            document.body.appendChild(tempPopup);
+            
+            // Remover após 3 segundos
+            setTimeout(() => {
+                if (document.body.contains(tempPopup)) {
+                    document.body.removeChild(tempPopup);
+                }
+            }, 3000);
+        }
     </script>
 </body>
 </html>

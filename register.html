@@ -56,12 +56,20 @@
 
         .logo {
             position: absolute;
-            top: 60px;
-            right: -10px;
+            top: 40px;
+            right: 5px;
             width: 145px;
             height: auto;
             animation: float 3s ease-in-out infinite;
             will-change: transform;
+        }
+
+        @media (max-width: 767px) {
+            .logo {
+                top: 60px;
+                right: 5px;
+                width: 135px;
+            }
         }
 
         .input-container {

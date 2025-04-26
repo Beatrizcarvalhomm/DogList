@@ -1213,6 +1213,7 @@
                 border-radius: 12px;
                 max-width: calc(100% - 50px);
                 min-width: 140px;
+                background-color: rgba(255, 255, 255, 0.5);
             }
             
             .legend-item {
@@ -1577,50 +1578,26 @@
             background-color: white;
             display: flex;
             align-items: center;
-            padding: 12px 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15);
-            min-width: 150px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            min-width: 130px;
             z-index: 9999;
-            transform: translate(-50%, -130%);
             pointer-events: none;
-        }
-        
-        .custom-location-popup::before {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 12px;
-            height: 12px;
-            background-color: white;
-            transform: rotate(45deg);
-            z-index: -1;
-        }
-        
-        .custom-location-popup-bar {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background-color: #0d6efd;
-            border-top-left-radius: 8px;
-            border-bottom-left-radius: 8px;
+            border: 2px solid rgba(0, 123, 255, 0.5);
+            transform: translate(-50%, -130%);
         }
         
         .custom-location-popup-icon {
-            color: #0d6efd;
-            font-size: 16px;
-            margin-left: 6px;
+            color: #007bff;
+            font-size: 14px;
             margin-right: 8px;
         }
         
         .custom-location-popup-text {
-            color: #0d6efd;
-            font-weight: 500;
-            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+            font-size: 13px;
             font-family: Arial, sans-serif;
         }
     </style>
@@ -2050,10 +2027,10 @@
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
                     fillColor: '#007bff',
-                    fillOpacity: 0.8,
+                    fillOpacity: 0.9,
                     strokeColor: '#FFFFFF',
                     strokeWeight: 2,
-                    scale: 10
+                    scale: 8
                 },
                 title: 'Você está aqui',
                 zIndex: 10
@@ -2063,37 +2040,68 @@
             new google.maps.Circle({
                 map: map,
                 center: location,
-                radius: 200, // 200 metros
+                radius: 150, // 150 metros
                 strokeColor: '#007bff',
-                strokeOpacity: 0.4,
-                strokeWeight: 2,
+                strokeOpacity: 0.3,
+                strokeWeight: 1,
                 fillColor: '#007bff',
-                fillOpacity: 0.1
+                fillOpacity: 0.08
             });
             
             // Adicionar evento de clique ao marcador
             userMarker.addListener('click', () => {
-                // Fechar qualquer infowindow aberta anteriormente
-                if (infoWindow) {
-                    infoWindow.close();
-                }
-                
-                infoWindow.setContent(`
-                    <div style="text-align: center; padding: 12px 15px; position: relative; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-left: 4px solid #007bff;">
-                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333; font-family: Arial, sans-serif;">
-                            <i class="fas fa-street-view" style="color: #007bff; margin-right: 5px;"></i>
-                            Você está aqui
-                        </p>
-                    </div>
-                `);
-                
-                infoWindow.open(map, userMarker);
-                
-                // Adicionar um pequeno atraso para aplicar os estilos após a renderização do infowindow
-                setTimeout(styleInfoWindow, 10);
+                showLocationPopup(userMarker);
             });
             
             return userMarker;
+        }
+
+        // Nova função para mostrar o popup de localização
+        function showLocationPopup(marker) {
+            // Fechar qualquer infowindow aberta anteriormente
+            if (infoWindow) {
+                infoWindow.close();
+            }
+            
+            // Abordagem simples e confiável
+            const tempPopup = document.createElement('div');
+            tempPopup.style.cssText = `
+                position: fixed;
+                top: 45%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                padding: 10px 15px;
+                border-radius: 20px;
+                border: 2px solid rgba(0, 123, 255, 0.5);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                font-family: Arial, sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                color: #333;
+            `;
+            
+            tempPopup.innerHTML = `
+                <i class="fas fa-location-arrow" style="color: #007bff; margin-right: 8px;"></i>
+                Você está aqui
+            `;
+            
+            document.body.appendChild(tempPopup);
+            
+            // Remover após 3 segundos
+            setTimeout(() => {
+                if (document.body.contains(tempPopup)) {
+                    document.body.removeChild(tempPopup);
+                }
+            }, 3000);
+        }
+        
+        function showSimpleLocationPopup() {
+            // Já não precisamos desta função, pois showLocationPopup já está usando a abordagem simples
+            showLocationPopup(null);
         }
 
         function searchVeterinaryClinics(location) {
@@ -2637,84 +2645,72 @@
 
         // Adicionar a função styleInfoWindow primeiro, exatamente como está na home.html
         function styleInfoWindow() {
-            google.maps.event.addListener(infoWindow, 'domready', function() {
-                const iwOuter = document.querySelector('.gm-style-iw');
-                if (iwOuter) {
-                    iwOuter.style.padding = '0';
-                    iwOuter.style.borderRadius = '10px';
-                    iwOuter.style.overflow = 'hidden';
-                    iwOuter.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
-                }
-                
-                // Remover o fundo branco padrão
-                const iwBackground = iwOuter.previousElementSibling;
-                if (iwBackground) {
-                    // Ajustar sombra
-                    const iwShadow = iwBackground.querySelector('.gm-style-iw-t');
-                    if (iwShadow) {
-                        iwShadow.style.backgroundColor = 'transparent';
-                    }
-                }
-                
-                // Estilizar botão de fechar
-                const closeButton = document.querySelector('.gm-ui-hover-effect');
-                if (closeButton) {
-                    // Corrigir bug fixando posição e tamanho
-                    closeButton.style.position = 'absolute';
-                    closeButton.style.top = '2px';
-                    closeButton.style.right = '2px';
-                    closeButton.style.display = 'flex';
-                    closeButton.style.alignItems = 'center';
-                    closeButton.style.justifyContent = 'center';
-                    closeButton.style.width = '30px';
-                    closeButton.style.height = '30px';
-                    closeButton.style.padding = '0 !important';
-                    closeButton.style.margin = '0';
-                    closeButton.style.backgroundColor = 'white';
-                    closeButton.style.borderRadius = '50%';
-                    closeButton.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
-                    closeButton.style.cursor = 'pointer';
-                    closeButton.style.zIndex = '10';
-                    closeButton.style.opacity = '1';
-                    
-                    // Ajustar posição do X dentro do botão
-                    const img = closeButton.querySelector('img');
-                    if (img) {
-                        img.style.width = '16px';
-                        img.style.height = '16px';
-                        img.style.margin = '0';
-                        img.style.pointerEvents = 'none'; // Garantir que o clique passe para o botão
-                        img.setAttribute('aria-hidden', 'true');
-                    }
-                    
-                    closeButton.addEventListener('mouseover', function() {
-                        this.style.backgroundColor = '#FF7F50';
-                        this.style.transform = 'rotate(90deg)';
-                        const closeIcon = this.querySelector('img');
-                        if (closeIcon) {
-                            closeIcon.style.filter = 'invert(100%)';
-                        }
+            setTimeout(() => {
+                try {
+                    // Remover a seta do InfoWindow
+                    const arrows = document.querySelectorAll('.gm-style-iw-t::after');
+                    arrows.forEach(arrow => {
+                        if (arrow) arrow.style.display = 'none';
                     });
                     
-                    closeButton.addEventListener('mouseout', function() {
-                        this.style.backgroundColor = 'white';
-                        this.style.transform = 'rotate(0deg)';
-                        const closeIcon = this.querySelector('img');
-                        if (closeIcon) {
-                            closeIcon.style.filter = 'none';
+                    // Estilizar o container principal
+                    const containers = document.querySelectorAll('.gm-style-iw-c');
+                    containers.forEach(container => {
+                        container.style.padding = '0';
+                        container.style.borderRadius = '8px';
+                        container.style.overflow = 'hidden';
+                        container.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+                    
+                        // Remover margens extras
+                        container.style.marginTop = '0';
+                        container.style.marginBottom = '0';
+                        container.style.marginRight = '0';
+                        container.style.marginLeft = '0';
+                    });
+                    
+                    // Estilizar os containers internos
+                    const innerContainers = document.querySelectorAll('.gm-style-iw-d');
+                    innerContainers.forEach(innerContainer => {
+                        innerContainer.style.overflow = 'hidden';
+                        innerContainer.style.padding = '0 !important';
+                        innerContainer.style.margin = '0 !important';
+                        innerContainer.style.maxWidth = '100%';
+                        innerContainer.style.maxHeight = 'none !important';
+                        
+                        // Remover scrollbars
+                        innerContainer.style.scrollbarWidth = 'none';
+                        innerContainer.style.msOverflowStyle = 'none';
+                    });
+
+                    // Ajustar conteúdo dentro do info window
+                    const infoContents = document.querySelectorAll('.clinic-info-content');
+                    infoContents.forEach(content => {
+                        if (content) {
+                            content.style.margin = '0';
+                            content.style.padding = '0';
                         }
                     });
+
+                    // Adicionar CSS para esconder scrollbars em todos os navegadores
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .gm-style-iw-d::-webkit-scrollbar { display: none; }
+                        .gm-style-iw { padding: 0 !important; margin: 0 !important; }
+                        .gm-style-iw-a { margin: 0 !important; }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    // Estilizar o botão de fechar de forma simples
+                    const closeButtons = document.querySelectorAll('button.gm-ui-hover-effect');
+                    closeButtons.forEach(button => {
+                        button.style.top = '1px';
+                        button.style.right = '1px';
+                        button.style.zIndex = '10';
+                    });
+                } catch (error) {
+                    console.error('Erro ao estilizar InfoWindow:', error);
                 }
-                
-                // Remover seta do InfoWindow
-                const iwArrow = iwBackground ? iwBackground.querySelectorAll('div') : null;
-                if (iwArrow && iwArrow.length >= 3) {
-                    iwArrow[0].style.display = 'none';
-                    iwArrow[1].style.display = 'none';
-                    iwArrow[2].style.display = 'none';
-                    iwArrow[3].style.display = 'none';
-                }
-            });
+            }, 50);
         }
 
         // Agora substituir a função centerMapOnUserLocation pela versão da home.html
@@ -2731,10 +2727,10 @@
                     addUserMarker(userLoc);
                 } else {
                     // Animar marcador existente
-                userMarker.setAnimation(google.maps.Animation.BOUNCE);
-                setTimeout(() => {
-                    userMarker.setAnimation(null);
-                }, 1400);
+                    userMarker.setAnimation(google.maps.Animation.BOUNCE);
+                    setTimeout(() => {
+                        userMarker.setAnimation(null);
+                    }, 1400);
                 }
                 
                 // Animar a transição com zoom mais próximo
@@ -2760,72 +2756,8 @@
                     }, 100);
                 }
                 
-                // Fechar qualquer infowindow aberta anteriormente
-                if (infoWindow) {
-                    infoWindow.close();
-                }
-                
-                // Criar um div personalizado para o popup sem botão fechar
-                const customPopupContent = `
-                    <div class="custom-popup" style="
-                        padding: 12px 15px; 
-                        text-align: center;
-                        position: relative; 
-                        border-radius: 10px; 
-                        box-shadow: 0 3px 10px rgba(0,0,0,0.1); 
-                        background: linear-gradient(135deg, #f8f9fa, #e9ecef); 
-                        border-left: 4px solid #007bff;
-                        min-width: 120px;">
-                        <p style="margin: 0; font-size: 14px; font-weight: bold; color: #333; font-family: Arial, sans-serif;">
-                            <i class="fas fa-street-view" style="color: #007bff; margin-right: 5px;"></i>
-                            Você está aqui
-                        </p>
-                    </div>
-                `;
-                
-                // Configurar o infoWindow com opções para ocultar o botão de fechar
-                const customInfo = new google.maps.InfoWindow({
-                    content: customPopupContent,
-                    pixelOffset: new google.maps.Size(0, -10),
-                    disableAutoPan: false
-                });
-                
-                // Abrir o infoWindow personalizado
-                customInfo.open(map, userMarker);
-                
-                // Adicionar listener de clique no mapa para fechar o infoWindow
-                google.maps.event.addListenerOnce(map, 'click', function() {
-                    customInfo.close();
-                });
-                
-                // Fechar o infoWindow quando o mapa é movido ou arrastado
-                google.maps.event.addListenerOnce(map, 'dragstart', function() {
-                    customInfo.close();
-                });
-                
-                // Fechar o infoWindow quando o zoom é alterado
-                google.maps.event.addListenerOnce(map, 'zoom_changed', function() {
-                    customInfo.close();
-                });
-                
-                // Aplicar estilos adicionais para esconder o botão de fechar depois que o InfoWindow é renderizado
-                setTimeout(() => {
-                    const closeButtons = document.querySelectorAll('.gm-ui-hover-effect');
-                    closeButtons.forEach(button => {
-                        button.style.display = 'none';
-                    });
-                    
-                    // Remover as setas do InfoWindow
-                    const iwBackground = document.querySelector('.gm-style-iw').previousElementSibling;
-                    if (iwBackground) {
-                        const arrowElements = iwBackground.querySelectorAll('div');
-                        if (arrowElements && arrowElements.length >= 4) {
-                            for (let i = 0; i < 4; i++) {
-                                arrowElements[i].style.display = 'none';
-                            }
-                        }
-                    }
-                }, 50);
+                // Mostrar popup de localização
+                showLocationPopup(userMarker);
             } else {
                 // Se não tiver localização, solicitar
                 refreshUserLocation();
@@ -3369,6 +3301,115 @@
             // Preparar o conteúdo do popup
             const isOpen = clinic.is_open;
             
+            // Obter o dia atual corretamente
+            const now = new Date();
+            const day = now.getDay(); // 0 = domingo, 6 = sábado
+            const weekDays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+            const currentDay = weekDays[day];
+            
+            console.log("====== DEBUG DIA ATUAL ======");
+            console.log("Data completa:", now);
+            console.log("Dia da semana (número):", day);
+            console.log("Dia da semana (texto):", currentDay);
+            console.log("============================");
+            
+            // Verificar a estrutura de weekday_text para determinar o formato
+            console.log("Estrutura de weekday_text:", clinic.weekday_text);
+            
+            let hoursText = 'Horário não disponível';
+            
+            if (clinic.weekday_text && clinic.weekday_text.length > 0) {
+                // Verificar o formato real do array weekday_text
+                // A Google Places API normalmente retorna o array começando por segunda-feira:
+                // [0] = "Segunda-feira: 8:00 – 22:00", [1] = "Terça-feira: 8:00 – 22:00", etc.
+                
+                // Primeiro, detectar se o array está no formato esperado
+                const firstDay = clinic.weekday_text[0].toLowerCase();
+                
+                // Se o primeiro dia for segunda-feira, significa que o array está no formato:
+                // 0=Segunda, 1=Terça, 2=Quarta, etc. (formato padrão da Places API)
+                if (firstDay.includes('segunda')) {
+                    // Mapear day para o índice correto no array
+                    const dayMap = {
+                        0: 6, // Domingo = índice 6 no array da API
+                        1: 0, // Segunda = índice 0 no array da API
+                        2: 1, // Terça = índice 1 no array da API
+                        3: 2, // Quarta = índice 2 no array da API
+                        4: 3, // Quinta = índice 3 no array da API
+                        5: 4, // Sexta = índice 4 no array da API
+                        6: 5  // Sábado = índice 5 no array da API
+                    };
+                    
+                    const dayToShow = dayMap[day];
+                    console.log("Formato da API detectado. Índice do dia mapeado:", dayToShow);
+                    
+                    // Verificar se o índice existe no array
+                    if (dayToShow >= 0 && dayToShow < clinic.weekday_text.length) {
+                        hoursText = clinic.weekday_text[dayToShow];
+                        console.log("Texto de horário escolhido:", hoursText, "para índice:", dayToShow);
+                    }
+                } else {
+                    // O array pode estar em outro formato, tentar encontrar o dia pelo nome
+                    console.log("Formato do array não padrão, buscando dia pelo nome...");
+                }
+                
+                // Se ainda não encontrou o horário ou o índice estava fora dos limites
+                if (hoursText === 'Horário não disponível') {
+                    // Percorrer todos os itens e encontrar o que contém o nome do dia atual
+                    for (let i = 0; i < clinic.weekday_text.length; i++) {
+                        const dayText = clinic.weekday_text[i].toLowerCase();
+                        if (dayText.includes(currentDay.toLowerCase())) {
+                            hoursText = clinic.weekday_text[i];
+                            console.log("Horário encontrado pelo nome do dia:", hoursText);
+                            break;
+                        }
+                    }
+                    
+                    // Se ainda não encontrou, pegar o primeiro dia como fallback
+                    if (hoursText === 'Horário não disponível' && clinic.weekday_text.length > 0) {
+                        hoursText = clinic.weekday_text[0];
+                        console.log("Fallback: usando primeiro dia disponível:", hoursText);
+                    }
+                }
+            }
+            
+            // Destacar o dia atual no texto de horário
+            if (hoursText !== 'Horário não disponível') {
+                const parts = hoursText.split(':');
+                if (parts.length > 1) {
+                    const dayPart = parts[0];
+                    const hoursPart = parts.slice(1).join(':').trim();
+                    hoursText = `<strong style="color: #FF7F50;">${dayPart}</strong>: ${hoursPart}`;
+                }
+            }
+            
+            // Adicionar todos os horários de funcionamento em uma lista
+            let allHoursHTML = '';
+            if (clinic.weekday_text && clinic.weekday_text.length > 0) {
+                allHoursHTML = '<div class="all-hours-container">';
+                allHoursHTML += '<h4>Horários de Funcionamento:</h4>';
+                allHoursHTML += '<ul class="hours-list">';
+                
+                clinic.weekday_text.forEach(dayHour => {
+                    const parts = dayHour.split(':');
+                    if (parts.length > 1) {
+                        const dayPart = parts[0];
+                        const hoursPart = parts.slice(1).join(':').trim();
+                        
+                        // Verificar se este é o dia atual para destacá-lo
+                        if (dayPart.toLowerCase().includes(currentDay.toLowerCase())) {
+                            allHoursHTML += `<li><strong style="color: #FF7F50;">${dayPart}</strong>: ${hoursPart}</li>`;
+                        } else {
+                            allHoursHTML += `<li>${dayPart}: ${hoursPart}</li>`;
+                        }
+                    } else {
+                        allHoursHTML += `<li>${dayHour}</li>`;
+                    }
+                });
+                
+                allHoursHTML += '</ul></div>';
+            }
+            
             popup.innerHTML = `
                 <div class="clinic-details-header">
                     <h3>${clinic.name}</h3>
@@ -3389,11 +3430,10 @@
                     <div class="clinic-details-row">
                         <i class="fas fa-clock"></i>
                         <div class="clinic-details-hours">
-                            ${(clinic.weekday_text && clinic.weekday_text.length > 0) ? 
-                              clinic.weekday_text[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] : 
-                              'Horário não disponível'}
+                            ${hoursText}
                         </div>
                     </div>
+                    ${allHoursHTML}
                     <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${clinic.geometry.location.lat()},${clinic.geometry.location.lng()}&travelmode=driving" 
                        target="_blank" 
                        class="clinic-details-button">
@@ -3401,6 +3441,32 @@
                     </a>
                 </div>
             `;
+            
+            // Adicionar CSS para a lista de horários
+            const style = document.createElement('style');
+            style.textContent = `
+                .all-hours-container {
+                    margin-top: 15px;
+                    border-top: 1px solid #eee;
+                    padding-top: 10px;
+                }
+                .all-hours-container h4 {
+                    margin: 0 0 8px 0;
+                    font-size: 14px;
+                    color: #333;
+                }
+                .hours-list {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                    font-size: 13px;
+                }
+                .hours-list li {
+                    padding: 3px 0;
+                    color: #555;
+                }
+            `;
+            document.head.appendChild(style);
             
             // Mostrar o popup e o overlay
             popup.style.display = 'block';
@@ -3436,60 +3502,6 @@
                 });
                 panorama.setVisible(true);
             }
-        }
-
-        // Adicione logo após a função addUserMarker ou antes do fechamento do script
-        function styleInfoWindow() {
-            setTimeout(() => {
-                try {
-                    // Remover a seta do InfoWindow
-                    const arrows = document.querySelectorAll('.gm-style-iw-t::after');
-                    arrows.forEach(arrow => {
-                        if (arrow) arrow.style.display = 'none';
-                    });
-                    
-                    // Estilizar o container principal
-                    const containers = document.querySelectorAll('.gm-style-iw-c');
-                    containers.forEach(container => {
-                        container.style.padding = '0';
-                        container.style.borderRadius = '8px';
-                        container.style.overflow = 'hidden';
-                        container.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
-                        
-                        // Remover margens extras
-                        container.style.marginTop = '0';
-                        container.style.marginBottom = '0';
-                    });
-                    
-                    // Estilizar os containers internos
-                    const innerContainers = document.querySelectorAll('.gm-style-iw-d');
-                    innerContainers.forEach(innerContainer => {
-                        innerContainer.style.overflow = 'hidden';
-                        innerContainer.style.paddingRight = '0px !important';
-                        innerContainer.style.paddingBottom = '0px !important';
-                        innerContainer.style.maxWidth = '100%';
-                        
-                        // Remover scrollbars
-                        innerContainer.style.scrollbarWidth = 'none';
-                        innerContainer.style.msOverflowStyle = 'none';
-                    });
-                    
-                    // Adicionar CSS para esconder scrollbars em todos os navegadores
-                    const style = document.createElement('style');
-                    style.textContent = `.gm-style-iw-d::-webkit-scrollbar { display: none; }`;
-                    document.head.appendChild(style);
-                    
-                    // Estilizar o botão de fechar de forma simples
-                    const closeButtons = document.querySelectorAll('button.gm-ui-hover-effect');
-                    closeButtons.forEach(button => {
-                        button.style.top = '1px';
-                        button.style.right = '1px';
-                        button.style.zIndex = '10';
-                    });
-                } catch (error) {
-                    console.error('Erro ao estilizar InfoWindow:', error);
-                }
-            }, 50);
         }
     </script>
 </body>
