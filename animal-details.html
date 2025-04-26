@@ -349,7 +349,12 @@
 
                 // Atualizar a imagem
                 const animalImage = document.getElementById('animalImage');
+                const animalImageContainer = document.querySelector('.animal-image');
+                
                 if (dog.image) {
+                    // Mostra o contêiner de imagem
+                    animalImageContainer.style.display = 'flex';
+                    
                     // Verifica se a imagem é um data URL (base64)
                     if (dog.image.startsWith('data:image')) {
                         animalImage.src = dog.image;
@@ -358,9 +363,12 @@
                         animalImage.src = 'Images/' + dog.image;
                     }
                 } else if (dog.selectedImage) {
+                    // Mostra o contêiner de imagem
+                    animalImageContainer.style.display = 'flex';
                     animalImage.src = dog.selectedImage;
                 } else {
-                    animalImage.src = 'Images/DogList-Logo.png';
+                    // Oculta completamente o contêiner de imagem quando não há foto
+                    animalImageContainer.style.display = 'none';
                 }
 
                 // Obter o nome do usuário atual

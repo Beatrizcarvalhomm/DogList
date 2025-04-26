@@ -562,88 +562,38 @@
                         if (arrow) arrow.style.display = 'none';
                     });
                     
-                    // Estilizar o container principal com estilos mais agressivos
+                    // Estilizar o container principal
                     const containers = document.querySelectorAll('.gm-style-iw-c');
                     containers.forEach(container => {
                         container.style.padding = '0 !important';
-                        container.style.borderRadius = '8px';
-                        container.style.overflow = 'hidden';
-                        container.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
-                        
-                        // Remover margens extras com !important
-                        container.style.marginTop = '0 !important';
-                        container.style.marginBottom = '0 !important';
-                        container.style.marginRight = '0 !important';
-                        container.style.marginLeft = '0 !important';
+                        container.style.borderRadius = '10px !important';
+                        container.style.overflow = 'hidden !important';
+                        container.style.boxShadow = '0 2px 7px rgba(0, 0, 0, 0.15) !important';
                     });
                     
-                    // Estilizar os containers internos com estilos mais agressivos
+                    // Estilizar os containers internos
                     const innerContainers = document.querySelectorAll('.gm-style-iw-d');
                     innerContainers.forEach(innerContainer => {
                         innerContainer.style.overflow = 'hidden !important';
                         innerContainer.style.padding = '0 !important';
-                        innerContainer.style.margin = '0 !important';
-                        innerContainer.style.maxWidth = '100% !important';
-                        innerContainer.style.maxHeight = 'none !important';
-                        
-                        // Remover scrollbars
-                        innerContainer.style.scrollbarWidth = 'none';
-                        innerContainer.style.msOverflowStyle = 'none';
                     });
 
-                    // Ajustar conteúdo dentro do info window
-                    const infoContents = document.querySelectorAll('.dog-info-content');
-                    infoContents.forEach(content => {
-                        if (content) {
-                            content.style.margin = '0 !important';
-                            content.style.padding = '0 !important';
-                        }
-                    });
-
-                    // Adicionar CSS para esconder scrollbars e remover todos os espaços
-                    const style = document.createElement('style');
-                    style.textContent = `
-                        .gm-style-iw-d::-webkit-scrollbar { display: none; }
-                        .gm-style-iw { padding: 0 !important; margin: 0 !important; }
-                        .gm-style-iw-a { margin: 0 !important; }
-                        .gm-style-iw * { margin-top: 0 !important; padding-top: 0 !important; }
-                        .gm-style-iw-c { padding-top: 0 !important; margin-top: 0 !important; }
-                        .gm-style-iw-t { margin-top: 0 !important; padding-top: 0 !important; }
-                    `;
-                    document.head.appendChild(style);
-                    
                     // Estilizar o botão de fechar
                     const closeButtons = document.querySelectorAll('button.gm-ui-hover-effect');
                     closeButtons.forEach(button => {
-                        button.style.top = '1px !important';
-                        button.style.right = '1px !important';
-                        button.style.zIndex = '10';
+                        button.style.top = '0px !important';
+                        button.style.right = '0px !important';
                     });
 
-                    // Ajustar diretamente o wrapper externo do InfoWindow 
-                    const iwOuters = document.querySelectorAll('.gm-style-iw-t');
-                    iwOuters.forEach(outer => {
-                        if (outer) {
-                            outer.style.padding = '0 !important';
-                            outer.style.margin = '0 !important';
-                        }
-                    });
-
-                    // Encontrar e corrigir qualquer elemento pai com padding ou margin
-                    const parentContainers = document.querySelectorAll('.gm-style-iw-c');
-                    parentContainers.forEach(parent => {
-                        // Obter todos os elementos pais 
-                        let currentElement = parent;
-                        for (let i = 0; i < 5 && currentElement.parentElement; i++) {
-                            currentElement = currentElement.parentElement;
-                            if (currentElement) {
-                                currentElement.style.padding = '0 !important';
-                                currentElement.style.paddingTop = '0 !important';
-                                currentElement.style.margin = '0 !important';
-                                currentElement.style.marginTop = '0 !important'; 
-                            }
-                        }
-                    });
+                    // Adicionar CSS para simplificar estilos
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .gm-style-iw-d::-webkit-scrollbar { display: none; }
+                        .gm-style-iw { padding: 0 !important; }
+                        .gm-ui-hover-effect { opacity: 1 !important; }
+                        .gm-ui-hover-effect img { opacity: 1 !important; }
+                    `;
+                    document.head.appendChild(style);
                 } catch (error) {
                     console.error('Erro ao estilizar InfoWindow:', error);
                 }
@@ -913,26 +863,31 @@
                         
                 // Criar o conteúdo da InfoWindow com estilo melhorado
                 const contentString = `
-                    <div class="dog-info-content" style="width: 220px; padding: 0; margin: 0; overflow: hidden; position: relative; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); background-color: white;">
-                        <div style="padding: 15px 12px 20px; position: relative; margin: 0;">
-                            <div style="text-align: center; margin-bottom: 12px; margin-top: -5px; padding-top: 0;">
-                                <span style="display: inline-block; padding: 3px 12px; background-color: ${dog.estado === 'procurado' ? '#ff0000' : '#00cc00'}; color: white; border-radius: 15px; font-size: 13px; font-weight: bold;">
-                                    ${dog.estado === 'procurado' ? 'Procurado' : 'Encontrado'}
+                    <div style="width: 220px; background-color: white; padding: 0; overflow: hidden; border-radius: 10px;">
+                        <div style="margin: 0; padding: 0;">
+                            <div style="text-align: center; margin: 5px 0 25px 0;">
+                                <span style="display: inline-block; padding: 3px 12px; background-color: #ff0000; color: white; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                                    Procurado
                                 </span>
                             </div>
-                            <div style="margin-bottom: 10px; text-align: center; margin-top: 0;">
-                                <img src="${dog.image || 'Images/dog-placeholder.jpg'}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;" onerror="this.src='Images/dog-placeholder.jpg'">
+                            ${dog.image ? 
+                            `<div style="text-align: center; margin: 0 0 8px 0;">
+                                <img src="${dog.image}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 0px;" onerror="this.src='Images/dog-placeholder.jpg'">
+                            </div>` : ''}
+                            <div style="text-align: center; margin: 0 0 8px 0;">
+                                <span style="margin: 0; font-size: 16px; color: #333;">Não especificada</span>
                             </div>
-                            <div style="text-align: center; margin-bottom: 10px; margin-top: 0;">
-                                <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #333;">${dog.raca || 'Não especificada'}</h3>
+                            <div style="margin: 0 0 8px; font-size: 12px; color: #666; text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center; padding-left: 15px;">
+                                    <i class="fas fa-map-marker-alt" style="color: #ff6b38; margin-right: 5px; font-size: 11px; position: relative; top: -1px;"></i>
+                                    <span>Via Giotto, 20A, 10126 Torino TO, Itália</span>
+                                </div>
                             </div>
-                            <div style="margin-bottom: 15px; font-size: 13px; color: #666; display: flex; align-items: center; margin-top: 0;">
-                                <i class="fas fa-map-marker-alt" style="color: #ff6b38; margin-right: 5px;"></i>
-                                <span>${dog.endereco || 'Localização não especificada'}</span>
-                            </div>
-                            <div style="display: flex; justify-content: center; margin-top: 10px; margin-bottom: 8px; padding-bottom: 5px;">
-                                <button onclick="location.href='animal-details.html?id=${dog.id}'" style="background: linear-gradient(135deg, #FF7F50, #FF6347); color: white; padding: 8px 15px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; width: 85%; text-align: center; box-shadow: 0 3px 8px rgba(255, 99, 71, 0.25); min-height: 36px; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
-                                    <i class="fas fa-paw" style="margin-right: 6px; font-size: 13px;"></i>Ver Detalhes
+                            <div style="padding: 0 15px 15px;">
+                                <button onclick="location.href='animal-details.html?id=${dog.id}'" style="background: #ff7f50; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 14px;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-paw" style="margin-right: 5px; font-size: 14px;"></i>Ver Detalhes
+                                    </span>
                                 </button>
                             </div>
                         </div>
@@ -942,7 +897,7 @@
                 // Usar configurações adicionais para evitar problemas com o InfoWindow
                 const infoWindow = new google.maps.InfoWindow({
                     content: contentString,
-                    maxWidth: 240,
+                    maxWidth: 220,
                     pixelOffset: new google.maps.Size(0, 0),
                     disableAutoPan: false
                 });
