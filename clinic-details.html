@@ -35,7 +35,7 @@
 
         .header {
             background: linear-gradient(135deg, #FFE4D6, #ffb38a);
-            padding: 15px 20px;
+            padding: 20px;
             display: flex;
             align-items: center;
             gap: 20px;
@@ -84,26 +84,39 @@
         }
 
         .title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             color: #333;
             letter-spacing: 0.5px;
-            display: block;
             text-align: center;
-            width: 100%;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: color 0.3s ease;
             position: relative;
+            display: inline-block;
+        }
+
+        .title:hover {
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
         }
 
         .title:after {
             content: '';
             position: absolute;
-            bottom: -5px;
+            bottom: -8px;
             left: 50%;
             transform: translateX(-50%);
-            width: 50px;
+            width: 70px;
             height: 2px;
             background-color: #FF7F50;
             border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .title:hover:after {
+            width: 120px;
+            background-color: #FF6347;
         }
 
         .content {
@@ -307,13 +320,23 @@
             100% { transform: translateX(-50%) scale(1); opacity: 0; }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 480px) {
             .header {
                 padding: 20px;
+                margin: 0 8px;
+                gap: 5px;
+                min-height: 48px;
             }
-
-            .action-buttons {
-                grid-template-columns: 1fr;
+            
+            .title {
+                font-size: 18px;
+            }
+            
+            .back-button {
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 15px;
             }
         }
 
@@ -438,6 +461,29 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .clinic-details {
+                padding: 15px;
+            }
+            
+            .clinic-name {
+                font-size: 22px;
+            }
+            
+            .info-section {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+                margin: 0 10px 15px 10px;
+            }
+            
+            .title {
+                font-size: 18px;
+            }
         }
     </style>
 </head>

@@ -38,10 +38,10 @@
 
         .header {
             background-color: rgba(255, 255, 255, 0.95);
-            padding: 15px 30px;
+            padding: 20px;
             display: flex;
             align-items: center;
-            gap: 30px;
+            justify-content: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
             position: sticky;
@@ -49,12 +49,11 @@
             z-index: 1000;
             margin: 0 20px;
             border-radius: 0 0 20px 20px;
-            justify-content: center;
             position: relative;
         }
 
         .back-button {
-            font-size: 28px;
+            font-size: 24px;
             text-decoration: none;
             color: #FF7F50;
             width: 40px;
@@ -64,35 +63,34 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            background-color: rgba(255, 255, 255, 0.9);
             position: absolute;
-            left: 15px;
-            top: 50%; /* Keep vertical centering */
-            transform: translateY(-50%); /* Keep vertical centering */
+            left: 20px;
+            top: 15px;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             border: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle neutral shadow */
-            z-index: 1001; /* Ensure it's above other elements */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
         }
 
         .back-button:hover {
             background-color: #FFFFFF;
-            transform: translateY(-50%) translateX(-3px); /* Combined transform to keep vertical centering while adding horizontal movement */
+            transform: translateX(-3px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             color: #333;
             letter-spacing: 0.5px;
             text-align: center;
-            width: calc(100% - 160px);
             margin: 0 auto;
-            position: relative;
             cursor: pointer;
             transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
         }
 
         .title:hover {
@@ -103,10 +101,10 @@
         .title:after {
             content: '';
             position: absolute;
-            bottom: -5px;
+            bottom: -8px;
             left: 50%;
             transform: translateX(-50%);
-            width: 50px;
+            width: 70px;
             height: 2px;
             background-color: #FF7F50;
             border-radius: 2px;
@@ -456,10 +454,11 @@
             }
             
             .header {
-                padding: 10px 0;
-                margin: 0;
-                border-radius: 0;
-                position: relative;
+                padding: 20px;
+                flex-direction: row;
+                margin: 0 8px;
+                gap: 5px;
+                min-height: 48px;
             }
             
             .title {
@@ -537,7 +536,7 @@
     <div class="container">
         <header class="header">
             <a href="home.html" class="back-button">←</a>
-            <h1 class="title">Minha Conta</h1>
+            <span class="title">Minha Conta</span>
         </header>
 
         <main class="content">

@@ -29,23 +29,27 @@
 
         .header {
             background-color: rgba(255, 255, 255, 0.95);
-            padding: 20px;
+            padding: 0 20px;
             display: flex;
             align-items: center;
-            gap: 20px;
-            border-radius: 0 0 20px 20px;
+            justify-content: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
             z-index: 100;
-            margin: 0 20px 20px 20px;
+            margin: 0 20px;
+            border-radius: 0 0 20px 20px;
+            position: relative;
+            height: 48px;
+            max-height: 48px;
+            box-sizing: border-box;
         }
 
         .back-button {
             background: none;
             border: none;
-            font-size: 28px;
+            font-size: 24px;
             color: #FF7F50;
             width: 40px;
             height: 40px;
@@ -55,17 +59,54 @@
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0;
+            margin: 0;
         }
 
         .back-button:hover {
-            background-color: #FFE4D6;
-            transform: translateX(-3px);
+            background-color: #FFFFFF;
+            transform: translateY(-50%) translateX(-3px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
-        .header h1 {
-            font-size: 24px;
+        .title {
+            font-size: 20px;
+            font-weight: 600;
             color: #333;
-            margin: 0;
+            letter-spacing: 0.5px;
+            text-align: center;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .title:hover {
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .title:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 2px;
+            background-color: #FF7F50;
+            border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .title:hover:after {
+            width: 120px;
+            background-color: #FF6347;
         }
 
         .content {
@@ -159,7 +200,9 @@
         @media (max-width: 768px) {
             .header {
                 margin: 0 10px 15px 10px;
-                padding: 15px;
+                padding: 0 20px;
+                height: 48px;
+                max-height: 48px;
             }
 
             .content {
@@ -180,6 +223,23 @@
             .info-item {
                 padding: 15px;
             }
+
+            .title {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 0 20px;
+                margin: 0 8px;
+                height: 48px;
+                max-height: 48px;
+            }
+            
+            .title {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
@@ -189,7 +249,7 @@
             <button class="back-button" onclick="window.history.back()">
                 <i class="fas fa-arrow-left"></i>
             </button>
-            <h1>Detalhes do Animal</h1>
+            <span class="title">Detalhes do Animal</span>
         </div>
 
         <main class="content">
@@ -332,7 +392,7 @@
                 document.getElementById('animalImage').src = 'Images/DogList-Logo.png';
                 
                 // Atualizar o título da página
-                document.querySelector('.header h1').textContent = 'Animal não encontrado';
+                document.querySelector('.title').textContent = 'Animal não encontrado';
                 
                 console.log('ID inválido ou indefinido:', animalId);
                 return;
@@ -419,7 +479,7 @@
                 document.getElementById('animalImage').src = 'Images/DogList-Logo.png';
                 
                 // Atualizar o título da página
-                document.querySelector('.header h1').textContent = 'Animal não encontrado';
+                document.querySelector('.title').textContent = 'Animal não encontrado';
                 
                 console.log('Animal não encontrado com ID:', animalId);
             }

@@ -34,12 +34,11 @@
         }
 
         .header {
-            background-color: rgba(255, 255, 255, 0.95); /* Back to white background */
-            padding: 25px 30px;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 30px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
             position: sticky;
@@ -47,17 +46,11 @@
             z-index: 1000;
             margin: 0 20px;
             border-radius: 0 0 20px 20px;
-            animation: slideDown 0.5s ease-out;
             position: relative;
         }
 
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
         .back-button {
-            font-size: 28px;
+            font-size: 24px;
             text-decoration: none;
             color: #FF7F50;
             width: 40px;
@@ -67,14 +60,15 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            background-color: rgba(255, 255, 255, 0.9);
             position: absolute;
-            left: 30px;
+            left: 20px;
+            top: 15px;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             border: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle neutral shadow */
-            z-index: 1001; /* Ensure it's above other elements */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
         }
 
         .back-button:hover {
@@ -88,32 +82,30 @@
         }
 
         .title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             color: #333;
             letter-spacing: 0.5px;
-            display: block;
             text-align: center;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            margin: 0;
+            margin: 0 auto;
             cursor: pointer;
             transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
         }
 
         .title:hover {
-            color: #333; /* Manter a cor original */
-            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3); /* Adicionar brilho sutil */
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
         }
 
         .title:after {
             content: '';
             position: absolute;
-            bottom: -5px;
+            bottom: -8px;
             left: 50%;
             transform: translateX(-50%);
-            width: 50px;
+            width: 70px;
             height: 2px;
             background-color: #FF7F50;
             border-radius: 2px;
@@ -592,32 +584,24 @@
         /* Ajustes adicionais para telas muito pequenas */
         @media (max-width: 480px) {
             .header {
-                padding: 8px 10px;
-                margin: 0 8px;
+                padding: 20px;
                 flex-direction: row;
+                margin: 0 8px;
                 gap: 5px;
                 min-height: 48px;
             }
             
             .title {
-                font-size: 16px;
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-                margin: 0;
-            }
-            
-            .show-clinics-btn {
-                font-size: 11px;
-                padding: 5px 10px;
+                font-size: 18px;
             }
             
             .back-button {
-                font-size: 18px;
-                width: 30px;
-                height: 30px;
-                left: 10px;
-                top: 10px;
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 15px;
+                top: 50%;
+                transform: translateY(-50%);
             }
             
             .title:after {
@@ -827,21 +811,22 @@
             background-color: #FF7F50;
             color: white;
             border: none;
-            padding: 8px 15px;
+            padding: 8px 14px;
             border-radius: 20px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 3px 10px rgba(255, 127, 80, 0.2);
             transition: all 0.3s ease;
-            font-size: 14px;
             position: absolute;
-            right: 30px;
+            right: 20px;
+            top: 15px;
+            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.2);
         }
 
         .show-clinics-btn:hover {
-            background-color: #ff6b3d;
+            background-color: #FF6347;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 127, 80, 0.3);
+            box-shadow: 0 6px 20px rgba(255, 127, 80, 0.3);
         }
 
         /* Clinics popup styling - design completamente simplificado */
@@ -1092,7 +1077,7 @@
         @media (max-width: 768px) {
             .header {
                 flex-direction: row;
-                padding: 10px 15px;
+                padding: 10px 20px;
                 gap: 8px;
                 justify-content: center;
                 height: auto;
@@ -1172,32 +1157,24 @@
         /* Ajustes adicionais para telas muito pequenas */
         @media (max-width: 480px) {
             .header {
-                padding: 8px 10px;
-                margin: 0 8px;
+                padding: 20px;
                 flex-direction: row;
+                margin: 0 8px;
                 gap: 5px;
                 min-height: 48px;
             }
             
             .title {
-                font-size: 16px;
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-                margin: 0;
-            }
-            
-            .show-clinics-btn {
-                font-size: 11px;
-                padding: 5px 10px;
+                font-size: 18px;
             }
             
             .back-button {
-                font-size: 18px;
-                width: 30px;
-                height: 30px;
-                left: 10px;
-                top: 10px;
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 15px;
+                top: 50%;
+                transform: translateY(-50%);
             }
             
             .title:after {
@@ -1611,7 +1588,6 @@
     <div class="container">
         <div class="header">
             <a href="home.html" class="back-button">←</a>
-            <img src="Images/DogList-Logo.png" alt="DogList Logo" class="logo">
             <span class="title">Veterinários</span>
             <button id="showClinicsBtn" class="show-clinics-btn">VER CLÍNICAS</button>
         </div>

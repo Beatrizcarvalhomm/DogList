@@ -323,7 +323,7 @@
 
         .header {
             background-color: rgba(255, 255, 255, 0.95);
-            padding: 15px 20px;
+            padding: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -351,6 +351,7 @@
             background-color: rgba(255, 255, 255, 0.9);
             position: absolute;
             left: 20px;
+            top: 15px;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             border: none;
@@ -358,51 +359,54 @@
             z-index: 1001;
         }
 
-        .header h1 {
-            font-size: 22px;
+        .title {
+            font-size: 20px;
             font-weight: 600;
             color: #333;
             letter-spacing: 0.5px;
             text-align: center;
-            margin: 0;
-            position: relative;
+            margin: 0 auto;
             cursor: pointer;
             transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
         }
 
-        .header h1:hover {
+        .title:hover {
             color: #333;
             text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
         }
 
-        .header h1:after {
+        .title:after {
             content: '';
             position: absolute;
-            bottom: -5px;
+            bottom: -8px;
             left: 50%;
             transform: translateX(-50%);
-            width: 50px;
+            width: 70px;
             height: 2px;
             background-color: #FF7F50;
             border-radius: 2px;
             transition: width 0.3s ease, background-color 0.3s ease;
         }
 
-        .header h1:hover:after {
+        .title:hover:after {
             width: 120px;
             background-color: #FF6347;
         }
 
         @media (max-width: 768px) {
             .header {
-                flex-direction: column;
-                padding: 15px 20px;
-                gap: 15px;
+                flex-direction: row;
+                padding: 10px 20px;
+                gap: 8px;
+                justify-content: center;
+                height: auto;
+                position: relative;
             }
             
-            .header h1 {
+            .title {
                 font-size: 20px;
-                margin-top: 25px; /* Espaço para o botão "voltar" */
             }
             
             .back-button {
@@ -413,11 +417,14 @@
 
         @media (max-width: 480px) {
             .header {
-                padding: 15px 10px;
-                margin: 0 10px;
+                padding: 20px;
+                flex-direction: row;
+                margin: 0 8px;
+                gap: 5px;
+                min-height: 48px;
             }
             
-            .header h1 {
+            .title {
                 font-size: 18px;
             }
             
@@ -774,13 +781,18 @@
                 max-width: 100%;
             }
         }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <a href="home.html" class="back-button">←</a>
-            <h1>Pesquisar Cães</h1>
+            <span class="title">Pesquisar Cães</span>
         </div>
 
         <div class="search-container">

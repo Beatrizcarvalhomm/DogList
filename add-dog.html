@@ -35,7 +35,7 @@
 
         .header {
             background-color: rgba(255, 255, 255, 0.95);
-            padding: 25px 30px;
+            padding: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -43,14 +43,15 @@
             backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
             margin: 0 20px;
             border-radius: 0 0 20px 20px;
             position: relative;
+            min-height: 65px;
         }
 
         .back-button {
-            font-size: 28px;
+            font-size: 24px;
             text-decoration: none;
             color: #FF7F50;
             width: 40px;
@@ -60,21 +61,26 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.9);
             position: absolute;
-            left: 15px;
+            left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            z-index: 1;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
         }
 
         .back-button:hover {
             background-color: #FFFFFF;
-            transform: translateY(-50%) translateX(-3px);
+            transform: translateX(-3px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             color: #333;
             letter-spacing: 0.5px;
@@ -94,7 +100,7 @@
         .title:after {
             content: '';
             position: absolute;
-            bottom: -12px;
+            bottom: -8px;
             left: 50%;
             transform: translateX(-50%);
             width: 70px;
@@ -408,24 +414,32 @@
             }
 
             .header {
-                margin: 0;
-                border-radius: 0;
                 padding: 20px;
+                min-height: 65px;
+                flex-direction: row;
+                margin: 0 10px 15px 10px;
+                position: relative;
             }
             
             .title {
-                font-size: 22px;
-                width: 80%;
+                font-size: 18px;
+                margin: 0 auto;
             }
 
-            .title:after {
-                bottom: -8px;
+            .back-button {
+                top: 50%;
+                transform: translateY(-50%);
+                left: 15px;
             }
         }
 
         @media (max-width: 480px) {
             .header {
-                padding: 15px;
+                padding: 20px;
+                min-height: 65px;
+                flex-direction: row;
+                margin: 0 8px;
+                gap: 5px;
             }
             
             .options-group {

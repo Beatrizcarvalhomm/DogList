@@ -32,10 +32,10 @@
 
         .header {
             background-color: rgba(255, 255, 255, 0.95);
-            padding: 25px 30px;
+            padding: 20px;
             display: flex;
             align-items: center;
-            gap: 30px;
+            justify-content: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
             position: sticky;
@@ -47,7 +47,7 @@
         }
 
         .back-button {
-            font-size: 28px;
+            font-size: 24px;
             text-decoration: none;
             color: #FF7F50;
             width: 40px;
@@ -57,30 +57,34 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
-            will-change: transform;
+            background-color: rgba(255, 255, 255, 0.9);
             position: absolute;
-            left: 30px;
-            z-index: 1;
+            left: 20px;
+            top: 15px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
         }
 
         .back-button:hover {
-            background-color: #FFE4D6;
+            background-color: #FFFFFF;
             transform: translateX(-3px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             color: #333;
             letter-spacing: 0.5px;
-            display: block;
             text-align: center;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            margin: 0;
+            margin: 0 auto;
             cursor: pointer;
             transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
         }
 
         .title:hover {
@@ -91,10 +95,10 @@
         .title:after {
             content: '';
             position: absolute;
-            bottom: -5px;
+            bottom: -8px;
             left: 50%;
             transform: translateX(-50%);
-            width: 50px;
+            width: 70px;
             height: 2px;
             background-color: #FF7F50;
             border-radius: 2px;
@@ -262,36 +266,24 @@
             to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 480px) {
             .header {
-                margin: 0;
-                border-radius: 0;
+                padding: 20px;
+                flex-direction: row;
+                margin: 0 8px;
+                gap: 5px;
+                min-height: 48px;
             }
-
-            .content {
-                padding: 15px;
+            
+            .title {
+                font-size: 18px;
             }
-
-            .dog-card {
-                padding: 15px;
-            }
-
-            .dog-image {
-                width: 80px;
-                height: 80px;
-            }
-
-            .dog-status {
-                font-size: 16px;
-            }
-
-            .dog-location, .dog-breed {
-                font-size: 14px;
-            }
-
-            .remove-button {
-                font-size: 14px;
-                padding: 6px 12px;
+            
+            .back-button {
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 15px;
             }
         }
     </style>
@@ -300,7 +292,7 @@
     <div class="container">
         <div class="header">
             <a href="account.html" class="back-button">←</a>
-            <h1 class="title">Meus Cães</h1>
+            <span class="title">Meus Cães</span>
         </div>
 
         <div class="content" id="dogsContainer">
