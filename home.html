@@ -82,6 +82,16 @@
             border-radius: 6px;
             background-color: transparent;
         }
+        
+        .legend-item.clickable {
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        
+        .legend-item.clickable:hover {
+            background-color: rgba(255, 127, 80, 0.08);
+            border-left: 3px solid rgba(255, 127, 80, 0.8);
+        }
 
         .legend-color {
             width: 26px;
@@ -107,6 +117,12 @@
         #legendVoceEstaAqui:hover {
             background-color: rgba(255, 127, 80, 0.08);
             border-left: 3px solid rgba(255, 127, 80, 0.8);
+        }
+        
+        .refresh-location {
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: 8px;
+            padding-top: 12px;
         }
 
         .navigation {
@@ -385,29 +401,23 @@
         </a>
 
         <div class="map-legend">
+            <div class="legend-item clickable" id="legendVoceEstaAqui" onclick="centerMapOnUserLocation()">
+                <div class="legend-color" style="background-color: #007bff;"></div>
+                <span class="legend-text">Você está aqui</span>
+            </div>
             <div class="legend-item" id="legendProcurados">
-                <div class="legend-color" style="background-color: #ff0000; opacity: 1;">
-                    <i class="fas fa-paw" style="color: white; font-size: 14px;"></i>
-                </div>
+                <div class="legend-color" style="background-color: #e74c3c;"></div>
                 <span class="legend-text">Procurados</span>
             </div>
             <div class="legend-item" id="legendEncontrados">
-                <div class="legend-color" style="background-color: #00ff00; opacity: 1;">
-                    <i class="fas fa-paw" style="color: white; font-size: 14px;"></i>
-                </div>
+                <div class="legend-color" style="background-color: #27ae60;"></div>
                 <span class="legend-text">Encontrados</span>
             </div>
-            <div class="legend-item" id="legendVoceEstaAqui" onclick="centerMapOnUserLocation()">
-                <div class="legend-color" style="background-color: #007bff; opacity: 1;">
-                    <i class="fas fa-map-marker-alt" style="color: white; font-size: 14px;"></i>
+            <div class="legend-item clickable refresh-location" onclick="refreshUserLocation()">
+                <div class="legend-color" style="background-color: #ffffff; display: flex; justify-content: center; align-items: center;">
+                    <i class="fas fa-sync-alt" style="color: #FF7F50;"></i>
                 </div>
-                <span class="legend-text">Você está aqui</span>
-            </div>
-            <div class="legend-item" id="diagButton" style="cursor: pointer; border: 2px solid #FF7F50; margin-top: 15px;">
-                <div class="legend-color" style="background-color: #FF7F50; opacity: 1;">
-                    <i class="fas fa-sync" style="color: white; font-size: 14px;"></i>
-                </div>
-                <span class="legend-text">Recarregar Cães</span>
+                <span class="legend-text">Atualizar localização</span>
             </div>
         </div>
 
@@ -866,8 +876,8 @@
                     <div style="width: 220px; background-color: white; padding: 0; overflow: hidden; border-radius: 10px;">
                         <div style="margin: 0; padding: 0;">
                             <div style="text-align: center; margin: 5px 0 25px 0;">
-                                <span style="display: inline-block; padding: 3px 12px; background-color: #ff0000; color: white; border-radius: 20px; font-size: 12px; font-weight: bold;">
-                                    Procurado
+                                <span style="display: inline-block; padding: 3px 12px; background-color: ${dog.estado === 'procurado' ? '#ff0000' : '#27ae60'}; color: white; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                                    ${dog.estado === 'procurado' ? 'Procurado' : 'Encontrado'}
                                 </span>
                             </div>
                             ${dog.image ? 
@@ -875,12 +885,12 @@
                                 <img src="${dog.image}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 0px;" onerror="this.src='Images/dog-placeholder.jpg'">
                             </div>` : ''}
                             <div style="text-align: center; margin: 0 0 8px 0;">
-                                <span style="margin: 0; font-size: 16px; color: #333;">Não especificada</span>
+                                <span style="margin: 0; font-size: 16px; color: #333;">${dog.raca || 'Não especificada'}</span>
                             </div>
                             <div style="margin: 0 0 8px; font-size: 12px; color: #666; text-align: center;">
                                 <div style="display: flex; align-items: center; justify-content: center; padding-left: 15px;">
                                     <i class="fas fa-map-marker-alt" style="color: #ff6b38; margin-right: 5px; font-size: 11px; position: relative; top: -1px;"></i>
-                                    <span>Via Giotto, 20A, 10126 Torino TO, Itália</span>
+                                    <span>${dog.endereco || 'Localização não especificada'}</span>
                             </div>
                             </div>
                             <div style="padding: 0 15px 15px;">
@@ -1228,6 +1238,124 @@
                     { timeout: 10000, maximumAge: 600000 }
                 );
             } else {
+                alert('Seu navegador não suporta geolocalização.');
+            }
+        }
+        
+        function refreshUserLocation() {
+            // Mostrar indicador de carregamento para feedback visual
+            const tempPopup = document.createElement('div');
+            tempPopup.style.cssText = `
+                position: fixed;
+                top: 45%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                padding: 15px 20px;
+                border-radius: 20px;
+                border: 2px solid rgba(255, 127, 80, 0.5);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                font-weight: 500;
+                color: #333;
+            `;
+            
+            tempPopup.innerHTML = `
+                <div style="margin-bottom: 10px;">Atualizando sua localização...</div>
+                <i class="fas fa-circle-notch fa-spin" style="color: #FF7F50; font-size: 20px;"></i>
+            `;
+            
+            document.body.appendChild(tempPopup);
+            
+            if (navigator.geolocation) {
+                const geoOptions = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                };
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // Atualizar a localização do usuário
+                        const newLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        console.log("Localização atualizada:", newLocation);
+                        
+                        // Salvar localização para uso futuro
+                        saveUserLocation(newLocation);
+                        
+                        // Centralizar mapa na nova localização
+                        map.setCenter(newLocation);
+                        map.setZoom(16);
+
+                        // Adicionar marcador do usuário na nova localização
+                        addUserMarker(newLocation);
+                        
+                        // Remover o popup de carregamento
+                        if (document.body.contains(tempPopup)) {
+                            document.body.removeChild(tempPopup);
+                        }
+                        
+                        // Mostrar notificação temporária de sucesso
+                        const successPopup = document.createElement('div');
+                        successPopup.style.cssText = `
+                            position: fixed;
+                            top: 45%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            background-color: white;
+                            padding: 10px 15px;
+                            border-radius: 20px;
+                            border: 2px solid rgba(39, 174, 96, 0.5);
+                            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+                            z-index: 10000;
+                            display: flex;
+                            align-items: center;
+                            font-family: Arial, sans-serif;
+                            font-size: 14px;
+                            font-weight: 500;
+                            color: #333;
+                        `;
+                        
+                        successPopup.innerHTML = `
+                            <i class="fas fa-check-circle" style="color: #27ae60; margin-right: 8px;"></i>
+                            Localização atualizada
+                        `;
+                        
+                        document.body.appendChild(successPopup);
+                        
+                        // Remover após 2 segundos
+                        setTimeout(() => {
+                            if (document.body.contains(successPopup)) {
+                                document.body.removeChild(successPopup);
+                            }
+                        }, 2000);
+                    },
+                    (error) => {
+                        // Remover o popup de carregamento
+                        if (document.body.contains(tempPopup)) {
+                            document.body.removeChild(tempPopup);
+                        }
+                        
+                        console.error('Erro ao atualizar localização:', error);
+                        alert('Não foi possível atualizar sua localização. Verifique as permissões do seu navegador.');
+                    },
+                    geoOptions
+                );
+            } else {
+                // Remover o popup de carregamento
+                if (document.body.contains(tempPopup)) {
+                    document.body.removeChild(tempPopup);
+                }
+                
                 alert('Seu navegador não suporta geolocalização.');
             }
         }
