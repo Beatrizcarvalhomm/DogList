@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doglist - Detalhes do Abrigo</title>
+    <!-- Favicon em vários tamanhos para melhor suporte -->
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="96x96">
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="Images/DogList-Logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #FFE4D6;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #FFE4D6;
+        }
+
+        .header {
+            background-color: #FFFFFF;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin: 0 20px;
+            border-radius: 0 0 20px 20px;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        .back-button {
+            font-size: 24px;
+            text-decoration: none;
+            color: #FF7F50;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background-color: #FFFFFF;
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+        }
+
+        .back-button:hover {
+            background-color: #FFFFFF;
+            transform: translateY(-50%) translateX(-3px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: 0.5px;
+            text-align: center;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .title:hover {
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .title:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 2px;
+            background-color: #FF7F50;
+            border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .title:hover:after {
+            width: 120px;
+            background-color: #FF6347;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .shelter-card {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .shelter-header {
+            background-color: #ff9800;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .shelter-header h2 {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .shelter-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .shelter-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .shelter-photo i {
+            font-size: 50px;
+            color: #ccc;
+        }
+
+        .shelter-info {
+            padding: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .info-item i {
+            width: 30px;
+            min-width: 30px;
+            height: 30px;
+            background-color: #fff3e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #ff9800;
+        }
+
+        .info-text {
+            flex: 1;
+            color: #666;
+        }
+
+        .info-text strong {
+            display: block;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .preferences-section {
+            background-color: #fff3e0;
+            padding: 20px;
+            border-top: 1px solid #ffe0b2;
+        }
+
+        .preferences-section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #ff9800;
+            text-align: center;
+        }
+
+        .preferences-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .preference-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .preference-card h4 {
+            font-size: 14px;
+            color: #ff9800;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .preference-card h4 i {
+            margin-right: 8px;
+        }
+
+        .preference-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .tag {
+            font-size: 12px;
+            background-color: #fff3e0;
+            color: #ff9800;
+            padding: 3px 8px;
+            border-radius: 10px;
+            border: 1px solid #ffe0b2;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .action-button {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(255, 152, 0, 0.2);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .action-button:hover {
+            background-color: #ff8500;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 152, 0, 0.3);
+        }
+
+        .map-container {
+            height: 250px;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Media queries */
+        @media (max-width: 768px) {
+            .header {
+                margin: 0 10px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .preferences-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                margin: 0 5px;
+                height: 50px;
+            }
+            
+            .back-button {
+                left: 10px;
+                width: 35px;
+                height: 35px;
+                font-size: 20px;
+            }
+            
+            .title {
+                font-size: 18px;
+            }
+            
+            .content {
+                padding: 10px;
+            }
+            
+            .shelter-photo {
+                width: 100px;
+                height: 100px;
+                margin: 0 auto 15px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .action-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="javascript:history.back()" class="back-button">←</a>
+            <span class="title">Abrigo Temporário</span>
+        </div>
+        
+        <div class="content">
+            <div class="shelter-card">
+                <div class="shelter-header">
+                    <h2>Abrigo Temporário</h2>
+                </div>
+                
+                <div class="shelter-photo" id="shelterPhoto">
+                    <i class="fas fa-user"></i>
+                </div>
+                
+                <div class="shelter-info">
+                    <div class="info-item">
+                        <i class="fas fa-user"></i>
+                        <div class="info-text">
+                            <strong>Nome</strong>
+                            <span id="shelterName">Carregando...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div class="info-text">
+                            <strong>Localização</strong>
+                            <span id="shelterLocation">Carregando...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <i class="fas fa-phone"></i>
+                        <div class="info-text">
+                            <strong>Contacto</strong>
+                            <span id="shelterContact">Carregando...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="preferences-section">
+                    <h3>Animais que aceita</h3>
+                    <div class="preferences-grid">
+                        <div class="preference-card">
+                            <h4><i class="fas fa-dog"></i>Porte</h4>
+                            <div class="preference-tags" id="porteTags">
+                                <span class="tag">Carregando...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-card">
+                            <h4><i class="fas fa-clock"></i>Idade</h4>
+                            <div class="preference-tags" id="idadeTags">
+                                <span class="tag">Carregando...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-card">
+                            <h4><i class="fas fa-venus-mars"></i>Sexo</h4>
+                            <div class="preference-tags" id="sexoTags">
+                                <span class="tag">Carregando...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-card">
+                            <h4><i class="fas fa-cut"></i>Castrado</h4>
+                            <div class="preference-tags" id="castradoTags">
+                                <span class="tag">Carregando...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-card" style="grid-column: span 2;">
+                            <h4><i class="fas fa-exclamation-triangle"></i>Agressividade</h4>
+                            <div class="preference-tags" id="agressividadeTags">
+                                <span class="tag">Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="#" class="action-button" id="callButton">
+                        <i class="fas fa-phone"></i>
+                        Ligar
+                    </a>
+                    <a href="#" class="action-button" id="directionsButton">
+                        <i class="fas fa-directions"></i>
+                        Como chegar
+                    </a>
+                </div>
+            </div>
+            
+            <div class="map-container" id="map"></div>
+        </div>
+    </div>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYiAXh7HwQgCEudiSzPR3bUuYQ1mnS3b4&libraries=geometry"></script>
+    <script>
+        // Verificar se está logado
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+        
+        // Variáveis globais
+        let map;
+        let marker;
+        let shelter;
+        
+        // Função para obter parâmetros da URL
+        function getParameterByName(name, url = window.location.href) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+        
+        // Carregar dados do abrigo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar dados do abrigo
+            const shelterId = getParameterByName('id');
+            if (!shelterId) {
+                window.location.href = 'home.html';
+                return;
+            }
+            
+            // Buscar o abrigo pelo ID
+            const shelters = JSON.parse(localStorage.getItem('shelters') || '[]');
+            const shelter = shelters.find(s => s.id === shelterId);
+            
+            if (!shelter) {
+                window.location.href = 'home.html';
+                return;
+            }
+            
+            // Carregar dados do usuário associado ao abrigo
+            let userName = shelter.userName || 'Anônimo';
+            let contacto = shelter.contacto || 'Contacto não disponível';
+            
+            // Se não houver nome/contato salvo diretamente no abrigo, tentar buscar do usuário
+            if (!shelter.userName || !shelter.contacto) {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const user = users.find(u => u.id === shelter.userId);
+                
+                if (user) {
+                    userName = user.name || userName;
+                    contacto = user.phone || contacto;
+                }
+            }
+            
+            // Preencher os dados na página
+            document.getElementById('shelterName').textContent = userName;
+            document.getElementById('shelterLocation').textContent = shelter.endereco || 'Localização não disponível';
+            document.getElementById('shelterContact').textContent = contacto;
+            
+            // Configurar botão de ligar
+            const callButton = document.getElementById('callButton');
+            if (contacto) {
+                callButton.href = `tel:${contacto}`;
+            } else {
+                callButton.style.opacity = '0.5';
+                callButton.style.pointerEvents = 'none';
+            }
+            
+            // Configurar botão de como chegar
+            const directionsButton = document.getElementById('directionsButton');
+            if (shelter.location && shelter.location.lat && shelter.location.lng) {
+                directionsButton.href = `https://www.google.com/maps/dir/?api=1&destination=${shelter.location.lat},${shelter.location.lng}`;
+                directionsButton.target = '_blank';
+            } else {
+                directionsButton.style.opacity = '0.5';
+                directionsButton.style.pointerEvents = 'none';
+            }
+            
+            // Mostrar foto de perfil se existir
+            if (shelter.photoUrl) {
+                const photoContainer = document.getElementById('shelterPhoto');
+                photoContainer.innerHTML = `<img src="${shelter.photoUrl}" alt="${userName || 'Abrigo'}" onerror="this.src='Images/user-placeholder.jpg'">`;
+            }
+            
+            // Preencher preferências
+            displayPreferences(shelter.aceita);
+            
+            // Inicializar o mapa
+            initMap(shelter.location);
+        });
+        
+        function displayPreferences(preferences) {
+            if (!preferences) return;
+            
+            // Porte
+            const porteMap = {
+                'small': 'Pequeno',
+                'medium': 'Médio',
+                'large': 'Grande'
+            };
+            displayTags('porteTags', preferences.porte, porteMap);
+            
+            // Idade
+            const idadeMap = {
+                '0-5': '0-5 anos',
+                '5-10': '5-10 anos',
+                '10+': '+10 anos'
+            };
+            displayTags('idadeTags', preferences.idade, idadeMap);
+            
+            // Sexo
+            const sexoMap = {
+                'male': 'Macho',
+                'female': 'Fêmea'
+            };
+            displayTags('sexoTags', preferences.sexo, sexoMap);
+            
+            // Castrado
+            const castradoMap = {
+                'yes': 'Sim',
+                'no': 'Não'
+            };
+            displayTags('castradoTags', preferences.castrado, castradoMap);
+            
+            // Agressividade
+            const agressividadeMap = {
+                'none': 'Não agressivo',
+                'humans': 'Agressivo com pessoas',
+                'animals': 'Agressivo com animais',
+                'both': 'Agressivo com pessoas e animais'
+            };
+            displayTags('agressividadeTags', preferences.agressivo, agressividadeMap);
+        }
+        
+        function displayTags(containerId, values, labelMap) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (!values || values.length === 0) {
+                container.innerHTML = '<span class="tag" style="color: #999; font-style: italic;">Não especificado</span>';
+                return;
+            }
+            
+            values.forEach(value => {
+                const label = labelMap[value] || value;
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.textContent = label;
+                container.appendChild(tag);
+            });
+        }
+        
+        function initMap(location) {
+            if (!location || !location.lat || !location.lng) {
+                console.error('Localização do abrigo não disponível');
+                return;
+            }
+            
+            // Criar mapa
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { 
+                    lat: parseFloat(location.lat), 
+                    lng: parseFloat(location.lng) 
+                },
+                zoom: 15,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+                    position: google.maps.ControlPosition.TOP_RIGHT
+                },
+                fullscreenControl: true,
+                streetViewControl: true,
+                zoomControl: true
+            });
+            
+            // Adicionar marcador
+            marker = new google.maps.Marker({
+                position: { 
+                    lat: parseFloat(location.lat), 
+                    lng: parseFloat(location.lng) 
+                },
+                map: map,
+                title: 'Localização do Abrigo',
+                animation: google.maps.Animation.DROP,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: '#ff9800',
+                    fillOpacity: 0.9,
+                    strokeColor: '#FFFFFF',
+                    strokeWeight: 2,
+                    scale: 10
+                }
+            });
+        }
+        
+        function showError(message) {
+            const content = document.querySelector('.content');
+            content.innerHTML = `
+                <div style="text-align: center; background-color: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                    <i class="fas fa-exclamation-circle" style="font-size: 50px; color: #ff9800; margin-bottom: 20px;"></i>
+                    <h2 style="color: #333; margin-bottom: 15px;">Erro</h2>
+                    <p style="color: #666; margin-bottom: 20px;">${message}</p>
+                    <a href="home.html" style="display: inline-block; background-color: #ff9800; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; box-shadow: 0 4px 8px rgba(255, 152, 0, 0.2);">
+                        <i class="fas fa-home" style="margin-right: 8px;"></i>Voltar para a Página Inicial
+                    </a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html> 

@@ -166,70 +166,180 @@
 
         .map-legend {
             position: absolute;
-            bottom: 40px;
-            left: 40px;
-            padding: 15px;
+            bottom: 100px;
+            left: 20px;
+            padding: 12px;
             border-radius: 15px;
-            background-color: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            background-color: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             z-index: 1000;
-            min-width: 180px;
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            transition: all 0.3s ease;
+            min-width: 200px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
         .map-legend:hover {
-            background-color: rgba(255, 255, 255, 0.7);
-            transform: translateY(-3px);
+            background-color: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Media query para desktop - posiciona a legenda mais à direita e mais para baixo */
+        @media (min-width: 992px) {
+            .map-legend {
+                bottom: 120px;
+                left: 40px;
+            }
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            margin: 12px 0;
-            font-size: 15px;
+            margin: 8px 0;
+            font-size: 14px;
             color: #333;
-            padding: 8px 12px;
+            padding: 6px 10px;
             transition: all 0.3s ease;
             border-radius: 8px;
+            border-left: 3px solid transparent;
         }
 
         .legend-item.clickable {
             cursor: pointer;
-            border-radius: 10px;
         }
 
         .legend-item.clickable:hover {
             background-color: rgba(255, 228, 214, 0.7);
             transform: translateX(3px);
+            border-left: 3px solid #FF7F50;
         }
 
         .legend-color {
-            width: 18px;
-            height: 18px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 12px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .legend-item.clickable:hover .legend-color {
-            transform: scale(1.2);
+            transform: scale(1.1);
         }
 
         .legend-text {
             font-weight: 500;
-            font-size: 18px;
+            font-size: 14px;
         }
 
         #nearestClinicLegend {
             cursor: pointer;
-            border-left: 3px solid transparent;
         }
 
         #nearestClinicLegend:hover {
             background-color: rgba(255, 127, 80, 0.1);
-            border-left: 3px solid #FF7F50;
+        }
+
+        .refresh-location {
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: 10px;
+            padding-top: 8px;
+        }
+
+        .refresh-location .legend-color {
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255, 127, 80, 0.2);
+        }
+
+        .refresh-location .legend-color i {
+            color: #FF7F50;
+            font-size: 16px;
+        }
+
+        .refresh-location:hover .legend-color i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .map-legend {
+                bottom: 100px;
+                left: 15px;
+                padding: 10px;
+                max-width: calc(100% - 30px);
+                min-width: 180px;
+                background-color: rgba(255, 255, 255, 0.95);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            }
+            
+            .legend-item {
+                margin: 5px 0;
+                padding: 5px 8px;
+                font-size: 13px;
+            }
+            
+            .legend-color {
+                width: 22px;
+                height: 22px;
+                margin-right: 10px;
+            }
+            
+            .legend-text {
+                font-size: 13px;
+            }
+
+            .refresh-location .legend-color i {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .map-legend {
+                bottom: 90px;
+                left: 10px;
+                padding: 10px;
+                border-radius: 12px;
+                max-width: calc(100% - 20px);
+                min-width: 150px;
+                background-color: rgba(255, 255, 255, 0.95);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            }
+            
+            .legend-item {
+                margin: 5px 0;
+                font-size: 12px;
+                padding: 4px 6px;
+            }
+            
+            .legend-color {
+                width: 20px;
+                height: 20px;
+                margin-right: 8px;
+            }
+            
+            .legend-text {
+                font-size: 12px;
+            }
+            
+            .refresh-location {
+                margin-top: 6px;
+                padding-top: 6px;
+            }
+            
+            .refresh-location .legend-color {
+                border: 1px solid rgba(255, 127, 80, 0.3);
+            }
+            
+            .refresh-location .legend-color i {
+                font-size: 12px;
+            }
         }
 
         .navigation {
@@ -545,13 +655,15 @@
             }
 
             .map-legend {
-                bottom: 30px;
-                left: 30px;
-                padding: 12px;
+                bottom: 40px;
+                left: 50px;
+                padding: 8px;
                 border-radius: 15px;
-                max-width: calc(100% - 70px);
-                background-color: rgba(255, 255, 255, 0.5);
-                min-width: 160px;
+                max-width: calc(100% - 40px);
+                min-width: 120px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
             }
 
             .legend-item {
@@ -609,29 +721,30 @@
             
             .map-legend {
                 bottom: 25px;
-                left: 20px;
-                padding: 10px;
-                border-radius: 12px;
-                max-width: calc(100% - 50px);
-                min-width: 140px;
-                background-color: rgba(255, 255, 255, 0.5);
+                left: 15px;
+                padding: 5px;
+                border-radius: 15px;
+                max-width: calc(100% - 40px);
+                min-width: 90px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
             }
             
             .legend-item {
-                margin: 4px 0;
-                padding: 4px 6px;
-                font-size: 11px;
+                margin: 6px 0;
+                font-size: 13px;
+                padding: 7px 10px;
             }
             
             .legend-color {
-                width: 12px;
-                height: 12px;
-                margin-right: 6px;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                width: 22px;
+                height: 22px;
+                margin-right: 10px;
             }
             
             .legend-text {
-                font-size: 15px;
+                font-size: 13px;
             }
             
             #map {
@@ -1151,29 +1264,30 @@
             
             .map-legend {
                 bottom: 25px;
-                left: 20px;
-                padding: 10px;
-                border-radius: 12px;
-                max-width: calc(100% - 50px);
-                min-width: 140px;
-                background-color: rgba(255, 255, 255, 0.5);
+                left: 15px;
+                padding: 5px;
+                border-radius: 15px;
+                max-width: calc(100% - 40px);
+                min-width: 90px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
             }
             
             .legend-item {
-                margin: 4px 0;
-                padding: 4px 6px;
-                font-size: 11px;
+                margin: 6px 0;
+                font-size: 13px;
+                padding: 7px 10px;
             }
             
             .legend-color {
-                width: 12px;
-                height: 12px;
-                margin-right: 6px;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                width: 22px;
+                height: 22px;
+                margin-right: 10px;
             }
             
             .legend-text {
-                font-size: 15px;
+                font-size: 13px;
             }
             
             #map {
@@ -1546,7 +1660,47 @@
 
         .legend-text {
             font-weight: 500;
-            font-size: 18px;
+            font-size: 12px;
+        }
+
+        .legend-item.clickable {
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .legend-item.clickable:hover {
+            background-color: rgba(255, 127, 80, 0.08);
+            border-left: 3px solid rgba(255, 127, 80, 0.8);
+        }
+
+        .legend-color {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .legend-item.clickable:hover .legend-color {
+            transform: none;
+        }
+
+        .legend-text {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        #nearestClinicLegend {
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        #nearestClinicLegend:hover {
+            background-color: rgba(255, 127, 80, 0.08);
+            border-left: 3px solid rgba(255, 127, 80, 0.8);
         }
     </style>
 </head>
@@ -3506,3 +3660,4 @@
     </script>
 </body>
 </html>
+

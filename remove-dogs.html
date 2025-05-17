@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Estilos gerais e reset */
         * {
             margin: 0;
             padding: 0;
@@ -30,6 +31,7 @@
             background-color: #FFE4D6;
         }
 
+        /* Cabeçalho */
         .header {
             background-color: #FFFFFF;
             padding: 0 20px;
@@ -46,6 +48,7 @@
             box-sizing: border-box;
         }
 
+        /* Botão voltar */
         .back-button {
             font-size: 24px;
             text-decoration: none;
@@ -70,10 +73,10 @@
 
         .back-button:hover {
             background-color: #FFFFFF;
-            transform: translateX(-3px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
+        /* Título */
         .title {
             font-size: 20px;
             font-weight: 600;
@@ -110,6 +113,7 @@
             background-color: #FF6347;
         }
 
+        /* Conteúdo principal */
         .content {
             flex: 1;
             padding: 20px;
@@ -119,11 +123,12 @@
             position: relative;
         }
 
+        /* Cartão de animal */
         .dog-card {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 20px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -134,16 +139,20 @@
         }
 
         .dog-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
         }
 
+        /* Status do animal */
         .dog-status {
             padding: 8px 16px;
             border-radius: 20px;
             font-weight: bold;
+            font-size: 14px;
             color: white;
             margin-bottom: 10px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .status-procurado {
@@ -154,6 +163,7 @@
             background-color: #4CAF50;
         }
 
+        /* Imagem do animal */
         .dog-image {
             width: 150px;
             height: 150px;
@@ -161,9 +171,17 @@
             background-size: cover;
             background-position: center;
             margin-bottom: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 3px solid #fff;
+            transition: all 0.3s ease;
         }
 
+        .dog-card:hover .dog-image {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        /* Informações do animal */
         .dog-info {
             text-align: center;
             width: 100%;
@@ -180,12 +198,14 @@
             justify-content: center;
             gap: 10px;
             color: #666;
+            font-size: 15px;
         }
 
         .dog-location i, .dog-breed i {
             color: #FF7F50;
         }
 
+        /* Botão remover */
         .remove-button {
             background-color: #f44336;
             color: white;
@@ -196,19 +216,36 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .remove-button:hover {
             background-color: #d32f2f;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
         }
 
+        .remove-button i {
+            font-size: 16px;
+        }
+
+        /* Mensagem vazia */
         .empty-message {
             text-align: center;
             padding: 40px;
             background: white;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .empty-message:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         .empty-message i {
@@ -220,8 +257,10 @@
         .empty-message p {
             margin-bottom: 20px;
             color: #666;
+            font-size: 16px;
         }
 
+        /* Botão adicionar */
         .add-button {
             background-color: #FF7F50;
             color: white;
@@ -232,14 +271,23 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
         }
 
         .add-button:hover {
             background-color: #ff6a3c;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 127, 80, 0.3);
         }
 
+        .add-button i {
+            font-size: 16px;
+        }
+
+        /* Carregamento */
         .loading {
             position: absolute;
             top: 0;
@@ -264,6 +312,86 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        /* Responsividade */
+        @media (min-width: 1024px) {
+            .header {
+                height: 70px;
+                margin: 0 30px;
+                border-radius: 0 0 25px 25px;
+            }
+            
+            .title {
+                font-size: 22px;
+            }
+            
+            .back-button {
+                width: 45px;
+                height: 45px;
+                font-size: 26px;
+                left: 20px;
+            }
+            
+            .content {
+                padding: 40px 30px;
+                max-width: 1000px;
+            }
+            
+            .dog-cards-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 25px;
+            }
+            
+            .dog-card {
+                margin-bottom: 0;
+                height: 100%;
+            }
+            
+            .dog-image {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .empty-message {
+                padding: 60px;
+                border-radius: 30px;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .empty-message i {
+                font-size: 60px;
+                margin-bottom: 25px;
+            }
+            
+            .empty-message p {
+                font-size: 18px;
+                margin-bottom: 30px;
+            }
+            
+            .add-button {
+                padding: 14px 28px;
+                font-size: 16px;
+            }
+        }
+        
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .content {
+                padding: 30px;
+            }
+            
+            .dog-cards-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            .dog-card {
+                margin-bottom: 0;
+                height: 100%;
+            }
         }
 
         @media (max-width: 768px) {
@@ -298,6 +426,20 @@
                 width: 35px;
                 height: 35px;
                 left: 10px;
+            }
+            
+            .dog-image {
+                width: 130px;
+                height: 130px;
+            }
+            
+            .dog-location, .dog-breed {
+                font-size: 14px;
+            }
+            
+            .remove-button {
+                padding: 10px 20px;
+                font-size: 14px;
             }
         }
     </style>
@@ -341,13 +483,20 @@
                 if (userDogs.length === 0) {
                     container.innerHTML = `
                         <div class="empty-message">
-                            <i class="fas fa-dog"></i>
+                            <i class="fas fa-paw"></i>
                             <p>Você não tem nenhum cão registrado.</p>
-                            <a href="add-dog.html" class="add-button">Adicionar Animal</a>
+                            <a href="add-dog.html" class="add-button">
+                                <i class="fas fa-plus"></i> Adicionar Animal
+                            </a>
                         </div>
                     `;
                     return;
                 }
+                
+                // Create container for grid layout
+                const cardsContainer = document.createElement('div');
+                cardsContainer.className = 'dog-cards-container';
+                container.appendChild(cardsContainer);
                 
                 // Create HTML for each dog
                 userDogs.forEach(dog => {
@@ -358,9 +507,12 @@
                     const statusClass = dog.estado === 'procurado' ? 'status-procurado' : 'status-encontrado';
                     const statusText = dog.estado === 'procurado' ? 'Procurado' : 'Encontrado';
                     
+                    // Default image if none provided
+                    const dogImage = dog.image || 'Images/dog-placeholder.jpg';
+                    
                     dogCard.innerHTML = `
                         <div class="dog-status ${statusClass}">${statusText}</div>
-                        <div class="dog-image" style="background-image: url(${dog.image})"></div>
+                        <div class="dog-image" style="background-image: url(${dogImage})"></div>
                         <div class="dog-info">
                             <div class="dog-details">
                                 <div class="dog-location">
@@ -372,11 +524,13 @@
                                     <span>${dog.raca || dog.breed || 'Raça não especificada'}</span>
                                 </div>
                             </div>
-                            <button class="remove-button" data-id="${dog.id}">Remover Animal</button>
+                            <button class="remove-button" data-id="${dog.id}">
+                                <i class="fas fa-trash-alt"></i> Remover Animal
+                            </button>
                         </div>
                     `;
                     
-                    container.appendChild(dogCard);
+                    cardsContainer.appendChild(dogCard);
                 });
                 
                 // Add event listeners to remove buttons

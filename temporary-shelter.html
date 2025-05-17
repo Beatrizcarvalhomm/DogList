@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DogList - Abrigo Temporário</title>
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Google Maps Script -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYiAXh7HwQgCEudiSzPR3bUuYQ1mnS3b4&libraries=geometry" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #FFE4D6;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #FFE4D6;
+        }
+
+        .header {
+            background-color: #FFFFFF;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin: 0 20px;
+            border-radius: 0 0 20px 20px;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        .back-button {
+            font-size: 24px;
+            text-decoration: none;
+            color: #FF7F50;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background-color: #FFFFFF;
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+        }
+
+        .back-button:hover {
+            background-color: #FFFFFF;
+            transform: translateY(-50%) translateX(-3px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: 0.5px;
+            text-align: center;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .title:hover {
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .title:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 2px;
+            background-color: #FF7F50;
+            border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .title:hover:after {
+            width: 120px;
+            background-color: #FF6347;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 25px 0 15px;
+            color: #ff9800;
+            border-left: 4px solid #ff9800;
+            padding-left: 10px;
+        }
+
+        .form-description {
+            background-color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-description p {
+            line-height: 1.6;
+            color: #666;
+        }
+
+        .photo-upload-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 3px solid #ff9800;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+            position: relative;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .photo-preview i {
+            font-size: 40px;
+            color: #ccc;
+        }
+
+        .change-photo-button {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .change-photo-button:hover {
+            background-color: #e68a00;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .photo-instructions {
+            font-size: 13px;
+            color: #777;
+            margin-top: 10px;
+            max-width: 280px;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid white;
+        }
+
+        .location-info {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .location-info i {
+            color: #ff9800;
+            font-size: 18px;
+        }
+
+        .use-my-location {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .use-my-location:hover {
+            background-color: #e68a00;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .options-group {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-label {
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: block;
+            color: #333;
+        }
+
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .option-checkbox {
+            display: none;
+        }
+
+        .option-checkbox + label {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .option-checkbox:checked + label {
+            background-color: #ff9800;
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+        }
+
+        .save-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+
+        .save-button:hover {
+            background-color: #e68a00;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .location-search {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .location-search input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .location-search input:focus {
+            outline: none;
+            border-color: #ff9800;
+            box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+        }
+
+        .location-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 15px 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f5f5f5;
+            transition: all 0.2s ease;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 20px;
+                margin: 0 10px;
+                height: 60px;
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+            
+            .back-button {
+                left: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 0 15px;
+                margin: 0 8px;
+                height: 50px;
+            }
+            
+            .title {
+                font-size: 18px;
+            }
+            
+            .back-button {
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="account.html" class="back-button">←</a>
+            <span class="title">Abrigo Temporário</span>
+        </div>
+
+        <div class="content">
+            <div class="form-description">
+                <p>Registe-se como abrigo temporário para animais encontrados. Os seus dados serão visíveis no mapa para que pessoas possam contactá-lo para acolher temporariamente um animal.</p>
+            </div>
+
+            <form id="shelterForm">
+                <h2 class="section-title">Os seus dados</h2>
+                <div class="photo-upload-container">
+                    <div class="photo-preview" id="photoPreview">
+                        <i class="fas fa-user"></i>
+                        <img id="previewImage" alt="Foto de perfil">
+                    </div>
+                    <label for="photoInput" class="change-photo-button">
+                        <i class="fas fa-camera"></i>
+                        <span>Escolher foto</span>
+                    </label>
+                    <input type="file" id="photoInput" class="file-input" accept="image/*">
+                    <p class="photo-instructions">Adicione uma foto de perfil que aparecerá quando alguém consultar o seu abrigo temporário.</p>
+                </div>
+
+                <h2 class="section-title">Localização</h2>
+                <div class="input-group">
+                    <div class="location-search">
+                        <input type="text" id="locationSearch" placeholder="Pesquisar endereço..." autocomplete="off">
+                        <div id="locationSuggestions" class="location-suggestions"></div>
+                    </div>
+                    <div class="map-container" id="map"></div>
+                    <div class="location-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="locationText">Clique no mapa ou pesquise um endereço</span>
+                    </div>
+                    <button type="button" class="use-my-location" onclick="useMyLocation()">
+                        <i class="fas fa-location-arrow"></i>
+                        Usar a minha localização atual
+                    </button>
+                    <input type="hidden" id="latitude" required>
+                    <input type="hidden" id="longitude" required>
+                </div>
+
+                <h2 class="section-title">Características dos animais que aceito</h2>
+                
+                <div class="options-group">
+                    <label class="option-label">Porte</label>
+                    <div class="options-container">
+                        <input type="checkbox" id="porteSmall" class="option-checkbox" value="small">
+                        <label for="porteSmall">Pequeno</label>
+                        
+                        <input type="checkbox" id="porteMedium" class="option-checkbox" value="medium">
+                        <label for="porteMedium">Médio</label>
+                        
+                        <input type="checkbox" id="porteLarge" class="option-checkbox" value="large">
+                        <label for="porteLarge">Grande</label>
+                    </div>
+                </div>
+
+                <div class="options-group">
+                    <label class="option-label">Idade</label>
+                    <div class="options-container">
+                        <input type="checkbox" id="idade1" class="option-checkbox" value="0-5">
+                        <label for="idade1">0-5 anos</label>
+                        
+                        <input type="checkbox" id="idade2" class="option-checkbox" value="5-10">
+                        <label for="idade2">5-10 anos</label>
+                        
+                        <input type="checkbox" id="idade3" class="option-checkbox" value="10+">
+                        <label for="idade3">+10 anos</label>
+                    </div>
+                </div>
+
+                <div class="options-group">
+                    <label class="option-label">Sexo</label>
+                    <div class="options-container">
+                        <input type="checkbox" id="sexoMale" class="option-checkbox" value="male">
+                        <label for="sexoMale">Macho</label>
+                        
+                        <input type="checkbox" id="sexoFemale" class="option-checkbox" value="female">
+                        <label for="sexoFemale">Fêmea</label>
+                    </div>
+                </div>
+
+                <div class="options-group">
+                    <label class="option-label">Castrado</label>
+                    <div class="options-container">
+                        <input type="checkbox" id="castradoYes" class="option-checkbox" value="yes">
+                        <label for="castradoYes">Sim</label>
+                        
+                        <input type="checkbox" id="castradoNo" class="option-checkbox" value="no">
+                        <label for="castradoNo">Não</label>
+                    </div>
+                </div>
+
+                <div class="options-group">
+                    <label class="option-label">Agressividade</label>
+                    <div class="options-container">
+                        <input type="checkbox" id="aggressivoNone" class="option-checkbox" value="none">
+                        <label for="aggressivoNone">Não é agressivo</label>
+                        
+                        <input type="checkbox" id="aggressivoHumans" class="option-checkbox" value="humans">
+                        <label for="aggressivoHumans">Agressivo com pessoas</label>
+                        
+                        <input type="checkbox" id="aggressivoAnimals" class="option-checkbox" value="animals">
+                        <label for="aggressivoAnimals">Agressivo com outros animais</label>
+                        
+                        <input type="checkbox" id="aggressivoBoth" class="option-checkbox" value="both">
+                        <label for="aggressivoBoth">Agressivo com pessoas e animais</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="save-button">Registar como Abrigo</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let map, marker;
+        let lastValidLocation;
+        let searchTimeout;
+        let geocoder;
+        let selectedLocation = null;
+        let photoFile = null;
+        
+        // Verificar se está logado
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+        
+        function initMap() {
+            try {
+                // Inicializar o geocoder
+                geocoder = new google.maps.Geocoder();
+                
+                // Coordenadas padrão (Lisboa)
+                const defaultLocation = {
+                    lat: 38.7223,
+                    lng: -9.1393
+                };
+                
+                // Criar mapa
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: defaultLocation,
+                    zoom: 13,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    fullscreenControl: true,
+                    streetViewControl: true,
+                    mapTypeControl: true
+                });
+                
+                // Adicionar evento de clique no mapa
+                map.addListener('click', function(event) {
+                    const clickedLocation = {
+                        lat: event.latLng.lat(),
+                        lng: event.latLng.lng()
+                    };
+                    
+                    // Colocar marcador e atualizar formulário
+                    placeMarker(clickedLocation);
+                });
+                
+                // Verificar se o usuário já tem uma localização salva
+                if (localStorage.getItem('userLocationLat') && localStorage.getItem('userLocationLng')) {
+                    const savedLocation = {
+                        lat: parseFloat(localStorage.getItem('userLocationLat')),
+                        lng: parseFloat(localStorage.getItem('userLocationLng'))
+                    };
+                    
+                    // Centralizar mapa na localização salva
+                    map.setCenter(savedLocation);
+                    map.setZoom(15);
+                }
+            } catch (error) {
+                console.error('Erro ao inicializar o mapa:', error);
+                alert('Ocorreu um erro ao inicializar o mapa. Por favor, recarregue a página.');
+            }
+        }
+
+        // Configurar campo de pesquisa de localização depois que o mapa estiver pronto
+        function setupLocationSearch() {
+            const locationInput = document.getElementById('locationSearch');
+            if (locationInput) {
+                locationInput.addEventListener('input', function() {
+                    searchLocation(this.value);
+                });
+            }
+        }
+        
+        function searchLocation(query) {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            const suggestionsContainer = document.getElementById('locationSuggestions');
+            
+            if (query.length < 3) {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+                    
+            searchTimeout = setTimeout(() => {
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ 'address': query }, function(results, status) {
+                    if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
+                        suggestionsContainer.innerHTML = '';
+                        
+                        results.slice(0, 5).forEach(result => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerHTML = result.formatted_address;
+                            div.addEventListener('click', function() {
+                                document.getElementById('locationSearch').value = result.formatted_address;
+                            
+                                // Armazenar o endereço formatado
+                                document.getElementById('locationText').textContent = result.formatted_address;
+                            
+                                // Obter e armazenar as coordenadas completas para garantir precisão
+                                const lat = result.geometry.location.lat();
+                                const lng = result.geometry.location.lng();
+                                document.getElementById('latitude').value = lat;
+                                document.getElementById('longitude').value = lng;
+                                
+                                lastValidLocation = {
+                                    lat: lat,
+                                    lng: lng,
+                                    address: result.formatted_address
+                                };
+                            
+                                // Mover o mapa para a localização e adicionar marcador
+                                if (map) {
+                                    map.setCenter(result.geometry.location);
+                                    map.setZoom(16);
+                                    
+                                    if (marker) marker.setMap(null);
+                                    marker = new google.maps.Marker({
+                                        position: result.geometry.location,
+                                        map: map,
+                                        title: result.formatted_address,
+                                        animation: google.maps.Animation.DROP,
+                                        icon: {
+                                            path: google.maps.SymbolPath.CIRCLE,
+                                            fillColor: '#ff9800',
+                                            fillOpacity: 0.9,
+                                            strokeColor: '#FFFFFF',
+                                            strokeWeight: 2,
+                                            scale: 10
+                                        }
+                                    });
+                                }
+                                
+                                document.querySelector('.location-info').style.border = '2px solid #ff9800';
+                            
+                                suggestionsContainer.style.display = 'none';
+                            });
+                            suggestionsContainer.appendChild(div);
+                        });
+                        
+                        suggestionsContainer.style.display = 'block';
+                    } else {
+                        suggestionsContainer.innerHTML = '<div class="suggestion-item">Nenhum resultado encontrado</div>';
+                        suggestionsContainer.style.display = 'block';
+                    }
+                });
+            }, 500);
+        }
+
+        function placeMarker(location) {
+            // Limpar marcador existente, se houver
+            if (marker) {
+                marker.setMap(null);
+            }
+            
+            // Adicionar novo marcador
+            marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                animation: google.maps.Animation.DROP
+            });
+            
+            // Atualizar inputs escondidos com latitude e longitude
+            document.getElementById('latitude').value = location.lat;
+            document.getElementById('longitude').value = location.lng;
+            
+            // Atualizar selectedLocation para uso no formulário
+            selectedLocation = {
+                lat: location.lat,
+                lng: location.lng
+            };
+            
+            // Obter endereço para o local selecionado
+            geocoder.geocode({
+                'location': location
+            }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                    document.getElementById('locationText').textContent = results[0].formatted_address;
+                } else {
+                    document.getElementById('locationText').textContent = 'Localização selecionada';
+                }
+            });
+        }
+
+        function useMyLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    
+                    // Centralizar mapa na posição do usuário
+                    map.setCenter(pos);
+                    map.setZoom(15);
+                    
+                    // Colocar marcador
+                    placeMarker(pos);
+                    
+                    // Atualizar selectedLocation para uso no formulário
+                    selectedLocation = {
+                        lat: pos.lat,
+                        lng: pos.lng
+                    };
+                    
+                }, function() {
+                    alert('Erro ao obter a localização atual. Por favor, tente novamente ou selecione manualmente no mapa.');
+                });
+            } else {
+                alert('Seu navegador não suporta geolocalização.');
+            }
+        }
+
+        // Evento para visualizar foto selecionada
+        document.getElementById('photoInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.match('image.*')) {
+                alert('Por favor, selecione uma imagem válida.');
+                return;
+            }
+            
+            photoFile = file;
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const previewImage = document.getElementById('previewImage');
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                document.querySelector('#photoPreview i').style.display = 'none';
+            };
+            
+            reader.readAsDataURL(file);
+        });
+
+        // Manipulador para envio do formulário
+        document.getElementById('shelterForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Verificar se a localização foi selecionada
+            if (!selectedLocation) {
+                alert('Por favor, selecione uma localização no mapa.');
+                return;
+            }
+            
+            // Recuperar a informação do usuário logado de várias possíveis fontes
+            const currentUserId = localStorage.getItem('currentUserId');
+            let userName = 'Anônimo';
+            let contacto = '';
+            
+            // Tentar obter do users array primeiro (forma mais atual)
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const currentUser = users.find(user => user.id === currentUserId);
+            
+            if (currentUser) {
+                userName = currentUser.name || 'Anônimo';
+                contacto = currentUser.phone || '';
+            } else {
+                // Tentar obter das keys individuais (forma anterior)
+                userName = localStorage.getItem('userName') || 'Anônimo';
+                contacto = localStorage.getItem('userPhone') || '';
+            }
+            
+            // Coletar as opções selecionadas
+            const porteOptions = getSelectedOptions('porte');
+            const idadeOptions = getSelectedOptions('idade');
+            const sexoOptions = getSelectedOptions('sexo');
+            const castradoOptions = getSelectedOptions('castrado');
+            const agressivoOptions = getSelectedOptions('aggressivo');
+            
+            // Verificar se pelo menos uma opção em cada categoria foi selecionada
+            if (
+                porteOptions.length === 0 ||
+                idadeOptions.length === 0 ||
+                sexoOptions.length === 0 ||
+                castradoOptions.length === 0 ||
+                agressivoOptions.length === 0
+            ) {
+                alert('Por favor, selecione pelo menos uma opção em cada categoria.');
+                return;
+            }
+            
+            // Se há uma foto, processar e salvar
+            let photoUrl = null;
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoUrl = e.target.result;
+                    // Continuar o processo de salvamento
+                    saveShelter(userName, contacto, porteOptions, idadeOptions, sexoOptions, castradoOptions, agressivoOptions, photoUrl);
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                // Verificar se já existe um abrigo com foto
+                const shelters = JSON.parse(localStorage.getItem('shelters') || '[]');
+                const currentUserId = localStorage.getItem('currentUserId');
+                const existingShelter = shelters.find(s => s.userId === currentUserId);
+                
+                // Se existir um abrigo e ele tiver uma foto, preservar a foto existente
+                if (existingShelter && existingShelter.photoUrl) {
+                    photoUrl = existingShelter.photoUrl;
+                }
+                
+                // Salvar com a foto existente ou sem foto
+                saveShelter(userName, contacto, porteOptions, idadeOptions, sexoOptions, castradoOptions, agressivoOptions, photoUrl);
+            }
+        });
+        
+        function saveShelter(userName, contacto, porteOptions, idadeOptions, sexoOptions, castradoOptions, agressivoOptions, photoUrl) {
+            const currentUserId = localStorage.getItem('currentUserId');
+            
+            // Salvar o abrigo no localStorage
+            let shelters = JSON.parse(localStorage.getItem('shelters') || '[]');
+            
+            // Verificar se o usuário já tem um abrigo registrado
+            const existingIndex = shelters.findIndex(s => s.userId === currentUserId);
+            
+            // Criar objeto do abrigo
+            const shelter = {
+                id: existingIndex !== -1 ? shelters[existingIndex].id : generateId(),
+                userId: currentUserId,
+                userName: userName,
+                contacto: contacto,
+                endereco: document.getElementById('locationText').textContent,
+                location: {
+                    lat: selectedLocation.lat,
+                    lng: selectedLocation.lng
+                },
+                aceita: {
+                    porte: porteOptions,
+                    idade: idadeOptions,
+                    sexo: sexoOptions,
+                    castrado: castradoOptions,
+                    agressivo: agressivoOptions
+                },
+                photoUrl: photoUrl
+            };
+            
+            if (existingIndex !== -1) {
+                // Atualizar abrigo existente
+                shelters[existingIndex] = shelter;
+                localStorage.setItem('shelters', JSON.stringify(shelters));
+                alert('Abrigo temporário atualizado com sucesso!');
+            } else {
+                // Adicionar novo abrigo
+                shelters.push(shelter);
+                localStorage.setItem('shelters', JSON.stringify(shelters));
+                alert('Abrigo temporário registado com sucesso!');
+            }
+            
+            // Redirecionar para a página principal
+            window.location.href = 'home.html';
+        }
+
+        // Função auxiliar para obter opções selecionadas por tipo
+        function getSelectedOptions(type) {
+            const options = [];
+            document.querySelectorAll(`input[id^="${type}"]:checked`).forEach(checkbox => {
+                options.push(checkbox.value);
+            });
+            return options;
+        }
+        
+        // Função para gerar ID único
+        function generateId() {
+            return 'shelter-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+
+        // Modificar a inicialização do mapa para garantir que todos os elementos do DOM estejam carregados
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se o Google Maps já foi carregado
+            function checkGoogleMapsLoaded() {
+                if (window.google && window.google.maps) {
+                    // Google Maps está carregado, inicializar o mapa
+                    initializeMap();
+                } else {
+                    // Verificar novamente em 100ms
+                    setTimeout(checkGoogleMapsLoaded, 100);
+                }
+            }
+            
+            // Iniciar verificação do carregamento do Google Maps
+            checkGoogleMapsLoaded();
+            
+            // Configurar a pesquisa de localização
+            setupLocationSearch();
+            
+            // Função para inicializar o mapa quando o Google Maps estiver carregado
+            function initializeMap() {
+                // Verificar se o elemento do mapa existe
+                if (document.getElementById('map')) {
+                    // Verificar se o usuário já tem um abrigo registrado
+                    const allShelters = JSON.parse(localStorage.getItem('shelters') || '[]');
+                    const currentUserId = localStorage.getItem('currentUserId');
+                    const existingShelter = allShelters.find(s => s.userId === currentUserId);
+                    
+                    if (existingShelter && existingShelter.location) {
+                        // Usar localização do abrigo existente
+                        initMap();
+                        
+                        // Definir a localização selecionada
+                        selectedLocation = {
+                            lat: existingShelter.location.lat,
+                            lng: existingShelter.location.lng
+                        };
+                        
+                        // Mostrar endereco
+                        document.getElementById('locationText').textContent = existingShelter.endereco || 'Localização selecionada';
+                        
+                        // Carregar foto se existir
+                        if (existingShelter.photoUrl) {
+                            const previewImage = document.getElementById('previewImage');
+                            previewImage.src = existingShelter.photoUrl;
+                            previewImage.style.display = 'block';
+                            document.querySelector('#photoPreview i').style.display = 'none';
+                        }
+                        
+                        // Preencher os campos selecionados
+                        if (existingShelter.aceita) {
+                            // Porte
+                            existingShelter.aceita.porte.forEach(value => {
+                                const porteCorrectedId = 'porte' + value.charAt(0).toUpperCase() + value.slice(1);
+                                if (document.getElementById(porteCorrectedId)) {
+                                    document.getElementById(porteCorrectedId).checked = true;
+                                }
+                            });
+                            
+                            // Idade
+                            existingShelter.aceita.idade.forEach(value => {
+                                let idadeId = '';
+                                if (value === '0-5') idadeId = 'idade1';
+                                else if (value === '5-10') idadeId = 'idade2';
+                                else if (value === '10+') idadeId = 'idade3';
+                                
+                                if (idadeId && document.getElementById(idadeId)) {
+                                    document.getElementById(idadeId).checked = true;
+                                }
+                            });
+                            
+                            // Sexo
+                            existingShelter.aceita.sexo.forEach(value => {
+                                const sexoCorrectedId = 'sexo' + value.charAt(0).toUpperCase() + value.slice(1);
+                                if (document.getElementById(sexoCorrectedId)) {
+                                    document.getElementById(sexoCorrectedId).checked = true;
+                                }
+                            });
+                            
+                            // Castrado
+                            existingShelter.aceita.castrado.forEach(value => {
+                                const castradoCorrectedId = 'castrado' + value.charAt(0).toUpperCase() + value.slice(1);
+                                if (document.getElementById(castradoCorrectedId)) {
+                                    document.getElementById(castradoCorrectedId).checked = true;
+                                }
+                            });
+                            
+                            // Agressividade
+                            existingShelter.aceita.agressivo.forEach(value => {
+                                const agressivoCorrectedId = 'aggressivo' + value.charAt(0).toUpperCase() + value.slice(1);
+                                if (document.getElementById(agressivoCorrectedId)) {
+                                    document.getElementById(agressivoCorrectedId).checked = true;
+                                }
+                            });
+                        }
+                    } else {
+                        // Tentar obter a localização do usuário
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                (position) => {
+                                    initMap();
+                                },
+                                (error) => {
+                                    console.error('Erro ao obter localização:', error);
+                                    initMap(); // Usar coordenadas padrão de Lisboa
+                                },
+                                {
+                                    enableHighAccuracy: true,
+                                    timeout: 5000,
+                                    maximumAge: 0
+                                }
+                            );
+                        } else {
+                            console.log('Geolocalização não suportada');
+                            initMap(); // Usar coordenadas padrão de Lisboa
+                        }
+                    }
+                } else {
+                    console.error('Elemento do mapa não encontrado no DOM');
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
