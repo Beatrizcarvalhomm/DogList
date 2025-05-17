@@ -34,19 +34,19 @@
         }
 
         .header {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 20px;
+            background-color: #FFFFFF;
+            padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 100;
             margin: 0 20px;
             border-radius: 0 0 20px 20px;
-            position: relative;
+            height: 60px;
+            box-sizing: border-box;
         }
 
         .back-button {
@@ -60,12 +60,12 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: #FFFFFF;
             position: absolute;
-            left: 20px;
-            top: 15px;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
             border: none;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             z-index: 1001;
@@ -170,10 +170,9 @@
             left: 40px;
             padding: 15px;
             border-radius: 15px;
-            background-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.7);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
             z-index: 1000;
-            backdrop-filter: blur(8px);
             min-width: 180px;
             border: 1px solid rgba(255, 255, 255, 0.7);
             transition: all 0.3s ease;
@@ -234,13 +233,12 @@
         }
 
         .navigation {
-            background-color: rgba(255, 228, 214, 0.95);
+            background-color: #FFFFFF;
             padding: 15px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
             border-radius: 20px 20px 0 0;
             margin: 0 15px;
         }
@@ -817,8 +815,9 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: absolute;
-            right: 20px;
-            top: 15px;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             box-shadow: 0 4px 15px rgba(255, 127, 80, 0.2);
         }
 
@@ -1076,80 +1075,48 @@
         @media (max-width: 768px) {
             .header {
                 flex-direction: row;
-                padding: 10px 20px;
-                gap: 8px;
-                justify-content: center;
-                height: auto;
-                position: relative;
+                padding: 0 20px;
+                margin: 0 10px;
+                height: 60px;
             }
             
             .title {
                 font-size: 20px;
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-                margin: 0;
-                text-align: center;
-            }
-            
-            .show-clinics-btn {
-                position: absolute;
-                right: 15px;
-                padding: 6px 12px;
-                font-size: 12px;
-                max-width: none;
             }
             
             .back-button {
-                position: absolute;
-                top: 10px;
                 left: 15px;
+            }
+            
+            .show-clinics-btn {
+                right: 15px;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 0 15px;
+                margin: 0 8px;
+                height: 50px;
+            }
+            
+            .title {
+                font-size: 18px;
+            }
+            
+            .back-button {
+                font-size: 22px;
                 width: 35px;
                 height: 35px;
-                font-size: 22px;
+                left: 10px;
             }
             
-            /* Outros ajustes responsivos existentes */
-            .gm-ui-hover-effect {
-                top: 5px !important;
-                right: 5px !important;
-            }
-            
-            .gm-style-iw {
-                max-width: 90vw !important;
-            }
-
-            .map-legend {
-                bottom: 30px;
-                left: 30px;
-                padding: 12px;
-                border-radius: 15px;
-                max-width: calc(100% - 70px);
-                background-color: rgba(255, 255, 255, 0.5);
-                min-width: 160px;
-            }
-
-            .legend-item {
-                margin: 6px 0;
-                padding: 5px 8px;
-                font-size: 13px;
-            }
-            
-            .legend-color {
-                width: 14px;
-                height: 14px;
-                margin-right: 8px;
-            }
-            
-            .legend-text {
-                font-size: 16px;
-            }
-
-            #map {
-                width: calc(100% - 30px);
-                margin: 15px auto;
-                min-height: 400px;
-                display: block;
+            .show-clinics-btn {
+                right: 10px;
+                padding: 5px 10px;
+                font-size: 11px;
             }
         }
 

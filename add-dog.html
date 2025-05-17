@@ -34,20 +34,19 @@
         }
 
         .header {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 20px;
+            background-color: #FFFFFF;
+            padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 100;
             margin: 0 20px;
             border-radius: 0 0 20px 20px;
-            position: relative;
-            min-height: 65px;
+            height: 60px;
+            box-sizing: border-box;
         }
 
         .back-button {
@@ -61,13 +60,12 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: #FFFFFF;
             position: absolute;
-            left: 20px;
+            left: 15px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
             border: none;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             z-index: 1001;
@@ -400,62 +398,37 @@
 
         /* Responsiveness */
         @media (max-width: 768px) {
-            .content {
-                padding: 15px;
-            }
-            
-            .photo-upload {
-                width: 150px;
-                height: 150px;
-            }
-            
-            .map-container {
-                height: 250px;
-            }
-
             .header {
-                padding: 20px;
-                min-height: 65px;
-                flex-direction: row;
-                margin: 0 10px 15px 10px;
-                position: relative;
+                padding: 0 20px;
+                margin: 0 10px;
+                height: 60px;
             }
             
             .title {
-                font-size: 18px;
-                margin: 0 auto;
+                font-size: 20px;
             }
-
+            
             .back-button {
-                top: 50%;
-                transform: translateY(-50%);
                 left: 15px;
             }
         }
 
         @media (max-width: 480px) {
             .header {
-                padding: 20px;
-                min-height: 65px;
-                flex-direction: row;
+                padding: 0 15px;
                 margin: 0 8px;
-                gap: 5px;
-            }
-            
-            .options-group {
-                padding: 15px;
-            }
-            
-            .save-button {
-                padding: 12px;
+                height: 50px;
             }
             
             .title {
-                font-size: 20px;
+                font-size: 18px;
             }
-
-            .title:after {
-                bottom: -6px;
+            
+            .back-button {
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 10px;
             }
         }
     </style>

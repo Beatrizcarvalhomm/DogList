@@ -34,27 +34,23 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #FFE4D6, #ffb38a);
-            padding: 20px;
+            background-color: #FFFFFF;
+            padding: 0 20px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            justify-content: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
-            z-index: 1000;
-            animation: slideDown 0.5s ease-out;
-            margin: 0 10px;
+            z-index: 100;
+            margin: 0 20px;
             border-radius: 0 0 20px 20px;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            height: 60px;
+            box-sizing: border-box;
         }
 
         .back-button {
-            font-size: 28px;
+            font-size: 24px;
             text-decoration: none;
             color: #FF7F50;
             width: 40px;
@@ -64,13 +60,15 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
-            background-color: rgba(255, 228, 214, 0.5);
+            background-color: #FFFFFF;
             position: absolute;
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
         }
 
         .back-button:hover {
@@ -263,13 +261,12 @@
         }
 
         .navigation {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: #FFFFFF;
             padding: 15px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
             border-radius: 20px 20px 0 0;
             margin: 0 15px;
         }
@@ -320,12 +317,33 @@
             100% { transform: translateX(-50%) scale(1); opacity: 0; }
         }
 
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 20px;
+                margin: 0 10px;
+                height: 60px;
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+            
+            .back-button {
+                left: 15px;
+            }
+            
+            .show-clinics-btn {
+                right: 15px;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+
         @media (max-width: 480px) {
             .header {
-                padding: 20px;
+                padding: 0 15px;
                 margin: 0 8px;
-                gap: 5px;
-                min-height: 48px;
+                height: 50px;
             }
             
             .title {
@@ -336,7 +354,13 @@
                 font-size: 22px;
                 width: 35px;
                 height: 35px;
-                left: 15px;
+                left: 10px;
+            }
+            
+            .show-clinics-btn {
+                right: 10px;
+                padding: 5px 10px;
+                font-size: 11px;
             }
         }
 
@@ -345,14 +369,17 @@
             background-color: #FF7F50;
             color: white;
             border: none;
-            padding: 8px 15px;
+            padding: 8px 14px;
             border-radius: 20px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 3px 10px rgba(255, 127, 80, 0.2);
             transition: all 0.3s ease;
-            margin-left: auto;
-            font-size: 14px;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.2);
         }
 
         .show-clinics-btn:hover {
@@ -461,29 +488,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        @media (max-width: 768px) {
-            .clinic-details {
-                padding: 15px;
-            }
-            
-            .clinic-name {
-                font-size: 22px;
-            }
-            
-            .info-section {
-                padding: 10px;
-            }
-            
-            .header {
-                padding: 20px;
-                margin: 0 10px 15px 10px;
-            }
-            
-            .title {
-                font-size: 18px;
-            }
         }
     </style>
 </head>
