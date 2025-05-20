@@ -15,13 +15,12 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
 
         body {
             background-color: #FFE4D6;
             min-height: 100vh;
-            font-family: 'Segoe UI', Arial, sans-serif;
             color: #333;
         }
 
@@ -270,75 +269,61 @@
 
         @media (max-width: 768px) {
             .map-legend {
-                bottom: 100px;
-                left: 15px;
-                padding: 10px;
-                max-width: calc(100% - 30px);
-                min-width: 180px;
-                background-color: rgba(255, 255, 255, 0.95);
-                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+                bottom: 40px;
+                left: 50px;
+                padding: 8px;
+                border-radius: 15px;
+                max-width: calc(100% - 40px);
+                min-width: 120px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
             }
-            
+
             .legend-item {
-                margin: 5px 0;
+                margin: 6px 0;
                 padding: 5px 8px;
-                font-size: 13px;
+                font-size: 14px;
             }
             
             .legend-color {
-                width: 22px;
-                height: 22px;
-                margin-right: 10px;
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
             }
             
             .legend-text {
-                font-size: 13px;
-            }
-
-            .refresh-location .legend-color i {
                 font-size: 14px;
             }
         }
 
         @media (max-width: 480px) {
             .map-legend {
-                bottom: 90px;
-                left: 10px;
-                padding: 10px;
-                border-radius: 12px;
-                max-width: calc(100% - 20px);
-                min-width: 150px;
-                background-color: rgba(255, 255, 255, 0.95);
-                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+                bottom: 25px;
+                left: 15px;
+                padding: 5px;
+                border-radius: 15px;
+                max-width: calc(100% - 40px);
+                min-width: 90px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
             }
             
             .legend-item {
-                margin: 5px 0;
-                font-size: 12px;
-                padding: 4px 6px;
+                margin: 6px 0;
+                font-size: 14px;
+                padding: 6px 10px;
             }
             
             .legend-color {
-                width: 20px;
-                height: 20px;
-                margin-right: 8px;
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
             }
             
             .legend-text {
-                font-size: 12px;
-            }
-            
-            .refresh-location {
-                margin-top: 6px;
-                padding-top: 6px;
-            }
-            
-            .refresh-location .legend-color {
-                border: 1px solid rgba(255, 127, 80, 0.3);
-            }
-            
-            .refresh-location .legend-color i {
-                font-size: 12px;
+                font-size: 14px;
             }
         }
 
@@ -669,56 +654,22 @@
             .legend-item {
                 margin: 6px 0;
                 padding: 5px 8px;
-                font-size: 13px;
+                font-size: 14px;
             }
             
             .legend-color {
-                width: 14px;
-                height: 14px;
-                margin-right: 8px;
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
             }
             
             .legend-text {
-                font-size: 16px;
-            }
-
-            #map {
-                width: calc(100% - 30px);
-                margin: 15px auto;
-                min-height: 400px;
-                display: block;
+                font-size: 14px;
             }
         }
 
         /* Ajustes adicionais para telas muito pequenas */
         @media (max-width: 480px) {
-            .header {
-                padding: 20px;
-                flex-direction: row;
-                margin: 0 8px;
-                gap: 5px;
-                min-height: 48px;
-            }
-            
-            .title {
-                font-size: 18px;
-            }
-            
-            .back-button {
-                font-size: 22px;
-                width: 35px;
-                height: 35px;
-                left: 15px;
-                top: 50%;
-                transform: translateY(-50%);
-            }
-            
-            .title:after {
-                bottom: -3px;
-                height: 1px;
-                width: 30px;
-            }
-            
             .map-legend {
                 bottom: 25px;
                 left: 15px;
@@ -733,25 +684,18 @@
             
             .legend-item {
                 margin: 6px 0;
-                font-size: 13px;
-                padding: 7px 10px;
+                font-size: 14px;
+                padding: 6px 10px;
             }
             
             .legend-color {
-                width: 22px;
-                height: 22px;
-                margin-right: 10px;
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
             }
             
             .legend-text {
-                font-size: 13px;
-            }
-            
-            #map {
-                width: calc(100% - 16px);
-                margin: 8px auto;
-                min-height: 350px;
-                border-radius: 15px;
+                font-size: 14px;
             }
         }
 
@@ -1276,18 +1220,18 @@
             
             .legend-item {
                 margin: 6px 0;
-                font-size: 13px;
-                padding: 7px 10px;
+                font-size: 14px;
+                padding: 6px 10px;
             }
             
             .legend-color {
-                width: 22px;
-                height: 22px;
-                margin-right: 10px;
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
             }
             
             .legend-text {
-                font-size: 13px;
+                font-size: 14px;
             }
             
             #map {
@@ -1660,7 +1604,7 @@
 
         .legend-text {
             font-weight: 500;
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .legend-item.clickable {

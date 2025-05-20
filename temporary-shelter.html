@@ -73,7 +73,6 @@
 
         .back-button:hover {
             background-color: #FFFFFF;
-            transform: translateY(-50%) translateX(-3px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
@@ -379,8 +378,18 @@
                 height: 60px;
             }
             
+            .title-container {
+                margin: 15px 15px 25px;
+                padding: 12px 0;
+            }
+            
             .title {
                 font-size: 20px;
+            }
+            
+            .title:after {
+                width: 80px;
+                bottom: -6px;
             }
             
             .back-button {
@@ -395,8 +404,18 @@
                 height: 50px;
             }
             
+            .title-container {
+                margin: 12px 10px 20px;
+                padding: 10px 0;
+            }
+            
             .title {
                 font-size: 18px;
+            }
+            
+            .title:after {
+                width: 70px;
+                bottom: -5px;
             }
             
             .back-button {
@@ -410,10 +429,10 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <header class="header">
             <a href="account.html" class="back-button">←</a>
             <span class="title">Abrigo Temporário</span>
-        </div>
+        </header>
 
         <div class="content">
             <div class="form-description">
