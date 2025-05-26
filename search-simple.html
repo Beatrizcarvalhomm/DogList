@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Simples - Pesquisa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .filter { margin: 10px 0; }
+        .result { border: 1px solid #ccc; margin: 10px 0; padding: 10px; }
+        button { padding: 10px 20px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Teste Simples - Filtros de Pesquisa</h1>
+    
+    <div class="filter">
+        <label>Estado:</label>
+        <select id="estado">
+            <option value="">Todos</option>
+            <option value="encontrado">Encontrado</option>
+            <option value="procurado">Procurado</option>
+        </select>
+    </div>
+    
+    <div class="filter">
+        <label>Sexo:</label>
+        <select id="sexo">
+            <option value="">Todos</option>
+            <option value="male">Macho</option>
+            <option value="female">Fêmea</option>
+        </select>
+    </div>
+    
+    <div class="filter">
+        <label>Porte:</label>
+        <select id="porte">
+            <option value="">Todos</option>
+            <option value="small">Pequeno</option>
+            <option value="medium">Médio</option>
+            <option value="large">Grande</option>
+        </select>
+    </div>
+    
+    <button onclick="pesquisar()">Pesquisar</button>
+    <button onclick="limparFiltros()">Limpar Filtros</button>
+    
+    <div id="resultados"></div>
+
+    <script>
+        // Dados de teste
+        const dadosTeste = [
+            {
+                id: 'test-1',
+                estado: 'procurado',
+                raca: 'Labrador',
+                idade: '0-5',
+                sexo: 'male',
+                castrado: true,
+                agressivo: 'none',
+                porte: 'large',
+                endereco: 'Lisboa, Portugal',
+                descricao: 'Contato: 912345678'
+            },
+            {
+                id: 'test-2',
+                estado: 'encontrado',
+                raca: 'Pastor Alemão',
+                idade: '5-10',
+                sexo: 'female',
+                castrado: false,
+                agressivo: 'animals',
+                porte: 'large',
+                endereco: 'Porto, Portugal',
+                descricao: 'Contato: 923456789'
+            },
+            {
+                id: 'test-3',
+                estado: 'procurado',
+                raca: 'Chihuahua',
+                idade: '0-5',
+                sexo: 'female',
+                castrado: true,
+                agressivo: 'none',
+                porte: 'small',
+                endereco: 'Braga, Portugal',
+                descricao: 'Contato: 934567890'
+            }
+        ];
+
+        async function carregarDados() {
+            try {
+                console.log('🔄 Tentando carregar do Supabase...');
+                
+                if (!window.supabase) {
+                    throw new Error('Supabase não disponível');
+                }
+                
+                const { data, error } = await window.supabase
+                    .from('dogs')
+                    .select('*');
+                
+                if (error) throw error;
+                
+                console.log('✅ Dados carregados do Supabase:', data);
+                return data || [];
+                
+            } catch (error) {
+                console.log('❌ Erro ao carregar do Supabase:', error.message);
+                console.log('🧪 Usando dados de teste');
+                return dadosTeste;
+            }
+        }
+
+        async function pesquisar() {
+            console.log('\n=== INICIANDO PESQUISA ===');
+            
+            const filtros = {
+                estado: document.getElementById('estado').value,
+                sexo: document.getElementById('sexo').value,
+                porte: document.getElementById('porte').value
+            };
+            
+            console.log('🔍 Filtros:', filtros);
+            
+            const todosCaes = await carregarDados();
+            console.log(`🐕 Total de cães: ${todosCaes.length}`);
+            
+            const caesFiltrados = todosCaes.filter(cao => {
+                let aprovado = true;
+                
+                if (filtros.estado && cao.estado) {
+                    const estadoMatch = cao.estado.toLowerCase() === filtros.estado.toLowerCase();
+                    console.log(`🏷️ ${cao.id} - Estado: '${cao.estado}' vs '${filtros.estado}' = ${estadoMatch ? '✅' : '❌'}`);
+                    aprovado = aprovado && estadoMatch;
+                }
+                
+                if (filtros.sexo && cao.sexo) {
+                    const sexoMatch = cao.sexo === filtros.sexo;
+                    console.log(`⚧️ ${cao.id} - Sexo: '${cao.sexo}' vs '${filtros.sexo}' = ${sexoMatch ? '✅' : '❌'}`);
+                    aprovado = aprovado && sexoMatch;
+                }
+                
+                if (filtros.porte && cao.porte) {
+                    const porteMatch = cao.porte === filtros.porte;
+                    console.log(`📏 ${cao.id} - Porte: '${cao.porte}' vs '${filtros.porte}' = ${porteMatch ? '✅' : '❌'}`);
+                    aprovado = aprovado && porteMatch;
+                }
+                
+                console.log(`🎯 ${cao.id} - Resultado: ${aprovado ? '✅ APROVADO' : '❌ REJEITADO'}`);
+                return aprovado;
+            });
+            
+            console.log(`\n🏁 RESULTADO: ${caesFiltrados.length} de ${todosCaes.length} cães aprovados`);
+            
+            exibirResultados(caesFiltrados);
+        }
+
+        function exibirResultados(caes) {
+            const container = document.getElementById('resultados');
+            
+            if (caes.length === 0) {
+                container.innerHTML = '<p><strong>Nenhum cão encontrado com os filtros selecionados.</strong></p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <h3>Resultados (${caes.length} cães encontrados):</h3>
+                ${caes.map(cao => `
+                    <div class="result">
+                        <strong>ID:</strong> ${cao.id}<br>
+                        <strong>Estado:</strong> ${cao.estado}<br>
+                        <strong>Raça:</strong> ${cao.raca}<br>
+                        <strong>Sexo:</strong> ${cao.sexo}<br>
+                        <strong>Porte:</strong> ${cao.porte}<br>
+                        <strong>Endereço:</strong> ${cao.endereco}<br>
+                        <strong>Contato:</strong> ${cao.descricao}
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function limparFiltros() {
+            document.getElementById('estado').value = '';
+            document.getElementById('sexo').value = '';
+            document.getElementById('porte').value = '';
+            document.getElementById('resultados').innerHTML = '';
+            console.log('🧹 Filtros limpos');
+        }
+
+        // Carregar dados iniciais
+        window.addEventListener('load', () => {
+            console.log('📄 Página carregada');
+            pesquisar(); // Mostrar todos os cães inicialmente
+        });
+    </script>
+</body>
+</html> 

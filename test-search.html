@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Supabase - DogList</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+</head>
+<body>
+    <h1>Teste de Conexão Supabase</h1>
+    <button onclick="testSupabase()">Testar Conexão</button>
+    <div id="results"></div>
+
+    <script>
+        async function testSupabase() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testando...</p>';
+            
+            try {
+                console.log('Testando Supabase...');
+                console.log('window.supabase:', typeof window.supabase);
+                
+                if (!window.supabase) {
+                    throw new Error('Supabase não inicializado');
+                }
+                
+                const { data, error } = await window.supabase
+                    .from('dogs')
+                    .select('*');
+                
+                if (error) {
+                    console.error('Erro:', error);
+                    resultsDiv.innerHTML = `<p style="color: red;">Erro: ${error.message}</p>`;
+                    return;
+                }
+                
+                console.log('Dados recebidos:', data);
+                resultsDiv.innerHTML = `
+                    <p style="color: green;">✅ Conexão bem-sucedida!</p>
+                    <p>Número de cães encontrados: ${data.length}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('Erro no teste:', error);
+                resultsDiv.innerHTML = `<p style="color: red;">❌ Erro: ${error.message}</p>`;
+            }
+        }
+        
+        // Testar automaticamente ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(testSupabase, 1000);
+        });
+    </script>
+</body>
+</html> 

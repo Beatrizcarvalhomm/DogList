@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Clínicas - DogList</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { border: 1px solid #ccc; margin: 10px 0; padding: 10px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Clínicas Veterinárias</h1>
+    <button onclick="testClinics()">Testar Clínicas</button>
+    <button onclick="createTestClinic()">Criar Clínica de Teste</button>
+    <div id="results"></div>
+
+    <script>
+        async function testClinics() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testando clínicas...</p>';
+            
+            try {
+                console.log('Testando tabela de clínicas...');
+                
+                if (!window.supabase) {
+                    throw new Error('Supabase não inicializado');
+                }
+                
+                // Testar se a tabela existe
+                const { data, error } = await window.supabase
+                    .from('clinics')
+                    .select('*');
+                
+                if (error) {
+                    console.error('Erro ao consultar clínicas:', error);
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Erro ao consultar clínicas:</h3>
+                            <p><strong>Código:</strong> ${error.code}</p>
+                            <p><strong>Mensagem:</strong> ${error.message}</p>
+                            <p><strong>Detalhes:</strong> ${error.details}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                console.log('Clínicas encontradas:', data);
+                
+                if (data && data.length > 0) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Tabela de clínicas encontrada!</h3>
+                            <p><strong>Número de clínicas:</strong> ${data.length}</p>
+                            <h4>Clínicas encontradas:</h4>
+                            ${data.map(clinic => `
+                                <div class="result">
+                                    <strong>ID:</strong> ${clinic.id}<br>
+                                    <strong>Nome:</strong> ${clinic.nome || 'Não informado'}<br>
+                                    <strong>Endereço:</strong> ${clinic.endereco || 'Não informado'}<br>
+                                    <strong>Telefone:</strong> ${clinic.telefone || 'Não informado'}<br>
+                                    <strong>Localização:</strong> ${clinic.location ? JSON.stringify(clinic.location) : 'Não informado'}<br>
+                                    <strong>Criado em:</strong> ${clinic.created_at || 'Não informado'}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Tabela de clínicas existe, mas está vazia</h3>
+                            <p>A tabela foi encontrada, mas não contém nenhuma clínica.</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Erro no teste:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erro no teste:</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function createTestClinic() {
+            try {
+                console.log('Criando clínica de teste...');
+                
+                if (!window.supabase) {
+                    throw new Error('Supabase não inicializado');
+                }
+                
+                const testClinic = {
+                    nome: 'Clínica Veterinária Teste',
+                    endereco: 'Rua de Teste, 123, Lisboa',
+                    telefone: '912345678',
+                    location: {
+                        lat: 38.7223,
+                        lng: -9.1393
+                    }
+                };
+                
+                const { data, error } = await window.supabase
+                    .from('clinics')
+                    .insert([testClinic])
+                    .select();
+                
+                if (error) {
+                    console.error('Erro ao criar clínica:', error);
+                    alert(`Erro ao criar clínica: ${error.message}`);
+                    return;
+                }
+                
+                console.log('Clínica criada:', data);
+                alert('Clínica de teste criada com sucesso!');
+                
+                // Recarregar a lista
+                testClinics();
+                
+            } catch (error) {
+                console.error('Erro ao criar clínica:', error);
+                alert(`Erro: ${error.message}`);
+            }
+        }
+        
+        // Testar automaticamente ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(testClinics, 1000);
+        });
+    </script>
+</body>
+</html> 

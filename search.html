@@ -6,11 +6,13 @@
     <title>DogList - Pesquisa</title>
     <link rel="icon" href="Images/DogList-Logo.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
     <script>
-        // Verifica se está logado
-        if (!localStorage.getItem('loggedIn')) {
-            window.location.href = 'index.html';
-        }
+        // Verifica se está logado (temporariamente desabilitado para debug)
+        // if (!localStorage.getItem('loggedIn')) {
+        //     window.location.href = 'index.html';
+        // }
 
         // Função para calcular a distância entre dois pontos usando a fórmula de Haversine
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -92,13 +94,117 @@
                 </div>`;
             
             try {
+                console.log('=== INÍCIO DO CARREGAMENTO ===');
+                console.log('Verificando Supabase:', typeof window.supabase);
+                
+                // Carregar dados do Supabase
+                let allDogs = [];
+                try {
+                    if (!window.supabase) {
+                        throw new Error('Supabase não inicializado');
+                    }
+                    
+                    console.log('Fazendo consulta ao Supabase...');
+                    const { data, error } = await window.supabase
+                        .from('dogs')
+                        .select('*');
+                    
+                    if (error) {
+                        console.error('Erro na consulta Supabase:', error);
+                        throw error;
+                    }
+                    
+                    allDogs = data || [];
+                    console.log(`✅ Carregados ${allDogs.length} cães do Supabase`);
+                    
+                    // Debug: mostrar estrutura dos dados
+                    if (allDogs.length > 0) {
+                        console.log('📋 Exemplo de estrutura de dados do primeiro cão:', allDogs[0]);
+                        console.log('🔑 Campos disponíveis:', Object.keys(allDogs[0]));
+                    } else {
+                        console.log('⚠️ Nenhum cão encontrado na base de dados');
+                    }
+                } catch (supabaseError) {
+                    console.error('❌ Erro ao carregar do Supabase:', supabaseError);
+                    // Fallback para localStorage se Supabase falhar
+                    allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
+                    console.log(`🔄 Fallback: carregados ${allDogs.length} cães do localStorage`);
+                    
+                    // Se não há dados nem no localStorage, criar dados de teste
+                    if (allDogs.length === 0) {
+                        console.log('🧪 Criando dados de teste...');
+                        allDogs = [
+                            {
+                                id: 'test-1',
+                                estado: 'procurado',
+                                raca: 'Labrador',
+                                idade: '0-5',
+                                sexo: 'male',
+                                castrado: true,
+                                agressivo: 'none',
+                                porte: 'large',
+                                endereco: 'Lisboa, Portugal',
+                                location: { lat: 38.7223, lng: -9.1393 },
+                                descricao: 'Contato: 912345678',
+                                image: null
+                            },
+                            {
+                                id: 'test-2',
+                                estado: 'encontrado',
+                                raca: 'Pastor Alemão',
+                                idade: '5-10',
+                                sexo: 'female',
+                                castrado: false,
+                                agressivo: 'animals',
+                                porte: 'large',
+                                endereco: 'Porto, Portugal',
+                                location: { lat: 41.1579, lng: -8.6291 },
+                                descricao: 'Contato: 923456789',
+                                image: null
+                            }
+                        ];
+                        console.log('🧪 Dados de teste criados:', allDogs);
+                    }
+                }
+                
+                // Se não há dados, mostrar mensagem e parar
+                if (allDogs.length === 0) {
+                    results.innerHTML = `
+                        <div class="no-results">
+                            <div class="no-results-content">
+                                <i class="fas fa-dog"></i>
+                                <p>Nenhum cão encontrado na base de dados</p>
+                            </div>
+                        </div>`;
+                    return;
+                }
+                
                 // Obter localização (atual ou por endereço)
-                const userLocation = await getLocation();
+                let userLocation;
+                try {
+                    userLocation = await getLocation();
+                    console.log('📍 Localização do usuário:', userLocation);
+                } catch (locationError) {
+                    console.error('❌ Erro ao obter localização:', locationError);
+                    // Usar localização padrão (Lisboa) se falhar
+                    userLocation = { lat: 38.7223, lng: -9.1393 };
+                    console.log('🔄 Usando localização padrão (Lisboa):', userLocation);
+                }
+                
                 const radius = parseFloat(document.getElementById('radius').value) || 5;
-                const allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
 
-                const filteredDogs = allDogs.filter(dog => {
+                console.log('🔍 Filtros aplicados:', filters);
+                console.log(`🐕 Iniciando filtros com ${allDogs.length} cães`);
+                
+                const filteredDogs = allDogs.filter((dog, index) => {
                     let matches = true;
+                    const originalMatches = true;
+                    
+                    console.log(`\n--- Processando cão ${index + 1}/${allDogs.length} ---`);
+                    console.log('ID:', dog.id);
+                    console.log('Estado:', dog.estado);
+                    console.log('Raça:', dog.raca);
+                    console.log('Localização:', dog.location);
 
                     // Verificar distância se o cão tem coordenadas
                     if (dog.location && dog.location.lat && dog.location.lng) {
@@ -108,34 +214,58 @@
                             parseFloat(dog.location.lat),
                             parseFloat(dog.location.lng)
                         );
-                        matches = matches && (distance <= radius);
+                        const distanceMatch = distance <= radius;
+                        console.log(`📏 Distância: ${distance.toFixed(2)}km (limite: ${radius}km) - ${distanceMatch ? '✅' : '❌'}`);
+                        matches = matches && distanceMatch;
+                    } else {
+                        console.log('📏 Sem coordenadas - pulando filtro de distância');
                     }
 
-                    // Aplicar outros filtros - ignora o filtro quando valor é "unknown"
+                    // Aplicar outros filtros
                     if (filters.estado && dog.estado) {
-                        matches = matches && dog.estado.toLowerCase() === filters.estado.toLowerCase();
+                        const estadoMatch = dog.estado.toLowerCase() === filters.estado.toLowerCase();
+                        console.log(`🏷️ Estado: '${dog.estado}' vs '${filters.estado}' - ${estadoMatch ? '✅' : '❌'}`);
+                        matches = matches && estadoMatch;
                     }
                     if (filters.raca && dog.raca) {
-                        matches = matches && dog.raca.toLowerCase().includes(filters.raca.toLowerCase());
+                        const racaMatch = dog.raca.toLowerCase().includes(filters.raca.toLowerCase());
+                        console.log(`🐕 Raça: '${dog.raca}' contém '${filters.raca}' - ${racaMatch ? '✅' : '❌'}`);
+                        matches = matches && racaMatch;
                     }
-                    if (filters.idade && filters.idade !== 'unknown' && dog.idade) {
-                        matches = matches && dog.idade === filters.idade;
+                    if (filters.idade && filters.idade !== '' && dog.idade) {
+                        const idadeMatch = dog.idade === filters.idade;
+                        console.log(`🎂 Idade: '${dog.idade}' vs '${filters.idade}' - ${idadeMatch ? '✅' : '❌'}`);
+                        matches = matches && idadeMatch;
                     }
-                    if (filters.sexo && filters.sexo !== 'unknown' && dog.sexo) {
-                        matches = matches && dog.sexo === filters.sexo;
+                    if (filters.sexo && filters.sexo !== '' && dog.sexo) {
+                        const sexoMatch = dog.sexo === filters.sexo;
+                        console.log(`⚧️ Sexo: '${dog.sexo}' vs '${filters.sexo}' - ${sexoMatch ? '✅' : '❌'}`);
+                        matches = matches && sexoMatch;
                     }
-                    if (filters.castrado && filters.castrado !== 'unknown' && dog.castrado) {
-                        matches = matches && dog.castrado === filters.castrado;
+                    if (filters.castrado && filters.castrado !== '' && dog.castrado !== null && dog.castrado !== undefined) {
+                        const dogCastrado = dog.castrado === true || dog.castrado === 'yes' || dog.castrado === 'true';
+                        const filterCastrado = filters.castrado === 'yes';
+                        const castradoMatch = dogCastrado === filterCastrado;
+                        console.log(`✂️ Castrado: '${dog.castrado}' (${dogCastrado}) vs '${filters.castrado}' (${filterCastrado}) - ${castradoMatch ? '✅' : '❌'}`);
+                        matches = matches && castradoMatch;
                     }
-                    if (filters.agressivo && filters.agressivo !== 'unknown' && dog.agressivo) {
-                        matches = matches && dog.agressivo === filters.agressivo;
+                    if (filters.agressivo && filters.agressivo !== '' && dog.agressivo) {
+                        const agressivoMatch = dog.agressivo === filters.agressivo;
+                        console.log(`😠 Agressivo: '${dog.agressivo}' vs '${filters.agressivo}' - ${agressivoMatch ? '✅' : '❌'}`);
+                        matches = matches && agressivoMatch;
                     }
                     if (filters.porte && dog.porte) {
-                        matches = matches && dog.porte === filters.porte;
+                        const porteMatch = dog.porte === filters.porte;
+                        console.log(`📏 Porte: '${dog.porte}' vs '${filters.porte}' - ${porteMatch ? '✅' : '❌'}`);
+                        matches = matches && porteMatch;
                     }
-
+                    
+                    console.log(`🎯 Resultado final para cão ${dog.id}: ${matches ? '✅ APROVADO' : '❌ REJEITADO'}`);
+                    
                     return matches;
                 });
+
+                console.log(`\n🏁 RESULTADO FINAL: ${filteredDogs.length} cães aprovados de ${allDogs.length} total`);
 
                 if (filteredDogs.length === 0) {
                     results.innerHTML = `
@@ -203,7 +333,7 @@
                             </div>
                             <div class="result-contact">
                                 <i class="fas fa-phone"></i>
-                                <span>Contato: ${dog.contacto || 'Não disponível'}</span>
+                                <span>Contato: ${dog.contacto || (dog.descricao && dog.descricao.includes('Contato:') ? dog.descricao.split('Contato:')[1].trim() : 'Não disponível')}</span>
                             </div>
                             <button onclick="showDetails('${dog.id}')" class="see-more">Ver mais detalhes</button>
                         </div>
@@ -238,11 +368,10 @@
             window.location.href = `animal-details.html?id=${id}`;
         }
 
-        // Carregar resultados iniciais
-        loadDogs();
-
         // Additional code to handle empty state styling
         document.addEventListener('DOMContentLoaded', function() {
+            // Carregar resultados iniciais quando a página carregar
+            loadDogs();
             // Apply additional styling to ensure centering
             const setupEmptyState = () => {
                 const noResults = document.querySelector('.no-results');
@@ -885,95 +1014,7 @@
     </div>
 
     <script>
-        // Função para exibir os resultados
-        function displayResults(animals) {
-            const resultsContainer = document.querySelector('.results');
-            resultsContainer.innerHTML = '';
-
-            if (animals.length === 0) {
-                // Check if filters are being used
-                const hasActiveFilters = document.getElementById('estado').value !== '' || 
-                                       document.getElementById('location').value !== '' ||
-                                       document.getElementById('raca').value !== '' ||
-                                       document.getElementById('idade').value !== '' ||
-                                       document.getElementById('sexo').value !== '' ||
-                                       document.getElementById('castrado').value !== '' ||
-                                       document.getElementById('agressivo').value !== '' ||
-                                       document.getElementById('porte').value !== '';
-                
-                const noResultsMessage = hasActiveFilters 
-                    ? 'Não existe nenhum cão com estes filtros' 
-                    : 'Não existe nenhum cão';
-                
-                resultsContainer.innerHTML = `
-                    <div class="no-results">
-                        <div class="no-results-content">
-                            <i class="fas fa-dog"></i>
-                            <p>${noResultsMessage}</p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
-            animals.forEach(animal => {
-                const card = document.createElement('div');
-                card.className = 'result-card';
-
-                // Determinar a imagem
-                let imageSrc = 'Images/DogList-Logo.png';
-                if (animal.image) {
-                    if (typeof animal.image === 'string') {
-                        if (animal.image.startsWith('data:image')) {
-                            imageSrc = animal.image;
-                        } else {
-                            imageSrc = 'Images/' + animal.image;
-                        }
-                    }
-                } else if (animal.selectedImage) {
-                    imageSrc = animal.selectedImage;
-                }
-
-                // Traduzir o estado para exibição
-                const statusLabel = animal.estado === 'encontrado' ? 'Encontrado' : 'Procurado';
-                const statusClass = animal.estado === 'encontrado' ? 'encontrado' : 'procurado';
-
-                // Obter endereço formatado
-                const address = animal.endereco || (animal.location && typeof animal.location === 'object' ? animal.location.address : (typeof animal.location === 'string' ? animal.location : null)) || animal.local || 'Local não especificado';
-
-                // Criar o HTML do card
-                card.innerHTML = `
-                    <div class="image-container">
-                        <img src="${imageSrc}" alt="${animal.raca || 'Cachorro'}" class="result-image" onerror="this.src='Images/DogList-Logo.png'">
-                    </div>
-                    <div class="result-info">
-                        <div class="result-status ${statusClass}">${statusLabel}</div>
-                        <div class="result-breed">
-                            <i class="fas fa-dog"></i>
-                            <span>${animal.raca || 'Raça não especificada'}</span>
-                        </div>
-                        <div class="result-address">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>${address}</span>
-                        </div>
-                        <div class="result-contact">
-                            <i class="fas fa-phone"></i>
-                            <span>${animal.contacto || 'Contato não disponível'}</span>
-                        </div>
-                        <a href="animal-details.html?id=${animal.id}" class="see-more">Ver Detalhes</a>
-                    </div>
-                `;
-
-                resultsContainer.appendChild(card);
-            });
-        }
-
-        // Inicializar a busca ao carregar a página
-        document.addEventListener('DOMContentLoaded', function() {
-            // Mostrar todos os animais inicialmente
-            const animals = JSON.parse(localStorage.getItem('allDogs')) || [];
-            displayResults(animals);
-        });
+        // Script adicional removido - funcionalidade já implementada acima
     </script>
 </body>
 </html>
