@@ -13,6 +13,19 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Inicializar o cliente Supabase corretamente
+        const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+        
+        // Inicializar o cliente Supabase de forma correta e explícita
+        const { createClient } = supabase;
+        window.supabase = createClient(supabaseUrl, supabaseKey);
+    </script>
+
     <style>
         /* Reset geral e estilos base */
         * {
@@ -521,7 +534,7 @@
         <div class="map-legend">
             <div class="legend-item clickable" id="legendVoceEstaAqui" onclick="centerMapOnUserLocation()">
                 <div class="legend-color" style="background-color: #007bff;"></div>
-                <span class="legend-text">Você está aqui</span>
+                <span class="legend-text">Está aqui</span>
             </div>
             <div class="legend-item" id="legendProcurados">
                 <div class="legend-color" style="background-color: #e74c3c;"></div>
@@ -690,16 +703,16 @@
             userMarker = new google.maps.Marker({
                 position: location,
                 map: map,
+                title: 'Está aqui',
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: '#007bff',
-                    fillOpacity: 0.9,
-                    strokeColor: '#FFFFFF',
+                    fillColor: '#4285F4',
+                    fillOpacity: 1,
                     strokeWeight: 2,
-                    scale: 8
+                    strokeColor: '#FFFFFF',
+                    scale: 12
                 },
-                title: 'Sua localização',
-                zIndex: 10
+                zIndex: 1 // Valor baixo para ficar abaixo dos outros marcadores
             });
 
             // Adicionar evento de clique ao marcador
@@ -777,6 +790,32 @@
                     return null;
                 }
                 
+                // Verificar se a localização do animal está muito próxima da localização do usuário
+                // e adicionar um pequeno deslocamento se necessário
+                if (userMarker) {
+                    const userPosition = userMarker.getPosition();
+                    const userLat = userPosition.lat();
+                    const userLng = userPosition.lng();
+                    
+                    // Calcular a distância aproximada entre os pontos
+                    const distance = calculateDistance(lat, lng, userLat, userLng);
+                    
+                    // Se estiver muito próximo (menos de 5 metros), adicionar um pequeno deslocamento
+                    if (distance < 0.005) { // 0.005 km = 5 metros
+                        console.log('Animal muito próximo da localização do usuário. Adicionando deslocamento.');
+                        
+                        // Adicionar um deslocamento maior (aprox. 20-30 metros)
+                        // Usando valores aleatórios para que múltiplos marcadores não fiquem sobrepostos
+                        const offsetLat = (Math.random() * 0.0003 + 0.0002) * (Math.random() > 0.5 ? 1 : -1);
+                        const offsetLng = (Math.random() * 0.0003 + 0.0002) * (Math.random() > 0.5 ? 1 : -1);
+                        
+                        lat += offsetLat;
+                        lng += offsetLng;
+                        
+                        console.log(`Posição ajustada para ${lat}, ${lng}`);
+                    }
+                }
+                
                 console.log(`Criando marcador em ${lat}, ${lng} para ${dog.nome || dog.raca || 'Sem nome'}`);
                 
                 // Definir cor e texto de status com base no estado do cachorro
@@ -797,7 +836,7 @@
                     fillOpacity: 1,
                     strokeWeight: 1,
                     strokeColor: '#ffffff',
-                                scale: 10
+                                scale: 12
                 };
                 
                 // Determinar se o marcador deve ser visível com base no tipo
@@ -809,8 +848,9 @@
                     map: showingOnlyShelters ? null : map,
                     icon: svgMarker,
                     title: dog.nome || dog.raca || 'Cachorro sem nome',
-                    animation: google.maps.Animation.DROP
-                        });
+                    animation: google.maps.Animation.DROP,
+                    zIndex: 2 // Valor maior para ficar acima do marcador do usuário
+                });
                         
                 // Armazenar os dados do cão no marcador para facilitar filtragem
                 marker.dogData = dog;
@@ -834,7 +874,7 @@
                             <div style="margin: 0 0 8px; font-size: 12px; color: #666; text-align: center;">
                                 <div style="display: flex; align-items: center; justify-content: center; padding-left: 15px;">
                                     <i class="fas fa-map-marker-alt" style="color: #ff6b38; margin-right: 5px; font-size: 11px; position: relative; top: -1px;"></i>
-                                    <span>${dog.endereco || 'Localização não especificada'}</span>
+                                    <span>${dog.endereco || 'Morada não especificada'}</span>
                             </div>
                             </div>
                             <div style="padding: 0 15px 15px;">
@@ -960,37 +1000,69 @@
             shelterMarkers = [];
         }
         
-        function loadAllDogs() {
+        // Função para carregar todos os cães do Supabase
+        async function loadAllDogs() {
             try {
-                // Carregar todos os cães
-                const allDogsData = localStorage.getItem('allDogs');
-                if (!allDogsData) {
-                    console.log('Nenhum dado de cães encontrado');
-            return;
-                }
+                // Buscar todos os cães do banco de dados
+                const { data, error } = await window.supabase
+                    .from('dogs')
+                    .select('*');
                 
-                // Adicionar todos os cães ao mapa
-                addPetMarkers();
+                if (error) throw error;
+                
+                console.log(`Carregando ${data.length} cães:`, data);
+                
+                // Limpar marcadores existentes
+                clearPetMarkers();
+                
+                // Adicionar os cães ao mapa
+                data.forEach(dog => {
+                    if (dog.location && dog.location.lat && dog.location.lng) {
+                        addDogMarker(dog);
+                    }
+                });
+                
+                // Também carregar abrigos temporários
+                loadTemporaryShelters();
             } catch (error) {
                 console.error('Erro ao carregar cães:', error);
             }
         }
         
-        function loadTemporaryShelters() {
+        // Função para carregar os abrigos temporários do Supabase
+        async function loadTemporaryShelters() {
             try {
-                const sheltersData = localStorage.getItem('shelters');
-                if (!sheltersData) {
-                    console.log('Nenhum abrigo temporário encontrado');
-                    return;
-                }
+                // Buscar todos os abrigos do banco de dados
+                const { data, error } = await window.supabase
+                    .from('shelters')
+                    .select('*, users(name, phone)');
                 
-                const shelters = JSON.parse(sheltersData);
-                console.log(`Carregando ${shelters.length} abrigos temporários`);
+                if (error) throw error;
                 
-                // Adicionar marcadores de abrigo ao mapa
-                addShelterMarkers(shelters);
+                console.log(`Carregando ${data.length} abrigos temporários`);
+                
+                // Formatar dados para compatibilidade com a função existente
+                const formattedShelters = data.map(shelter => ({
+                    id: shelter.id,
+                    userId: shelter.user_id,
+                    userName: shelter.users ? shelter.users.name : 'Anônimo',
+                    contacto: shelter.users ? shelter.users.phone : '',
+                    endereco: shelter.endereco,
+                    location: shelter.location,
+                    photoUrl: shelter.photo_url,
+                    aceita: {
+                        porte: shelter.aceita_porte || [],
+                        idade: shelter.aceita_idade || [],
+                        sexo: shelter.aceita_sexo || [],
+                        castrado: shelter.aceita_castrado || [],
+                        agressivo: shelter.aceita_agressivo || []
+                    }
+                }));
+                
+                // Adicionar abrigos ao mapa
+                addShelterMarkers(formattedShelters);
             } catch (error) {
-                console.error('Erro ao carregar abrigos temporários:', error);
+                console.error('Erro ao carregar abrigos:', error);
             }
         }
         
@@ -1000,13 +1072,43 @@
             
             shelters.forEach(shelter => {
                 if (shelter.location && shelter.location.lat && shelter.location.lng) {
+                    // Obter e converter coordenadas
+                    let lat = parseFloat(shelter.location.lat);
+                    let lng = parseFloat(shelter.location.lng);
+                    
+                    // Verificar se a localização do abrigo está muito próxima da localização do usuário
+                    // e adicionar um pequeno deslocamento se necessário
+                    if (userMarker) {
+                        const userPosition = userMarker.getPosition();
+                        const userLat = userPosition.lat();
+                        const userLng = userPosition.lng();
+                        
+                        // Calcular a distância aproximada entre os pontos
+                        const distance = calculateDistance(lat, lng, userLat, userLng);
+                        
+                        // Se estiver muito próximo (menos de 5 metros), adicionar um pequeno deslocamento
+                        if (distance < 0.005) { // 0.005 km = 5 metros
+                            console.log('Abrigo muito próximo da localização do usuário. Adicionando deslocamento.');
+                            
+                            // Adicionar um deslocamento maior (aprox. 20-30 metros)
+                            // Usando valores aleatórios para que múltiplos marcadores não fiquem sobrepostos
+                            const offsetLat = (Math.random() * 0.0003 + 0.0002) * (Math.random() > 0.5 ? 1 : -1);
+                            const offsetLng = (Math.random() * 0.0003 + 0.0002) * (Math.random() > 0.5 ? 1 : -1);
+                            
+                            lat += offsetLat;
+                            lng += offsetLng;
+                            
+                            console.log(`Posição do abrigo ajustada para ${lat}, ${lng}`);
+                        }
+                    }
+                    
                     // Criar marcador de abrigo
                     const marker = new google.maps.Marker({
                         position: { 
-                            lat: parseFloat(shelter.location.lat), 
-                            lng: parseFloat(shelter.location.lng) 
+                            lat: lat, 
+                            lng: lng 
                         },
-                        map: showingOnlyShelters ? map : null, // Invisível inicialmente
+                        map: showingOnlyShelters ? map : null,
                         title: 'Abrigo Temporário',
                         animation: google.maps.Animation.DROP,
                         icon: {
@@ -1015,18 +1117,26 @@
                             fillOpacity: 0.9,
                             strokeColor: '#FFFFFF',
                             strokeWeight: 2,
-                            scale: 10
-                        }
+                            scale: 12
+                        },
+                        zIndex: 2 // Valor maior para ficar acima do marcador do usuário
                     });
                     
                     // Criar conteúdo inicial simples para infoWindow (apenas morada e contato)
                     const basicContent = `
                         <div style="width: 220px; background-color: white; padding: 0; overflow: hidden; border-radius: 10px;">
-                            <div style="text-align: center; margin: 5px 0 25px 0;">
+                            <div style="text-align: center; margin: 5px 0 15px 0;">
                                 <span style="display: inline-block; padding: 3px 12px; background-color: #ff9800; color: white; border-radius: 20px; font-size: 12px; font-weight: bold;">
                                     Abrigo Temporário
                                 </span>
-                    </div>
+                            </div>
+                            ${shelter.photoUrl ? `
+                                <div style="text-align: center; margin-bottom: 15px;">
+                                    <img src="${shelter.photoUrl.startsWith('local:') ? localStorage.getItem(shelter.photoUrl.replace('local:', '')) : shelter.photoUrl}" 
+                                         style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #ff9800;" 
+                                         onerror="this.style.display='none'">
+                                </div>
+                            ` : ''}
                             <div style="margin: 0 0 8px; font-size: 14px; color: #333; text-align: center; padding: 0 15px;">
                                 <div style="margin-bottom: 10px;">
                                     <i class="fas fa-user" style="color: #ff9800; margin-right: 5px;"></i>
@@ -1034,7 +1144,7 @@
                                 </div>
                                 <div style="margin-bottom: 10px;">
                                     <i class="fas fa-map-marker-alt" style="color: #ff9800; margin-right: 5px;"></i>
-                                    <span style="font-size: 13px;">${shelter.endereco || 'Localização não especificada'}</span>
+                                    <span style="font-size: 13px;">${shelter.endereco || 'Morada não especificada'}</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <i class="fas fa-phone" style="color: #ff9800; margin-right: 5px;"></i>
@@ -1046,10 +1156,10 @@
                                     <span style="display: inline-flex; align-items: center; justify-content: center;">
                                         <i class="fas fa-info-circle" style="margin-right: 5px;"></i>Ver Detalhes
                                     </span>
-                        </a>
-                    </div>
-                </div>
-            `;
+                                </a>
+                            </div>
+                        </div>
+                    `;
             
                     // Criar infoWindow com conteúdo básico inicial
                     const infoWindow = new google.maps.InfoWindow({
@@ -1128,7 +1238,7 @@
                         </div>
                         <div style="margin-bottom: 10px;">
                             <i class="fas fa-map-marker-alt" style="color: #ff9800; margin-right: 5px;"></i>
-                            <span style="font-size: 13px;">${shelter.endereco || 'Localização não especificada'}</span>
+                            <span style="font-size: 13px;">${shelter.endereco || 'Morada não especificada'}</span>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <i class="fas fa-phone" style="color: #ff9800; margin-right: 5px;"></i>
@@ -1199,11 +1309,18 @@
                 if (marker.shelterData) {
                     const basicContent = `
                         <div style="width: 220px; background-color: white; padding: 0; overflow: hidden; border-radius: 10px;">
-                            <div style="text-align: center; margin: 5px 0 25px 0;">
+                            <div style="text-align: center; margin: 5px 0 15px 0;">
                                 <span style="display: inline-block; padding: 3px 12px; background-color: #ff9800; color: white; border-radius: 20px; font-size: 12px; font-weight: bold;">
                                     Abrigo Temporário
                                 </span>
                             </div>
+                            ${marker.shelterData.photoUrl ? `
+                                <div style="text-align: center; margin-bottom: 15px;">
+                                    <img src="${marker.shelterData.photoUrl.startsWith('local:') ? localStorage.getItem(marker.shelterData.photoUrl.replace('local:', '')) : marker.shelterData.photoUrl}" 
+                                         style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #ff9800;" 
+                                         onerror="this.style.display='none'">
+                                </div>
+                            ` : ''}
                             <div style="margin: 0 0 8px; font-size: 14px; color: #333; text-align: center; padding: 0 15px;">
                                 <div style="margin-bottom: 10px;">
                                     <i class="fas fa-user" style="color: #ff9800; margin-right: 5px;"></i>
@@ -1211,7 +1328,7 @@
                                 </div>
                                 <div style="margin-bottom: 10px;">
                                     <i class="fas fa-map-marker-alt" style="color: #ff9800; margin-right: 5px;"></i>
-                                    <span style="font-size: 13px;">${marker.shelterData.endereco || 'Localização não especificada'}</span>
+                                    <span style="font-size: 13px;">${marker.shelterData.endereco || 'Morada não especificada'}</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <i class="fas fa-phone" style="color: #ff9800; margin-right: 5px;"></i>
@@ -1339,13 +1456,12 @@
                         addUserMarker(userLocation);
                     },
                     (error) => {
-                        console.error('Erro ao obter localização:', error);
-                        alert('Não foi possível obter sua localização. Verifique as permissões do seu navegador.');
+                        console.error('Não foi possível obter a sua localização. Verifique as permissões do seu navegador.', error);
                     },
                     { timeout: 10000, maximumAge: 600000 }
                 );
             } else {
-                alert('Seu navegador não suporta geolocalização.');
+                alert('O seu navegador não suporta geolocalização.');
             }
         }
         
@@ -1368,15 +1484,16 @@
                         // Adicionar marcador do usuário na nova localização
                         addUserMarker(newLocation);
                         
-                        alert('Localização atualizada com sucesso!');
+                        alert('Localização actualizada com sucesso!');
                     },
                     (error) => {
-                        console.error('Erro ao atualizar localização:', error);
-                        alert('Não foi possível atualizar sua localização. Verifique as permissões do seu navegador.');
-                    }
+                        console.error('Erro ao actualizar localização:', error);
+                        alert('Não foi possível actualizar a sua localização. Verifique as permissões do seu navegador.');
+                    },
+                    { timeout: 10000, maximumAge: 600000 }
                 );
             } else {
-                alert('Seu navegador não suporta geolocalização.');
+                alert('O seu navegador não suporta geolocalização.');
             }
         }
 
@@ -1409,7 +1526,7 @@
             
             tempPopup.innerHTML = `
                 <i class="fas fa-location-arrow" style="color: #007bff; margin-right: 8px;"></i>
-                Você está aqui
+                Está aqui
             `;
             
             document.body.appendChild(tempPopup);
@@ -1435,6 +1552,20 @@
                 });
             });
         });
+
+        // Adicionar a função para calcular a distância entre dois pontos usando a fórmula de Haversine
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Raio da Terra em km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c; // Distância em km
+            return distance;
+        }
     </script>
     
     <!-- Carregue o script do Google Maps depois da definição da função initMap -->

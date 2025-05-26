@@ -8,6 +8,103 @@
     <!-- Preconnect to CDN for faster loading -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Função para limpar completamente dados corrompidos e forçar logout
+        function forceCleanLogout() {
+            console.log('Forçando limpeza completa e logout...');
+            
+            // Limpar TODOS os dados do localStorage
+            const keysToRemove = [
+                'loggedIn', 'currentUserId', 'userName', 'userPhone',
+                'tempUserId', 'tempUserName', 'tempUserPhone',
+                'tempRegisterName', 'tempRegisterPhone', 'tempRegisterPassword', 'tempRegisterConfirmPassword',
+                'termsAccepted'
+            ];
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            // Limpar completamente o localStorage
+            localStorage.clear();
+            
+            alert('Dados de sessão corrompidos detectados. Por favor, faça login novamente.');
+            window.location.href = 'index.html';
+        }
+
+        // Verificar e limpar dados corrompidos do localStorage PRIMEIRO
+        function cleanCorruptedData() {
+            const currentUserId = localStorage.getItem('currentUserId');
+            const isLoggedIn = localStorage.getItem('loggedIn');
+            
+            if (isLoggedIn && (!currentUserId || currentUserId.length === 0)) {
+                // Se está marcado como logado mas não tem UUID, é corrupção
+                console.warn('Estado inconsistente: logado sem UUID');
+                forceCleanLogout();
+                return false;
+            }
+            
+            if (currentUserId && currentUserId.length > 0) {
+                // Verificar se o UUID tem formato válido
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                if (!uuidRegex.test(currentUserId)) {
+                    console.warn('UUID corrompido detectado no localStorage:', currentUserId);
+                    forceCleanLogout();
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Executar limpeza ANTES de qualquer outra verificação
+        if (!cleanCorruptedData()) {
+            // Se dados foram corrompidos, parar execução
+            throw new Error('Dados corrompidos detectados - redirecionando');
+        }
+
+        // Verificar se está logado (após limpeza)
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+        
+        // Inicializar o cliente Supabase
+        const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+        
+        // Aguardar o carregamento do Supabase antes de inicializar
+        let supabaseClient = null;
+        
+        function initializeSupabase() {
+            try {
+                if (typeof supabase !== 'undefined' && supabase.createClient) {
+                    const { createClient } = supabase;
+                    supabaseClient = createClient(supabaseUrl, supabaseKey);
+                    window.supabase = supabaseClient;
+                    console.log('Supabase inicializado com sucesso');
+                    return true;
+                } else {
+                    console.error('Supabase não carregado ainda');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Erro ao inicializar Supabase:', error);
+                return false;
+            }
+        }
+        
+        // Tentar inicializar imediatamente
+        if (!initializeSupabase()) {
+            // Se falhar, tentar novamente após um delay
+            setTimeout(() => {
+                if (!initializeSupabase()) {
+                    console.error('Falha ao inicializar Supabase após retry');
+                    alert('Erro de conectividade. Por favor, recarregue a página.');
+                }
+            }, 1000);
+        }
+    </script>
     <style>
         /* Estilos gerais e reset */
         * {
@@ -205,7 +302,7 @@
             color: #FF7F50;
         }
 
-        /* Botão remover */
+        /* Botão remover - modificado para ficar centralizado */
         .remove-button {
             background-color: #f44336;
             color: white;
@@ -215,12 +312,13 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 10px;
+            margin: 15px auto 0;
             font-size: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            width: fit-content;
         }
 
         .remove-button:hover {
@@ -236,55 +334,120 @@
         /* Mensagem vazia */
         .empty-message {
             text-align: center;
-            padding: 40px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 60px;
+            border-radius: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            border: 2px solid rgba(255, 127, 80, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .empty-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF7F50, #ff6a3c, #FF7F50);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .empty-message:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 127, 80, 0.3);
         }
 
         .empty-message i {
-            font-size: 48px;
+            font-size: 80px;
             color: #FF7F50;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+
+        .empty-message:hover i {
+            transform: scale(1.1);
+            opacity: 1;
         }
 
         .empty-message p {
-            margin-bottom: 20px;
+            margin-bottom: 35px;
             color: #666;
-            font-size: 16px;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1.5;
         }
 
-        /* Botão adicionar */
+        /* Botão adicionar melhorado */
         .add-button {
-            background-color: #FF7F50;
+            background: linear-gradient(135deg, #FF7F50 0%, #ff6a3c 50%, #FF5722 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-weight: bold;
+            padding: 18px 36px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 15px;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 8px 25px rgba(255, 127, 80, 0.4);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 220px;
+        }
+
+        .add-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .add-button:hover::before {
+            left: 100%;
         }
 
         .add-button:hover {
-            background-color: #ff6a3c;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 127, 80, 0.3);
+            background: linear-gradient(135deg, #ff6a3c 0%, #FF5722 50%, #E64A19 100%);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(255, 127, 80, 0.5);
+        }
+
+        .add-button:active {
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(255, 127, 80, 0.4);
         }
 
         .add-button i {
-            font-size: 16px;
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .add-button:hover i {
+            transform: rotate(90deg);
         }
 
         /* Carregamento */
@@ -362,18 +525,23 @@
             }
             
             .empty-message i {
-                font-size: 60px;
-                margin-bottom: 25px;
-            }
-            
-            .empty-message p {
-                font-size: 18px;
+                font-size: 80px;
                 margin-bottom: 30px;
             }
             
+            .empty-message p {
+                font-size: 20px;
+                margin-bottom: 35px;
+            }
+            
             .add-button {
-                padding: 14px 28px;
-                font-size: 16px;
+                padding: 18px 36px;
+                font-size: 18px;
+                min-width: 220px;
+            }
+            
+            .add-button i {
+                font-size: 20px;
             }
         }
         
@@ -392,6 +560,31 @@
                 margin-bottom: 0;
                 height: 100%;
             }
+            
+            .empty-message {
+                padding: 50px 30px;
+                border-radius: 25px;
+            }
+            
+            .empty-message i {
+                font-size: 70px;
+                margin-bottom: 25px;
+            }
+            
+            .empty-message p {
+                font-size: 18px;
+                margin-bottom: 30px;
+            }
+            
+            .add-button {
+                padding: 16px 32px;
+                font-size: 16px;
+                min-width: 200px;
+            }
+            
+            .add-button i {
+                font-size: 18px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -407,6 +600,33 @@
             
             .back-button {
                 left: 15px;
+            }
+            
+            .empty-message {
+                padding: 40px 25px;
+                border-radius: 20px;
+                margin: 0 10px;
+            }
+            
+            .empty-message i {
+                font-size: 56px;
+                margin-bottom: 20px;
+            }
+            
+            .empty-message p {
+                font-size: 16px;
+                margin-bottom: 25px;
+            }
+            
+            .add-button {
+                padding: 14px 28px;
+                font-size: 15px;
+                min-width: 180px;
+                letter-spacing: 0.5px;
+            }
+            
+            .add-button i {
+                font-size: 16px;
             }
         }
 
@@ -441,6 +661,51 @@
                 padding: 10px 20px;
                 font-size: 14px;
             }
+            
+            .empty-message {
+                padding: 30px 20px;
+                border-radius: 15px;
+                margin: 0 5px;
+            }
+            
+            .empty-message i {
+                font-size: 48px;
+                margin-bottom: 15px;
+            }
+            
+            .empty-message p {
+                font-size: 15px;
+                margin-bottom: 20px;
+                line-height: 1.4;
+            }
+            
+            .add-button {
+                padding: 12px 24px;
+                font-size: 14px;
+                min-width: 160px;
+                letter-spacing: 0.3px;
+                border-radius: 40px;
+            }
+            
+            .add-button i {
+                font-size: 15px;
+            }
+        }
+
+        /* Adicionar estilo para exibir o contato */
+        .dog-contact {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #FF7F50;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        
+        .dog-contact i {
+            color: #FF7F50;
         }
     </style>
 </head>
@@ -460,28 +725,155 @@
         </div>
 
         <script>
-            // Check if user is logged in
-            if (!localStorage.getItem('loggedIn')) {
+            // Função para extrair o número de contato da descrição ou nome
+            function extractContactFromDog(dog) {
+                let contact = null;
+                
+                // Tentar extrair do campo descrição (formato "Contato: 123456789")
+                if (dog.descricao && dog.descricao.includes("Contato:")) {
+                    const match = dog.descricao.match(/Contato: (\d+)/);
+                    if (match && match[1]) {
+                        contact = match[1];
+                    }
+                }
+                
+                // Se não encontrou na descrição, tentar no campo nome (formato "Animal adicionado por: 123456789")
+                if (!contact && dog.nome && dog.nome.includes("adicionado por:")) {
+                    const match = dog.nome.match(/adicionado por: (\d+)/);
+                    if (match && match[1]) {
+                        contact = match[1];
+                    }
+                }
+                
+                return contact;
+            }
+
+            // Função para validar UUID
+            function isValidUUID(uuid) {
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                return uuidRegex.test(uuid);
+            }
+
+            // Função para buscar os cães do usuário atual do Supabase
+            async function fetchUserDogs() {
+                try {
+                    console.log('Iniciando busca de cães do usuário...');
+                    
+                    // Mostrar indicador de carregamento
+                    document.getElementById('loadingIndicator').style.display = 'flex';
+                    
+                    const currentUserId = localStorage.getItem('currentUserId');
+                    console.log('ID do usuário atual:', currentUserId);
+                    
+                    if (!currentUserId) {
+                        console.error('ID do usuário não encontrado no localStorage');
+                        throw new Error('ID do usuário não encontrado');
+                    }
+                    
+                    // Validar formato do UUID
+                    if (!isValidUUID(currentUserId)) {
+                        console.error('UUID inválido:', currentUserId);
+                        localStorage.clear(); // Limpar dados corrompidos
+                        alert('Dados de sessão corrompidos. Por favor, faça login novamente.');
+                        window.location.href = 'index.html';
+                        return [];
+                    }
+                    
+                    // Verificar se o Supabase está inicializado
+                    if (!window.supabase) {
+                        console.error('Supabase não está inicializado');
+                        throw new Error('Supabase não está inicializado');
+                    }
+                    
+                    console.log('Fazendo consulta ao Supabase...');
+                    
+                    // Buscar cães do usuário no Supabase
+                    const { data: dogs, error } = await window.supabase
+                        .from('dogs')
+                        .select('*')
+                        .eq('user_id', currentUserId);
+                    
+                    console.log('Resposta do Supabase:', { dogs, error });
+                    
+                    if (error) {
+                        console.error('Erro do Supabase:', error);
+                        
+                        // Se o erro for relacionado ao UUID, limpar dados e redirecionar
+                        if (error.message && error.message.includes('invalid input syntax for type uuid')) {
+                            console.error('UUID corrompido detectado, limpando dados...');
+                            localStorage.clear();
+                            alert('Dados de sessão corrompidos. Por favor, faça login novamente.');
                 window.location.href = 'index.html';
+                            return [];
+                        }
+                        
+                        throw error;
+                    }
+                    
+                    console.log('Cães encontrados:', dogs ? dogs.length : 0);
+                    
+                    // Esconder indicador de carregamento
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    
+                    return dogs || [];
+                } catch (error) {
+                    console.error('Erro ao buscar cães:', error);
+                    alert('Erro ao carregar seus animais: ' + error.message + '. Por favor, tente novamente.');
+                    
+                    // Esconder indicador de carregamento
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    
+                    return [];
+                }
+            }
+
+            // Função para remover um cão do Supabase
+            async function removeDogFromSupabase(dogId) {
+                try {
+                    // Mostrar indicador de carregamento
+                    document.getElementById('loadingIndicator').style.display = 'flex';
+                    
+                    // Remover o cão do Supabase
+                    const { error } = await window.supabase
+                        .from('dogs')
+                        .delete()
+                        .eq('id', dogId);
+                    
+                    if (error) {
+                        throw error;
+                    }
+                    
+                    // Esconder indicador de carregamento
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Erro ao remover cão:', error);
+                    alert('Erro ao remover o animal. Por favor, tente novamente.');
+                    
+                    // Esconder indicador de carregamento
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    
+                    return false;
+                }
             }
 
             // Display all dogs belonging to the current user
-            function displayDogs() {
+            async function displayDogs() {
+                console.log('Iniciando displayDogs...');
                 const container = document.getElementById('dogsContainer');
-                const currentUserId = localStorage.getItem('currentUserId');
                 
-                // Get all dogs from localStorage
-                let allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
+                // Buscar os cães do usuário do Supabase
+                const userDogs = await fetchUserDogs();
+                console.log('Cães retornados para exibição:', userDogs);
                 
-                // Filter dogs belonging to current user
-                const userDogs = allDogs.filter(dog => dog.userId === currentUserId);
+                // Limpar o container (exceto o indicador de carregamento)
+                container.innerHTML = '<div class="loading" id="loadingIndicator" style="display: none;"><div class="spinner"></div></div>';
                 
-                // Clear the container
-                container.innerHTML = '';
-                
-                // Show message if no dogs found
+                // Mostrar mensagem se nenhum cão for encontrado
                 if (userDogs.length === 0) {
-                    container.innerHTML = `
+                    console.log('Nenhum cão encontrado, exibindo mensagem vazia');
+                    container.innerHTML += `
                         <div class="empty-message">
                             <i class="fas fa-paw"></i>
                             <p>Você não tem nenhum cão registrado.</p>
@@ -493,22 +885,32 @@
                     return;
                 }
                 
-                // Create container for grid layout
+                console.log('Criando cards para', userDogs.length, 'cães');
+                
+                // Criar container para layout de grid
                 const cardsContainer = document.createElement('div');
                 cardsContainer.className = 'dog-cards-container';
                 container.appendChild(cardsContainer);
                 
-                // Create HTML for each dog
-                userDogs.forEach(dog => {
+                // Criar HTML para cada cão
+                userDogs.forEach((dog, index) => {
+                    console.log(`Criando card para cão ${index + 1}:`, dog);
+                    
+                    // Extrair número de contato da descrição ou nome
+                    const contactNumber = extractContactFromDog(dog);
+                    
                     const dogCard = document.createElement('div');
                     dogCard.className = 'dog-card';
                     
-                    // Set the appropriate status class
+                    // Definir a classe de status apropriada
                     const statusClass = dog.estado === 'procurado' ? 'status-procurado' : 'status-encontrado';
                     const statusText = dog.estado === 'procurado' ? 'Procurado' : 'Encontrado';
                     
-                    // Default image if none provided
+                    // Imagem padrão se nenhuma for fornecida
                     const dogImage = dog.image || 'Images/dog-placeholder.jpg';
+                    
+                    // Determinar o endereço a ser exibido
+                    const address = dog.endereco || 'Local não especificado';
                     
                     dogCard.innerHTML = `
                         <div class="dog-status ${statusClass}">${statusText}</div>
@@ -517,12 +919,17 @@
                             <div class="dog-details">
                                 <div class="dog-location">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    <span>${dog.endereco || (dog.location && typeof dog.location === 'object' ? dog.location.address : (typeof dog.location === 'string' ? dog.location : null)) || dog.local || 'Local não especificado'}</span>
+                                    <span>${address}</span>
                                 </div>
                                 <div class="dog-breed">
                                     <i class="fas fa-dog"></i>
-                                    <span>${dog.raca || dog.breed || 'Raça não especificada'}</span>
+                                    <span>${dog.raca || 'Raça não especificada'}</span>
                                 </div>
+                                ${contactNumber ? `
+                                <div class="dog-contact">
+                                    <i class="fas fa-phone"></i>
+                                    <span>${contactNumber}</span>
+                                </div>` : ''}
                             </div>
                             <button class="remove-button" data-id="${dog.id}">
                                 <i class="fas fa-trash-alt"></i> Remover Animal
@@ -533,36 +940,52 @@
                     cardsContainer.appendChild(dogCard);
                 });
                 
-                // Add event listeners to remove buttons
+                console.log('Cards criados, adicionando event listeners...');
+                
+                // Adicionar event listeners aos botões de remover
                 document.querySelectorAll('.remove-button').forEach(button => {
                     button.onclick = function() {
                         removeDog(this.getAttribute('data-id'));
                     };
                 });
+                
+                console.log('displayDogs concluído');
             }
             
             // Function to remove a dog
-            function removeDog(dogId) {
+            async function removeDog(dogId) {
                 if (confirm('Tem certeza que deseja remover este animal?')) {
-                    // Get all dogs from localStorage
-                    let allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
+                    // Mostrar indicador de carregamento
+                    document.getElementById('loadingIndicator').style.display = 'flex';
                     
-                    // Remove the dog with the matching ID
-                    const updatedDogs = allDogs.filter(dog => dog.id !== dogId);
+                    // Remover o cão do Supabase
+                    const success = await removeDogFromSupabase(dogId);
                     
-                    // Save the updated list back to localStorage
-                    localStorage.setItem('allDogs', JSON.stringify(updatedDogs));
-                    
-                    // Show success message
+                    if (success) {
+                        // Mostrar mensagem de sucesso
                     alert('Animal removido com sucesso!');
                     
-                    // Refresh the display
-                    displayDogs();
+                        // Atualizar a exibição
+                        await displayDogs();
+                    }
                 }
             }
             
-            // Load dogs when page loads
-            window.onload = displayDogs;
+            // Carregar cães quando a página carregar
+            window.onload = function() {
+                // Aguardar o Supabase estar pronto antes de carregar dados
+                function waitForSupabaseAndLoad() {
+                    if (window.supabase) {
+                        console.log('Supabase pronto, carregando cães do usuário...');
+                        displayDogs();
+                    } else {
+                        console.log('Aguardando Supabase...');
+                        setTimeout(waitForSupabaseAndLoad, 500);
+                    }
+                }
+                
+                waitForSupabaseAndLoad();
+            };
         </script>
     </div>
 </body>

@@ -10,6 +10,8 @@
     <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="192x192">
     <link rel="apple-touch-icon" href="Images/DogList-Logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -447,9 +449,98 @@
     
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYiAXh7HwQgCEudiSzPR3bUuYQ1mnS3b4&libraries=geometry"></script>
     <script>
-        // Verificar se está logado
+        // Função para limpar completamente dados corrompidos e forçar logout
+        function forceCleanLogout() {
+            console.log('Forçando limpeza completa e logout...');
+            
+            // Limpar TODOS os dados do localStorage
+            const keysToRemove = [
+                'loggedIn', 'currentUserId', 'userName', 'userPhone',
+                'tempUserId', 'tempUserName', 'tempUserPhone',
+                'tempRegisterName', 'tempRegisterPhone', 'tempRegisterPassword', 'tempRegisterConfirmPassword',
+                'termsAccepted'
+            ];
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            // Limpar completamente o localStorage
+            localStorage.clear();
+            
+            alert('Dados de sessão corrompidos detectados. Por favor, faça login novamente.');
+            window.location.href = 'index.html';
+        }
+
+        // Verificar e limpar dados corrompidos do localStorage PRIMEIRO
+        function cleanCorruptedData() {
+            const currentUserId = localStorage.getItem('currentUserId');
+            const isLoggedIn = localStorage.getItem('loggedIn');
+            
+            if (isLoggedIn && (!currentUserId || currentUserId.length === 0)) {
+                // Se está marcado como logado mas não tem UUID, é corrupção
+                console.warn('Estado inconsistente: logado sem UUID');
+                forceCleanLogout();
+                return false;
+            }
+            
+            if (currentUserId && currentUserId.length > 0) {
+                // Verificar se o UUID tem formato válido
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                if (!uuidRegex.test(currentUserId)) {
+                    console.warn('UUID corrompido detectado no localStorage:', currentUserId);
+                    forceCleanLogout();
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Executar limpeza ANTES de qualquer outra verificação
+        if (!cleanCorruptedData()) {
+            // Se dados foram corrompidos, parar execução
+            throw new Error('Dados corrompidos detectados - redirecionando');
+        }
+
+        // Verificar se está logado (após limpeza)
         if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'index.html';
+        }
+
+        // Inicializar o cliente Supabase
+        const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+        
+        // Aguardar o carregamento do Supabase antes de inicializar
+        let supabaseClient = null;
+        
+        function initializeSupabase() {
+            try {
+                if (typeof supabase !== 'undefined' && supabase.createClient) {
+                    const { createClient } = supabase;
+                    supabaseClient = createClient(supabaseUrl, supabaseKey);
+                    window.supabase = supabaseClient;
+                    console.log('Supabase inicializado com sucesso');
+                    return true;
+                } else {
+                    console.error('Supabase não carregado ainda');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Erro ao inicializar Supabase:', error);
+                return false;
+            }
+        }
+        
+        // Tentar inicializar imediatamente
+        if (!initializeSupabase()) {
+            // Se falhar, tentar novamente após um delay
+            setTimeout(() => {
+                if (!initializeSupabase()) {
+                    console.error('Falha ao inicializar Supabase após retry');
+                    alert('Erro de conectividade. Por favor, recarregue a página.');
+                }
+            }, 1000);
         }
         
         // Variáveis globais
@@ -469,46 +560,97 @@
         
         // Carregar dados do abrigo
         document.addEventListener('DOMContentLoaded', function() {
-            // Carregar dados do abrigo
-            const shelterId = getParameterByName('id');
-            if (!shelterId) {
-                window.location.href = 'home.html';
-                return;
-            }
-            
-            // Buscar o abrigo pelo ID
-            const shelters = JSON.parse(localStorage.getItem('shelters') || '[]');
-            const shelter = shelters.find(s => s.id === shelterId);
-            
-            if (!shelter) {
-                window.location.href = 'home.html';
-                return;
-            }
-            
-            // Carregar dados do usuário associado ao abrigo
-            let userName = shelter.userName || 'Anônimo';
-            let contacto = shelter.contacto || 'Contacto não disponível';
-            
-            // Se não houver nome/contato salvo diretamente no abrigo, tentar buscar do usuário
-            if (!shelter.userName || !shelter.contacto) {
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
-                const user = users.find(u => u.id === shelter.userId);
-                
-                if (user) {
-                    userName = user.name || userName;
-                    contacto = user.phone || contacto;
+            // Aguardar o Supabase estar pronto antes de carregar dados
+            function waitForSupabaseAndLoad() {
+                if (window.supabase) {
+                    console.log('Supabase pronto, carregando dados do abrigo...');
+                    loadShelterData();
+                } else {
+                    console.log('Aguardando Supabase...');
+                    setTimeout(waitForSupabaseAndLoad, 500);
                 }
             }
             
-            // Preencher os dados na página
-            document.getElementById('shelterName').textContent = userName;
+            waitForSupabaseAndLoad();
+        });
+        
+        // Função para carregar dados do abrigo do Supabase
+        async function loadShelterData() {
+            try {
+                // Carregar dados do abrigo
+                const shelterId = getParameterByName('id');
+                if (!shelterId) {
+                    showError('ID do abrigo não fornecido');
+                    return;
+                }
+                
+                console.log('Buscando abrigo com ID:', shelterId);
+                
+                // Buscar o abrigo no Supabase com dados do usuário
+                const { data, error } = await window.supabase
+                    .from('shelters')
+                    .select(`
+                        *,
+                        users (
+                            name,
+                            phone
+                        )
+                    `)
+                    .eq('id', shelterId)
+                    .single();
+                
+                if (error) {
+                    console.error('Erro ao buscar abrigo:', error);
+                    showError('Erro ao carregar dados do abrigo');
+                    return;
+                }
+                
+                if (!data) {
+                    console.error('Abrigo não encontrado');
+                    showError('Abrigo não encontrado');
+                    return;
+                }
+                
+                console.log('Dados do abrigo carregados:', data);
+                
+                // Processar dados do abrigo
+                const shelter = {
+                    id: data.id,
+                    userId: data.user_id,
+                    userName: data.users ? data.users.name : 'Anônimo',
+                    contacto: data.users ? data.users.phone : 'Contacto não disponível',
+                    endereco: data.endereco,
+                    location: data.location,
+                    photoUrl: data.photo_url,
+                    aceita: {
+                        porte: data.aceita_porte || [],
+                        idade: data.aceita_idade || [],
+                        sexo: data.aceita_sexo || [],
+                        castrado: data.aceita_castrado || [],
+                        agressivo: data.aceita_agressivo || []
+                    }
+                };
+                
+                // Preencher os dados na página
+                populateShelterData(shelter);
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados do abrigo:', error);
+                showError('Erro inesperado ao carregar dados do abrigo');
+            }
+        }
+        
+        // Função para preencher os dados do abrigo na página
+        function populateShelterData(shelter) {
+            // Preencher informações básicas
+            document.getElementById('shelterName').textContent = shelter.userName;
             document.getElementById('shelterLocation').textContent = shelter.endereco || 'Localização não disponível';
-            document.getElementById('shelterContact').textContent = contacto;
+            document.getElementById('shelterContact').textContent = shelter.contacto;
             
             // Configurar botão de ligar
             const callButton = document.getElementById('callButton');
-            if (contacto) {
-                callButton.href = `tel:${contacto}`;
+            if (shelter.contacto && shelter.contacto !== 'Contacto não disponível') {
+                callButton.href = `tel:${shelter.contacto}`;
             } else {
                 callButton.style.opacity = '0.5';
                 callButton.style.pointerEvents = 'none';
@@ -527,7 +669,17 @@
             // Mostrar foto de perfil se existir
             if (shelter.photoUrl) {
                 const photoContainer = document.getElementById('shelterPhoto');
-                photoContainer.innerHTML = `<img src="${shelter.photoUrl}" alt="${userName || 'Abrigo'}" onerror="this.src='Images/user-placeholder.jpg'">`;
+                
+                // Verificar se é uma imagem local (base64)
+                if (shelter.photoUrl.startsWith('local:')) {
+                    const imageKey = shelter.photoUrl.replace('local:', '');
+                    const base64Data = localStorage.getItem(imageKey);
+                    if (base64Data) {
+                        photoContainer.innerHTML = `<img src="${base64Data}" alt="${shelter.userName || 'Abrigo'}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'">`;
+                    }
+                } else {
+                    photoContainer.innerHTML = `<img src="${shelter.photoUrl}" alt="${shelter.userName || 'Abrigo'}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'">`;
+                }
             }
             
             // Preencher preferências
@@ -535,7 +687,7 @@
             
             // Inicializar o mapa
             initMap(shelter.location);
-        });
+        }
         
         function displayPreferences(preferences) {
             if (!preferences) return;

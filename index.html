@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DogList - Início</title>
     <link rel="icon" href="Images/DogList-Logo.png" type="image/png">
-    <!-- Preconnect to CDN for faster loading -->
+    <!-- Pré-conectar ao CDN para carregamento mais rápido dos recursos -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <!-- Carregar biblioteca de ícones Font Awesome para usar ícones bonitos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Adicionar bcrypt.js para hash de senhas -->
+    <!-- Carregar biblioteca bcrypt.js para hash de palavras-passe (segurança) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -305,27 +307,32 @@
             color: #ff6a3c;
         }
 
-        .register-container .register-link span {
-            position: relative;
-            border-bottom: 2px solid #FF7F50;
-            padding-bottom: 2px;
-            transition: all 0.3s ease;
-        }
-
         .register-container .register-link:hover span {
             border-bottom-color: #ff6a3c;
             padding-bottom: 4px;
             text-shadow: 0 0 1px rgba(255, 127, 80, 0.3);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
         .register-container .register-link:hover span {
             animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        /* Animação para mensagens de erro */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Estilo para mensagem de erro */
+        .error-message {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+            animation: pulse 1s;
         }
     </style>
 </head>
@@ -335,6 +342,9 @@
         <div class="login-container">
             <h1 class="title" style="font-weight: bold;">Entrar</h1>
             
+            <div id="errorContainer" style="display:none;" class="error-message"></div>
+            
+            <form id="loginForm">
             <div class="input-group">
                 <div class="input-label">Telemóvel</div>
                 <input type="tel" class="input-field" id="phone" 
@@ -344,18 +354,19 @@
             </div>
 
             <div class="input-group">
-                <div class="input-label">Password</div>
-                <div style="position: relative;">
+                    <div class="input-label">Palavra-passe</div>
+                    <div class="password-group">
                     <input type="password" class="input-field" id="password" 
-                        pattern="^(?=.*[!@#$%^&*(),.?:{}\|<>])(?=.*[a-zA-Z0-9]).{7,}$" 
-                        title="A senha deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial">
+                            placeholder="Escreva aqui a sua palavra-passe" required minlength="7"
+                            title="A palavra-passe deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial">
                     <button type="button" id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 20px;" aria-label="Toggle password visibility">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
-                <span id="passwordError" style="color: red; display: none; font-size: 14px; margin-top: 5px;">A senha deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial</span>
+                    <span id="passwordError" style="color: red; display: none; font-size: 14px; margin-top: 5px;">A palavra-passe deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial</span>
             </div>
-            <button class="login-button">Entrar</button>
+                <button type="button" class="login-button" id="loginButton">Entrar</button>
+            </form>
             
             <div class="register-container">
                 <a href="register.html" class="register-link">Não tem conta? <span>Registre-se</span></a>
@@ -434,144 +445,186 @@
         <div class="paw-print"></div>
         <div class="paw-print"></div>
     </div>
+
+    <!-- Carregar biblioteca Supabase no final para melhor performance -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
-        async function handleLogin() {
-            const phone = document.getElementById('phone').value;
-            const password = document.getElementById('password').value;
-            
-            // Resetar mensagens de erro
-            document.getElementById('phoneError').style.display = 'none';
-            document.getElementById('passwordError').style.display = 'none';
-            
-            if (!phone || !password) {
-                alert('Por favor, preencha todos os campos.');
-                return;
-            }
-            
-            // Validação do número de telefone (9 dígitos)
-            if (!/^[2-9][0-9]{8}$/.test(phone)) {
-                document.getElementById('phoneError').style.display = 'block';
-                return;
-            }
-
-            // Validação da senha (mínimo 7 caracteres com pelo menos um caractere especial)
-            if (!/^(?=.*[!@#$%^&*(),.?:{}\|<>])(?=.*[a-zA-Z0-9]).{7,}$/.test(password)) {
-                document.getElementById('passwordError').style.display = 'block';
-                return;
-            }
-            
-            // Obter lista de usuários
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            
-            // Procurar usuário com o telefone informado
-            const user = users.find(u => u.phone === phone);
-            
-            if (user) {
-                try {
-                    // Verificar se o bcrypt está disponível
-                    if (typeof bcrypt !== 'undefined') {
-                        // Verificar se a senha está correta usando bcrypt
-                        if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
-                            // Tenta comparar com bcrypt
-                            try {
-                                const match = await new Promise(resolve => {
-                                    bcrypt.compare(password, user.password, (err, result) => {
-                                        if (err) {
-                                            console.error('Erro bcrypt:', err);
-                                            resolve(false);
-                                        } else {
-                                            resolve(result);
-                                        }
-                                    });
-                                });
-                                
-                                if (match) {
-                                    // Senha correta, fazer login
-                                    loginSuccess(user);
-                                    return;
-                                } 
-                            } catch (bcryptError) {
-                                console.error('Falha no bcrypt:', bcryptError);
-                                // Continua para método alternativo abaixo
-                            }
-                        }
-                    } 
-                    
-                    // Método alternativo (se bcrypt falhar ou não estiver disponível)
-                    if (user.password === password) {
-                        // Login direto com senha não-hash
-                        loginSuccess(user);
-                        return;
-                    }
-                    
-                    // Tenta mais uma vez com uma solução alternativa caso tudo falhar
-                    // Apenas para recuperação de acesso
-                    if (confirm('Deseja tentar um método de login alternativo?')) {
-                        loginSuccess(user);
-                        return;
-                    } else {
-                        alert('Senha incorreta. Por favor, tente novamente.');
-                    }
-                } catch (error) {
-                    console.error('Erro ao verificar senha:', error);
-                    alert('Ocorreu um erro ao fazer login. Por favor, tente novamente.');
-                }
-            } else {
-                // Usuário não encontrado
-                alert('Usuário não encontrado. Por favor, registre-se primeiro.');
-            }
-        }
-
-        function loginSuccess(user) {
-            localStorage.setItem('currentUserId', user.id);
-            localStorage.setItem('userName', user.name);
-            localStorage.setItem('userPhone', user.phone);
-            localStorage.setItem('loggedIn', 'true');
-            window.location.href = 'home.html';
-        }
-        
-        function updateUserPassword(userId, hashedPassword) {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const userIndex = users.findIndex(u => u.id === userId);
-            
-            if (userIndex !== -1) {
-                users[userIndex].password = hashedPassword;
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-        }
-        
-        async function hashPassword(password) {
-            return new Promise((resolve, reject) => {
-                // Usar salt rounds = 10 (padrão recomendado)
-                bcrypt.hash(password, 10, (err, hash) => {
-                    if (err) reject(err);
-                    else resolve(hash);
-                });
-            });
-        }
-
-        // Verificar se já está logado
+        // ===== VERIFICAÇÃO INICIAL DE SESSÃO =====
+        // Verificar se o utilizador já está com sessão iniciada
+        // Se sim, redirecionar directamente para a página principal
         if (localStorage.getItem('loggedIn')) {
             window.location.href = 'home.html';
         }
-
-        document.querySelector('.login-button').addEventListener('click', handleLogin);
-
-        // Toggle password visibility
-        const togglePassword = document.getElementById('togglePassword');
-        const password = document.getElementById('password');
-
-        togglePassword.addEventListener('click', function() {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
+        
+        // ===== INICIALIZAÇÃO QUANDO A PÁGINA CARREGA =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obter referências para os elementos HTML que vamos usar
+            const loginButton = document.getElementById('loginButton');
+            const loginForm = document.getElementById('loginForm');
+            const phoneInput = document.getElementById('phone');
+            const passwordInput = document.getElementById('password');
+            const errorContainer = document.getElementById('errorContainer');
+            const togglePassword = document.getElementById('togglePassword');
             
-            const icon = this.querySelector('i');
-            if (type === 'password') {
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            } else {
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
+            // ===== CONFIGURAÇÃO DA BASE DE DADOS SUPABASE =====
+            // Estas são as credenciais para conectar à nossa base de dados
+            const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+            
+            // Variável para guardar a ligação à base de dados
+            let supabaseClient;
+            
+            // ===== FUNÇÃO PARA MOSTRAR MENSAGENS DE ERRO =====
+            function showError(message) {
+                // Mostrar a mensagem de erro no contentor específico
+                errorContainer.textContent = message;
+                errorContainer.style.display = 'block';
+            }
+            
+            // ===== INICIALIZAR LIGAÇÃO À BASE DE DADOS =====
+            try {
+                // Verificar se a biblioteca Supabase foi carregada correctamente
+                if (typeof supabase === 'undefined') {
+                    throw new Error('Biblioteca Supabase não carregada. Verifique a sua ligação à internet.');
+                }
+                
+                // Criar a ligação à base de dados
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+                console.log('Cliente Supabase inicializado com sucesso');
+            } catch (error) {
+                console.error('Erro ao inicializar Supabase:', error);
+                showError('Erro ao conectar com o servidor. Por favor, tente novamente mais tarde.');
+            }
+            
+            // ===== FUNCIONALIDADE PARA MOSTRAR/ESCONDER PALAVRA-PASSE =====
+            if (togglePassword) {
+                togglePassword.addEventListener('click', function() {
+                    // Alternar entre mostrar e esconder a palavra-passe
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+            
+                    // Mudar o ícone do olho conforme o estado
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        if (type === 'password') {
+                            // Palavra-passe escondida - mostrar ícone de olho normal
+                            icon.classList.remove('fa-eye-slash');
+                            icon.classList.add('fa-eye');
+                        } else {
+                            // Palavra-passe visível - mostrar ícone de olho cortado
+                            icon.classList.remove('fa-eye');
+                            icon.classList.add('fa-eye-slash');
+                        }
+                    }
+                });
+            }
+            
+            // ===== EVENTOS PARA O FORMULÁRIO DE LOGIN =====
+            // Quando o formulário for submetido (Enter pressionado)
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Impedir o envio normal do formulário
+                    doLogin(); // Chamar a nossa função personalizada
+                });
+            }
+            
+            // Quando o botão de login for clicado
+            if (loginButton) {
+                loginButton.addEventListener('click', function() {
+                    doLogin(); // Chamar a função de login
+                });
+            }
+            
+            // ===== FUNÇÃO PRINCIPAL DE LOGIN =====
+            async function doLogin() {
+                try {
+                    // Esconder mensagens de erro anteriores
+                    errorContainer.style.display = 'none';
+                    
+                    // Obter os valores inseridos pelo utilizador
+                    const phone = phoneInput.value.trim(); // .trim() remove espaços em branco
+                    const password = passwordInput.value;
+                    
+                    // ===== VALIDAÇÕES DOS DADOS INSERIDOS =====
+                    if (!phone) {
+                        showError('Por favor, informe o número de telefone.');
+                        return; // Parar a execução se não houver telefone
+                    }
+                    
+                    if (!password) {
+                        showError('Por favor, informe a palavra-passe.');
+                        return; // Parar a execução se não houver palavra-passe
+                    }
+                    
+                    // Verificar se temos ligação à base de dados
+                    if (!supabaseClient) {
+                        throw new Error('Cliente Supabase não inicializado.');
+                                        }
+                    
+                    // ===== MOSTRAR INDICADOR DE CARREGAMENTO =====
+                    // Desactivar o botão para evitar cliques múltiplos
+                    loginButton.disabled = true;
+                    loginButton.textContent = 'A processar...';
+                    
+                    // ===== PROCURAR UTILIZADOR NA BASE DE DADOS =====
+                    // Buscar utilizador pelo número de telefone
+                    const { data, error } = await supabaseClient
+                        .from('users') // Tabela 'users' na base de dados
+                        .select('*') // Seleccionar todas as colunas
+                        .eq('phone', phone) // Onde o telefone é igual ao inserido
+                        .maybeSingle(); // Esperar no máximo um resultado
+                    
+                    // Verificar se houve erro na consulta à base de dados
+                    if (error) {
+                        throw new Error(`Erro ao buscar utilizador: ${error.message}`);
+                    } 
+                    
+                    // Verificar se o utilizador existe na base de dados
+                    if (!data) {
+                        showError('Número de telefone não registado. Por favor, registe-se primeiro.');
+                        return;
+                    }
+                    
+                    // ===== VERIFICAR PALAVRA-PASSE =====
+                    if (data.password !== password) {
+                        showError('Palavra-passe incorrecta. Por favor, tente novamente.');
+                        return;
+                    }
+                    
+                    // ===== VALIDAR ID DO UTILIZADOR =====
+                    // Verificar se o ID retornado é um UUID válido (formato específico)
+                    const userId = data.id;
+                    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                    
+                    if (!uuidRegex.test(userId)) {
+                        console.error('UUID inválido na base de dados:', userId);
+                        showError('Erro interno: dados de utilizador corrompidos. Entre em contacto com o suporte.');
+                        return;
+                    }
+                    
+                    console.log('Login bem-sucedido, ID do utilizador:', userId);
+                    
+                    // ===== GUARDAR DADOS DA SESSÃO =====
+                    // Guardar no localStorage para manter o utilizador logado
+                    localStorage.setItem('loggedIn', 'true'); // Marcar como logado
+                    localStorage.setItem('currentUserId', userId); // Guardar ID do utilizador
+                    localStorage.setItem('userName', data.name); // Guardar nome
+                    localStorage.setItem('userPhone', data.phone); // Guardar telefone
+                    
+                    // ===== REDIRECIONAR PARA PÁGINA PRINCIPAL =====
+                    window.location.href = 'home.html';
+                    
+                } catch (error) {
+                    // ===== TRATAMENTO DE ERROS =====
+                    console.error('Erro no login:', error);
+                    showError(error.message || 'Erro ao fazer login. Por favor, tente novamente.');
+                } finally {
+                    // ===== RESTAURAR BOTÃO (SEMPRE EXECUTADO) =====
+                    // Reactivar o botão mesmo se houver erro
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Entrar';
+                }
             }
         });
     </script>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Abrigos - DogList</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .shelter-card {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .shelter-id {
+            color: #666;
+            font-size: 12px;
+        }
+        .test-link {
+            background: #ff9800;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste de Abrigos Temporários</h1>
+    <div id="loading" class="loading">Carregando abrigos...</div>
+    <div id="shelters-container"></div>
+
+    <script>
+        // Inicializar Supabase
+        const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+        
+        const { createClient } = supabase;
+        const client = createClient(supabaseUrl, supabaseKey);
+
+        async function loadShelters() {
+            try {
+                console.log('Buscando abrigos...');
+                
+                const { data, error } = await client
+                    .from('shelters')
+                    .select('*, users(name, phone)');
+                
+                if (error) {
+                    console.error('Erro:', error);
+                    document.getElementById('loading').innerHTML = `<p style="color: red;">Erro: ${error.message}</p>`;
+                    return;
+                }
+                
+                console.log('Abrigos encontrados:', data);
+                
+                const container = document.getElementById('shelters-container');
+                const loading = document.getElementById('loading');
+                
+                loading.style.display = 'none';
+                
+                if (data.length === 0) {
+                    container.innerHTML = '<p>Nenhum abrigo encontrado.</p>';
+                    return;
+                }
+                
+                container.innerHTML = data.map(shelter => `
+                    <div class="shelter-card">
+                        <div class="shelter-id">ID: ${shelter.id}</div>
+                        <h3>${shelter.users?.name || 'Nome não disponível'}</h3>
+                        <p><strong>Endereço:</strong> ${shelter.endereco || 'Não especificado'}</p>
+                        <p><strong>Telefone:</strong> ${shelter.users?.phone || 'Não disponível'}</p>
+                        <p><strong>Localização:</strong> ${shelter.location ? `${shelter.location.lat}, ${shelter.location.lng}` : 'Não especificada'}</p>
+                        <a href="shelter-details.html?id=${shelter.id}" class="test-link" target="_blank">
+                            Testar Detalhes
+                        </a>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Erro inesperado:', error);
+                document.getElementById('loading').innerHTML = `<p style="color: red;">Erro inesperado: ${error.message}</p>`;
+            }
+        }
+
+        // Carregar abrigos quando a página carregar
+        window.onload = loadShelters;
+    </script>
+</body>
+</html> 

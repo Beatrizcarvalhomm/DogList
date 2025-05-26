@@ -154,6 +154,12 @@
     </div>
     
     <script>
+        // Função para validar UUID
+        function isValidUUID(uuid) {
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            return uuidRegex.test(uuid);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Verificar se existem dados temporários
             const tempUserId = localStorage.getItem('tempUserId');
@@ -163,6 +169,18 @@
             if (!tempUserId || !tempUserName || !tempUserPhone) {
                 // Se não houver dados temporários, redirecionar para a página de registro
                 alert('Erro ao processar o registro. Por favor, tente novamente.');
+                window.location.href = 'register.html';
+                return;
+            }
+            
+            // Validar se o tempUserId é um UUID válido
+            if (!isValidUUID(tempUserId)) {
+                console.error('UUID temporário inválido:', tempUserId);
+                alert('Erro nos dados de registro. Por favor, tente registrar-se novamente.');
+                // Limpar dados corrompidos
+                localStorage.removeItem('tempUserId');
+                localStorage.removeItem('tempUserName');
+                localStorage.removeItem('tempUserPhone');
                 window.location.href = 'register.html';
                 return;
             }
@@ -193,6 +211,11 @@
             
             function completeRegistration() {
                 try {
+                    // Validar novamente o UUID antes de definir
+                    if (!isValidUUID(tempUserId)) {
+                        throw new Error('UUID inválido detectado durante finalização');
+                    }
+                    
                     // Definir o usuário como logado
                     localStorage.setItem('currentUserId', tempUserId);
                     localStorage.setItem('userName', tempUserName);
@@ -209,6 +232,11 @@
                 } catch (error) {
                     console.error('Erro ao completar o registro:', error);
                     alert('Ocorreu um erro ao finalizar seu registro. Por favor, tente novamente.');
+                    // Limpar dados e redirecionar para registro
+                    localStorage.removeItem('tempUserId');
+                    localStorage.removeItem('tempUserName');
+                    localStorage.removeItem('tempUserPhone');
+                    window.location.href = 'register.html';
                 }
             }
         });

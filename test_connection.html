@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DogList - Teste de Conexão</title>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #FF7F50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+            font-family: monospace;
+            padding: 10px;
+        }
+        h2 {
+            color: #FF7F50;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Teste de Conexão com Supabase</h1>
+        <div id="status">Verificando conexão...</div>
+        <div id="result"></div>
+        <div id="error" style="color: red;"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Inicializar o cliente Supabase corretamente
+                const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+                
+                // Inicializar o cliente Supabase de forma correta e explícita
+                const { createClient } = supabase;
+                const supabaseClient = createClient(supabaseUrl, supabaseKey);
+                
+                // Função para redirecionar console.log para a textarea
+                (function() {
+                    const oldLog = console.log;
+                    const oldError = console.error;
+                    const textarea = document.getElementById('consoleLog');
+                    
+                    console.log = function(...args) {
+                        oldLog.apply(console, args);
+                        textarea.value += '> ' + args.map(arg => 
+                            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+                        ).join(' ') + '\n';
+                        textarea.scrollTop = textarea.scrollHeight;
+                    };
+                    
+                    console.error = function(...args) {
+                        oldError.apply(console, args);
+                        textarea.value += '❌ ' + args.map(arg => 
+                            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+                        ).join(' ') + '\n';
+                        textarea.scrollTop = textarea.scrollHeight;
+                    };
+                })();
+                
+                console.log('Inicializando página de teste...');
+                
+                // Teste de conexão
+                document.getElementById('testConnection').addEventListener('click', async function() {
+                    const resultDiv = document.getElementById('connectionResult');
+                    resultDiv.innerHTML = 'Testando conexão...';
+                    
+                    try {
+                        console.log('Testando conexão com Supabase...');
+                        const { data, error } = await supabaseClient.from('users').select('count(*)', { count: 'exact', head: true });
+                        
+                        if (error) {
+                            throw error;
+                        }
+                        
+                        console.log('Conexão bem-sucedida!', data);
+                        resultDiv.innerHTML = '<div class="success">✅ Conexão estabelecida com sucesso!</div>';
+                        
+                        // Verificar se as tabelas necessárias existem
+                        resultDiv.innerHTML += '<div>Verificando tabelas...</div>';
+                        const tables = ['users', 'dogs', 'shelters'];
+                        let allTablesExist = true;
+                        
+                        for (const table of tables) {
+                            try {
+                                const { error: tableError } = await supabaseClient
+                                    .from(table)
+                                    .select('count(*)', { count: 'exact', head: true });
+                                
+                                if (tableError) {
+                                    console.error(`Erro ao verificar tabela ${table}:`, tableError);
+                                    resultDiv.innerHTML += `<div class="error">❌ Tabela ${table}: ${tableError.message}</div>`;
+                                    allTablesExist = false;
+                                } else {
+                                    resultDiv.innerHTML += `<div class="success">✅ Tabela ${table} existe</div>`;
+                                }
+                            } catch (tableCheckError) {
+                                console.error(`Erro ao verificar tabela ${table}:`, tableCheckError);
+                                resultDiv.innerHTML += `<div class="error">❌ Tabela ${table}: ${tableCheckError.message}</div>`;
+                                allTablesExist = false;
+                            }
+                        }
+                        
+                        if (!allTablesExist) {
+                            resultDiv.innerHTML += '<div class="error">⚠️ Algumas tabelas não existem. Execute o script SQL para criar as tabelas.</div>';
+                        }
+                    } catch (error) {
+                        console.error('Erro na conexão:', error);
+                        resultDiv.innerHTML = '<div class="error">❌ Erro na conexão: ' + (error.message || error) + '</div>';
+                        resultDiv.innerHTML += '<div>Verifique se:</div>';
+                        resultDiv.innerHTML += '<ul>';
+                        resultDiv.innerHTML += '<li>As credenciais do Supabase estão corretas</li>';
+                        resultDiv.innerHTML += '<li>O projeto Supabase está online</li>';
+                        resultDiv.innerHTML += '<li>Você tem conexão com a internet</li>';
+                        resultDiv.innerHTML += '</ul>';
+                    }
+                });
+                
+                // Adicionar usuário
+                document.getElementById('addUser').addEventListener('click', async function() {
+                    const resultDiv = document.getElementById('userResult');
+                    resultDiv.innerHTML = 'Adicionando usuário...';
+                    
+                    const name = document.getElementById('userName').value;
+                    const phone = document.getElementById('userPhone').value;
+                    const password = document.getElementById('userPassword').value;
+                    
+                    try {
+                        console.log('Adicionando usuário:', { name, phone });
+                        const { data, error } = await supabaseClient
+                            .from('users')
+                            .insert([{ name, phone, password }])
+                            .select();
+                        
+                        if (error) {
+                            throw error;
+                        }
+                        
+                        console.log('Usuário adicionado:', data);
+                        resultDiv.innerHTML = '<div class="success">✅ Usuário adicionado com sucesso: ' + JSON.stringify(data) + '</div>';
+                    } catch (error) {
+                        console.error('Erro ao adicionar usuário:', error);
+                        resultDiv.innerHTML = '<div class="error">❌ Erro ao adicionar usuário: ' + (error.message || error) + '</div>';
+                        
+                        // Adicionar dicas específicas baseadas no erro
+                        if (error.code === '42P01') {
+                            resultDiv.innerHTML += '<div>A tabela "users" não existe. Execute o script SQL para criar as tabelas.</div>';
+                        } else if (error.code === '23505') {
+                            resultDiv.innerHTML += '<div>Este número de telefone já está registrado.</div>';
+                        } else if (error.code === '23502') {
+                            resultDiv.innerHTML += '<div>Um campo obrigatório está faltando. Verifique se todos os campos foram preenchidos.</div>';
+                        } else if (error.code === '42501') {
+                            resultDiv.innerHTML += '<div>Problema de permissão. Verifique as políticas RLS no Supabase.</div>';
+                        }
+                    }
+                });
+                
+                // Listar usuários
+                document.getElementById('listUsers').addEventListener('click', async function() {
+                    const resultDiv = document.getElementById('usersResult');
+                    resultDiv.innerHTML = 'Buscando usuários...';
+                    
+                    try {
+                        console.log('Buscando usuários...');
+                        const { data, error } = await supabaseClient
+                            .from('users')
+                            .select('*');
+                        
+                        if (error) {
+                            throw error;
+                        }
+                        
+                        console.log('Usuários encontrados:', data);
+                        resultDiv.innerHTML = '<div class="success">✅ ' + data.length + ' usuários encontrados</div>';
+                        resultDiv.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    } catch (error) {
+                        console.error('Erro ao buscar usuários:', error);
+                        resultDiv.innerHTML = '<div class="error">❌ Erro ao buscar usuários: ' + (error.message || error) + '</div>';
+                        
+                        if (error.code === '42P01') {
+                            resultDiv.innerHTML += '<div>A tabela "users" não existe. Execute o script SQL para criar as tabelas.</div>';
+                        } else if (error.code === '42501') {
+                            resultDiv.innerHTML += '<div>Problema de permissão. Verifique as políticas RLS no Supabase.</div>';
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao inicializar o cliente Supabase:', error);
+                document.getElementById('error').innerHTML = '❌ Erro ao inicializar o cliente Supabase: ' + (error.message || error);
+            }
+        });
+    </script>
+</body>
+</html> 

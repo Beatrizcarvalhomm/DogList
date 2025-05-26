@@ -1,3 +1,8 @@
+<!--
+    DogList - Abrigo Temporário
+    Comentários detalhados em português de Portugal para explicar toda a estrutura, estilos e scripts.
+    Este ficheiro permite ao utilizador registar ou actualizar um abrigo temporário para animais.
+-->
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -11,6 +16,75 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <!-- Google Maps Script -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYiAXh7HwQgCEudiSzPR3bUuYQ1mnS3b4&libraries=geometry" async defer></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Função para limpar completamente dados corrompidos e forçar logout
+        function forceCleanLogout() {
+            console.log('Forçando limpeza completa e logout...');
+            
+            // Limpar TODOS os dados do localStorage
+            const keysToRemove = [
+                'loggedIn', 'currentUserId', 'userName', 'userPhone',
+                'tempUserId', 'tempUserName', 'tempUserPhone',
+                'tempRegisterName', 'tempRegisterPhone', 'tempRegisterPassword', 'tempRegisterConfirmPassword',
+                'termsAccepted'
+            ];
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            // Limpar completamente o localStorage
+            localStorage.clear();
+            
+            alert('Dados de sessão corrompidos detectados. Por favor, faça login novamente.');
+            window.location.href = 'index.html';
+        }
+
+        // Verificar e limpar dados corrompidos do localStorage PRIMEIRO
+        function cleanCorruptedData() {
+            const currentUserId = localStorage.getItem('currentUserId');
+            const isLoggedIn = localStorage.getItem('loggedIn');
+            
+            if (isLoggedIn && (!currentUserId || currentUserId.length === 0)) {
+                // Se está marcado como logado mas não tem UUID, é corrupção
+                console.warn('Estado inconsistente: logado sem UUID');
+                forceCleanLogout();
+                return false;
+            }
+            
+            if (currentUserId && currentUserId.length > 0) {
+                // Verificar se o UUID tem formato válido
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                if (!uuidRegex.test(currentUserId)) {
+                    console.warn('UUID corrompido detectado no localStorage:', currentUserId);
+                    forceCleanLogout();
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Executar limpeza ANTES de qualquer outra verificação
+        if (!cleanCorruptedData()) {
+            // Se dados foram corrompidos, parar execução
+            throw new Error('Dados corrompidos detectados - redirecionando');
+        }
+
+        // Verificar se está logado (após limpeza)
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+
+        // Inicializar o cliente Supabase corretamente
+        const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+        
+        // Inicializar o cliente Supabase de forma correta e explícita
+        const { createClient } = supabase;
+        window.supabase = createClient(supabaseUrl, supabaseKey);
+    </script>
     <style>
         * {
             margin: 0;
@@ -152,6 +226,18 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
+            border: 2px dashed #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .photo-upload-container:hover {
+            border-color: #ff9800;
+            background-color: #fff8f0;
+        }
+
+        .photo-upload-container.drag-over {
+            border-color: #4CAF50;
+            background-color: #f0fff0;
         }
 
         .photo-preview {
@@ -166,6 +252,11 @@
             justify-content: center;
             background-color: #f5f5f5;
             position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .photo-preview:hover {
+            transform: scale(1.05);
         }
 
         .photo-preview img {
@@ -178,6 +269,11 @@
         .photo-preview i {
             font-size: 40px;
             color: #ccc;
+            transition: color 0.3s ease;
+        }
+
+        .photo-preview:hover i {
+            color: #ff9800;
         }
 
         .change-photo-button {
@@ -188,19 +284,36 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
             transition: all 0.3s ease;
             margin-top: 10px;
         }
 
         .change-photo-button:hover {
             background-color: #e68a00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .photo-upload-text {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.4;
         }
 
         .file-input {
             display: none;
+        }
+
+        /* Estilo para informações do arquivo */
+        #fileInfo {
+            background-color: #f0f8ff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #333;
         }
 
         .photo-instructions {
@@ -451,19 +564,25 @@
                         <span>Escolher foto</span>
                     </label>
                     <input type="file" id="photoInput" class="file-input" accept="image/*">
+                    <div class="photo-upload-text">
+                        <p><strong>Clique para escolher</strong> ou <strong>arraste uma imagem</strong> aqui</p>
+                        <p style="font-size: 12px; color: #999; margin-top: 5px;">
+                            Formatos aceites: JPG, PNG, GIF | Tamanho máximo: 5MB
+                        </p>
+                    </div>
                     <p class="photo-instructions">Adicione uma foto de perfil que aparecerá quando alguém consultar o seu abrigo temporário.</p>
                 </div>
 
                 <h2 class="section-title">Localização</h2>
                 <div class="input-group">
                     <div class="location-search">
-                        <input type="text" id="locationSearch" placeholder="Pesquisar endereço..." autocomplete="off">
+                        <input type="text" id="locationSearch" placeholder="Pesquisar morada..." autocomplete="off">
                         <div id="locationSuggestions" class="location-suggestions"></div>
                     </div>
                     <div class="map-container" id="map"></div>
                     <div class="location-info">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span id="locationText">Clique no mapa ou pesquise um endereço</span>
+                        <span id="locationText">Clique no mapa ou pesquise uma morada</span>
                     </div>
                     <button type="button" class="use-my-location" onclick="useMyLocation()">
                         <i class="fas fa-location-arrow"></i>
@@ -752,10 +871,93 @@
                     };
                     
                 }, function() {
-                    alert('Erro ao obter a localização atual. Por favor, tente novamente ou selecione manualmente no mapa.');
+                    alert('Erro ao obter a localização actual. Por favor, tente novamente ou seleccione manualmente no mapa.');
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
                 });
             } else {
-                alert('Seu navegador não suporta geolocalização.');
+                alert('O seu navegador não suporta geolocalização.');
+            }
+        }
+
+        // Função para carregar imagem local ou remota
+        function loadImageUrl(url) {
+            if (url && url.startsWith('local:')) {
+                // É uma imagem local salva no localStorage
+                const imageKey = url.replace('local:', '');
+                return localStorage.getItem(imageKey);
+            }
+            return url;
+        }
+
+        // Adicionar funcionalidade de drag and drop
+        function setupDragAndDrop() {
+            const photoContainer = document.querySelector('.photo-upload-container');
+            const photoInput = document.getElementById('photoInput');
+            
+            if (!photoContainer || !photoInput) return;
+            
+            // Prevenir comportamento padrão para todos os eventos de drag
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                photoContainer.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // Destacar área de drop quando arquivo está sendo arrastado
+            ['dragenter', 'dragover'].forEach(eventName => {
+                photoContainer.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                photoContainer.addEventListener(eventName, unhighlight, false);
+            });
+            
+            // Lidar com arquivos soltos
+            photoContainer.addEventListener('drop', handleDrop, false);
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function highlight(e) {
+                photoContainer.classList.add('drag-over');
+            }
+            
+            function unhighlight(e) {
+                photoContainer.classList.remove('drag-over');
+            }
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    const file = files[0];
+                    
+                    // Verificar se é uma imagem
+                    if (!file.type.startsWith('image/')) {
+                        alert('Por favor, solte apenas arquivos de imagem.');
+                        return;
+                    }
+                    
+                    // Verificar tamanho
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Imagem muito grande. Por favor, use uma imagem menor que 5MB.');
+                        return;
+                    }
+                    
+                    // Simular seleção no input
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    photoInput.files = dataTransfer.files;
+                    
+                    // Disparar evento change
+                    const event = new Event('change', { bubbles: true });
+                    photoInput.dispatchEvent(event);
+                }
             }
         }
 
@@ -766,6 +968,14 @@
             
             if (!file.type.match('image.*')) {
                 alert('Por favor, selecione uma imagem válida.');
+                this.value = ''; // Limpar o input
+                return;
+            }
+            
+            // Verificar tamanho do arquivo (máximo 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Imagem muito grande. Por favor, selecione uma imagem menor que 5MB.');
+                this.value = ''; // Limpar o input
                 return;
             }
             
@@ -777,37 +987,65 @@
                 previewImage.src = e.target.result;
                 previewImage.style.display = 'block';
                 document.querySelector('#photoPreview i').style.display = 'none';
+                
+                // Adicionar feedback visual de que a imagem foi carregada
+                const photoContainer = document.querySelector('.photo-upload-container');
+                photoContainer.style.borderColor = '#4CAF50';
+                photoContainer.style.backgroundColor = '#f8fff8';
+                
+                // Mostrar nome do arquivo
+                const fileName = file.name;
+                let fileInfo = document.getElementById('fileInfo');
+                if (!fileInfo) {
+                    fileInfo = document.createElement('div');
+                    fileInfo.id = 'fileInfo';
+                    fileInfo.style.marginTop = '10px';
+                    fileInfo.style.fontSize = '12px';
+                    fileInfo.style.color = '#666';
+                    photoContainer.appendChild(fileInfo);
+                }
+                fileInfo.textContent = `Arquivo: ${fileName} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            };
+            
+            reader.onerror = function() {
+                alert('Erro ao ler o arquivo de imagem. Por favor, tente novamente.');
+                document.getElementById('photoInput').value = '';
             };
             
             reader.readAsDataURL(file);
         });
 
         // Manipulador para envio do formulário
-        document.getElementById('shelterForm').addEventListener('submit', function(event) {
+        document.getElementById('shelterForm').addEventListener('submit', async function(event) {
             event.preventDefault();
+            
+            // Mostrar feedback visual
+            const saveButton = document.querySelector('.save-button');
+            const originalText = saveButton.textContent;
+            saveButton.textContent = 'Salvando...';
+            saveButton.disabled = true;
+            
+            try {
+                console.log('Iniciando registro de abrigo...');
             
             // Verificar se a localização foi selecionada
             if (!selectedLocation) {
+                    console.log('Erro: Localização não selecionada');
                 alert('Por favor, selecione uma localização no mapa.');
+                    saveButton.textContent = originalText;
+                    saveButton.disabled = false;
                 return;
             }
             
-            // Recuperar a informação do usuário logado de várias possíveis fontes
+                // Recuperar a informação do usuário logado
             const currentUserId = localStorage.getItem('currentUserId');
-            let userName = 'Anônimo';
-            let contacto = '';
+                console.log('ID do usuário atual:', currentUserId);
             
-            // Tentar obter do users array primeiro (forma mais atual)
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const currentUser = users.find(user => user.id === currentUserId);
-            
-            if (currentUser) {
-                userName = currentUser.name || 'Anônimo';
-                contacto = currentUser.phone || '';
-            } else {
-                // Tentar obter das keys individuais (forma anterior)
-                userName = localStorage.getItem('userName') || 'Anônimo';
-                contacto = localStorage.getItem('userPhone') || '';
+                if (!currentUserId) {
+                    console.log('Erro: Usuário não está logado ou ID não encontrado');
+                    alert('Precisa de estar com sessão iniciada para registar um abrigo. Vamos redireccionar para a página de login.');
+                    window.location.href = 'index.html';
+                    return;
             }
             
             // Coletar as opções selecionadas
@@ -815,7 +1053,15 @@
             const idadeOptions = getSelectedOptions('idade');
             const sexoOptions = getSelectedOptions('sexo');
             const castradoOptions = getSelectedOptions('castrado');
-            const agressivoOptions = getSelectedOptions('aggressivo');
+                const agressivoOptions = getSelectedOptions('agressivo');
+                
+                console.log('Opções selecionadas:', {
+                    porte: porteOptions,
+                    idade: idadeOptions,
+                    sexo: sexoOptions,
+                    castrado: castradoOptions,
+                    agressivo: agressivoOptions
+                });
             
             // Verificar se pelo menos uma opção em cada categoria foi selecionada
             if (
@@ -825,88 +1071,266 @@
                 castradoOptions.length === 0 ||
                 agressivoOptions.length === 0
             ) {
+                    console.log('Erro: Faltam opções selecionadas');
                 alert('Por favor, selecione pelo menos uma opção em cada categoria.');
+                    saveButton.textContent = originalText;
+                    saveButton.disabled = false;
                 return;
             }
             
-            // Se há uma foto, processar e salvar
+                // Processar foto de perfil
             let photoUrl = null;
-            if (photoFile) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    photoUrl = e.target.result;
-                    // Continuar o processo de salvamento
-                    saveShelter(userName, contacto, porteOptions, idadeOptions, sexoOptions, castradoOptions, agressivoOptions, photoUrl);
-                };
-                reader.readAsDataURL(photoFile);
-            } else {
-                // Verificar se já existe um abrigo com foto
-                const shelters = JSON.parse(localStorage.getItem('shelters') || '[]');
-                const currentUserId = localStorage.getItem('currentUserId');
-                const existingShelter = shelters.find(s => s.userId === currentUserId);
+                const photoFile = document.getElementById('photoInput').files[0];
                 
-                // Se existir um abrigo e ele tiver uma foto, preservar a foto existente
-                if (existingShelter && existingShelter.photoUrl) {
-                    photoUrl = existingShelter.photoUrl;
+            if (photoFile) {
+                    try {
+                        console.log('Iniciando upload da imagem:', photoFile.name, 'tamanho:', photoFile.size, 'tipo:', photoFile.type);
+                        
+                        // Validar tipo de arquivo
+                        if (!photoFile.type.startsWith('image/')) {
+                            throw new Error('Arquivo selecionado não é uma imagem válida');
+                        }
+                        
+                        // Validar tamanho (máximo 5MB)
+                        if (photoFile.size > 5 * 1024 * 1024) {
+                            throw new Error('Imagem muito grande. Máximo permitido: 5MB');
+                        }
+                        
+                        // Gerar nome único para o arquivo
+                        const fileExt = photoFile.name.split('.').pop().toLowerCase();
+                        const fileName = `shelter-${currentUserId}-${Date.now()}.${fileExt}`;
+                        console.log('Nome do arquivo para upload:', fileName);
+                        
+                        // Tentar upload no bucket principal primeiro
+                        console.log('Tentando upload no bucket "dog-images"...');
+                        
+                        const { data: uploadData, error: uploadError } = await window.supabase.storage
+                            .from('dog-images')
+                            .upload(fileName, photoFile, { 
+                                upsert: true,
+                                cacheControl: '3600',
+                                contentType: photoFile.type
+                            });
+                            
+                        if (uploadError) {
+                            console.error('Erro no upload:', uploadError);
+                            
+                            // Se o erro for de bucket não encontrado, tentar criar ou usar outro método
+                            if (uploadError.message && uploadError.message.includes('not found')) {
+                                console.log('Bucket não encontrado, tentando método alternativo...');
+                                
+                                // Converter imagem para base64 como fallback
+                const reader = new FileReader();
+                                const base64Promise = new Promise((resolve, reject) => {
+                                    reader.onload = () => resolve(reader.result);
+                                    reader.onerror = reject;
+                reader.readAsDataURL(photoFile);
+                                });
+                                
+                                const base64Data = await base64Promise;
+                                console.log('Imagem convertida para base64, salvando localmente...');
+                                
+                                // Salvar base64 no localStorage temporariamente
+                                const imageKey = `shelter-image-${currentUserId}`;
+                                localStorage.setItem(imageKey, base64Data);
+                                photoUrl = `local:${imageKey}`;
+                                
+                                console.log('Imagem salva localmente com chave:', imageKey);
+            } else {
+                                throw uploadError;
+                            }
+                        } else {
+                            console.log('Upload bem-sucedido:', uploadData);
+                            
+                            // Obter URL pública
+                            const { data: urlData } = window.supabase.storage
+                                .from('dog-images')
+                                .getPublicUrl(fileName);
+                                
+                            console.log('URL pública obtida:', urlData);
+                            
+                            if (urlData && urlData.publicUrl) {
+                                photoUrl = urlData.publicUrl;
+                                console.log('URL da foto definida:', photoUrl);
+                            } else {
+                                console.warn('URL pública não encontrada, usando método local');
+                
+                                // Fallback para base64
+                                const reader = new FileReader();
+                                const base64Promise = new Promise((resolve, reject) => {
+                                    reader.onload = () => resolve(reader.result);
+                                    reader.onerror = reject;
+                                    reader.readAsDataURL(photoFile);
+                                });
+                                
+                                const base64Data = await base64Promise;
+                                const imageKey = `shelter-image-${currentUserId}`;
+                                localStorage.setItem(imageKey, base64Data);
+                                photoUrl = `local:${imageKey}`;
+                            }
+                        }
+                        
+                        console.log('Processamento de imagem concluído. URL final:', photoUrl);
+                        
+                    } catch (photoError) {
+                        console.error('Erro durante o processamento da foto:', photoError);
+                        
+                        // Perguntar ao usuário se quer continuar sem a foto
+                        const continueWithoutPhoto = confirm(
+                            `Erro ao processar a foto: ${photoError.message}\n\n` +
+                            'Deseja continuar o registo do abrigo sem a foto?'
+                        );
+                        
+                        if (!continueWithoutPhoto) {
+                            saveButton.textContent = originalText;
+                            saveButton.disabled = false;
+                            return;
+                        }
+                        
+                        console.log('Usuário optou por continuar sem a foto');
+                        photoUrl = null;
+                    }
+                } else {
+                    console.log('Nenhuma foto selecionada, continuando sem imagem');
+                }
+            
+                // Verificar se o usuário já tem um abrigo
+                const { data: existingShelters, error: queryError } = await window.supabase
+                    .from('shelters')
+                    .select('*')
+                    .eq('user_id', currentUserId);
+                
+                if (queryError) {
+                    console.error('Erro ao verificar abrigos existentes:', queryError);
+                    throw new Error('Falha ao verificar se você já possui um abrigo registrado');
                 }
                 
-                // Salvar com a foto existente ou sem foto
-                saveShelter(userName, contacto, porteOptions, idadeOptions, sexoOptions, castradoOptions, agressivoOptions, photoUrl);
-            }
-        });
-        
-        function saveShelter(userName, contacto, porteOptions, idadeOptions, sexoOptions, castradoOptions, agressivoOptions, photoUrl) {
-            const currentUserId = localStorage.getItem('currentUserId');
+                // Verificar se o endereço está preenchido
+                const endereco = document.getElementById('locationText').textContent;
+                if (!endereco || endereco === 'Localização selecionada' || endereco.trim() === '') {
+                    console.error('Erro: Endereço não especificado');
+                    throw new Error('Por favor, seleccione uma morada válida no mapa.');
+                }
+                
+                // Garantir que a localização esteja no formato correto
+                const locationFormatted = {
+                    lat: parseFloat(selectedLocation.lat),
+                    lng: parseFloat(selectedLocation.lng)
+                };
+                
+                // Verificar se a localização é válida após formatação
+                if (isNaN(locationFormatted.lat) || isNaN(locationFormatted.lng)) {
+                    console.error('Erro: Coordenadas inválidas', selectedLocation);
+                    throw new Error('As coordenadas da localização são inválidas. Por favor, selecione novamente no mapa.');
+                }
+                
+                // Preparar dados do abrigo
+                const shelterData = {
+                    user_id: currentUserId,
+                    endereco: endereco,
+                    location: locationFormatted,
+                    aceita_porte: porteOptions,
+                    aceita_idade: idadeOptions,
+                    aceita_sexo: sexoOptions,
+                    aceita_castrado: castradoOptions,
+                    aceita_agressivo: agressivoOptions
+                };
+                
+                // Adicionar a foto se foi enviada
+                if (photoUrl) {
+                    shelterData.photo_url = photoUrl;
+                }
+                
+                // Log detalhado dos dados que serão enviados
+                console.log('Dados do abrigo a serem enviados:', JSON.stringify(shelterData, null, 2));
+
+                let result;
             
-            // Salvar o abrigo no localStorage
-            let shelters = JSON.parse(localStorage.getItem('shelters') || '[]');
-            
-            // Verificar se o usuário já tem um abrigo registrado
-            const existingIndex = shelters.findIndex(s => s.userId === currentUserId);
-            
-            // Criar objeto do abrigo
-            const shelter = {
-                id: existingIndex !== -1 ? shelters[existingIndex].id : generateId(),
-                userId: currentUserId,
-                userName: userName,
-                contacto: contacto,
-                endereco: document.getElementById('locationText').textContent,
-                location: {
-                    lat: selectedLocation.lat,
-                    lng: selectedLocation.lng
-                },
-                aceita: {
-                    porte: porteOptions,
-                    idade: idadeOptions,
-                    sexo: sexoOptions,
-                    castrado: castradoOptions,
-                    agressivo: agressivoOptions
-                },
-                photoUrl: photoUrl
-            };
-            
-            if (existingIndex !== -1) {
+                if (existingShelters && existingShelters.length > 0) {
                 // Atualizar abrigo existente
-                shelters[existingIndex] = shelter;
-                localStorage.setItem('shelters', JSON.stringify(shelters));
+                    result = await window.supabase
+                        .from('shelters')
+                        .update(shelterData)
+                        .eq('user_id', currentUserId);
+                    
+                    if (result.error) {
+                        console.error('Erro detalhado ao atualizar abrigo:', result.error);
+                        throw new Error('Falha ao atualizar informações do abrigo');
+                    }
+                    
                 alert('Abrigo temporário atualizado com sucesso!');
             } else {
-                // Adicionar novo abrigo
-                shelters.push(shelter);
-                localStorage.setItem('shelters', JSON.stringify(shelters));
-                alert('Abrigo temporário registado com sucesso!');
+                    // Criar novo abrigo
+                    result = await window.supabase
+                        .from('shelters')
+                        .insert([shelterData]);
+                    
+                    if (result.error) {
+                        console.error('Erro detalhado ao criar abrigo:', result.error);
+                        throw new Error('Falha ao registrar abrigo temporário');
+                    }
+                    
+                    alert('Abrigo temporário registrado com sucesso!');
             }
             
             // Redirecionar para a página principal
             window.location.href = 'home.html';
-        }
+            } catch (error) {
+                console.error('Erro detalhado ao salvar abrigo:', error);
+                console.error('Stack trace:', error.stack);
+                
+                // Exibir mensagem de erro mais detalhada
+                let errorMessage = 'Erro ao salvar o abrigo.';
+                
+                if (error.message) {
+                    errorMessage += ' ' + error.message;
+                }
+                
+                if (error.details) {
+                    errorMessage += ' Detalhes: ' + JSON.stringify(error.details);
+                }
+                
+                if (error.hint) {
+                    errorMessage += ' Dica: ' + error.hint;
+                }
+                
+                alert(errorMessage + ' Por favor, tente novamente.');
+            } finally {
+                // Restaurar o botão
+                saveButton.textContent = originalText;
+                saveButton.disabled = false;
+            }
+        });
 
-        // Função auxiliar para obter opções selecionadas por tipo
         function getSelectedOptions(type) {
             const options = [];
-            document.querySelectorAll(`input[id^="${type}"]:checked`).forEach(checkbox => {
-                options.push(checkbox.value);
-            });
+            
+            // Verificar cada tipo de seleção específicamente com os IDs corretos
+            if (type === 'porte') {
+                if (document.getElementById('porteSmall').checked) options.push('small');
+                if (document.getElementById('porteMedium').checked) options.push('medium');
+                if (document.getElementById('porteLarge').checked) options.push('large');
+            } 
+            else if (type === 'idade') {
+                if (document.getElementById('idade1').checked) options.push('0-5');
+                if (document.getElementById('idade2').checked) options.push('5-10');
+                if (document.getElementById('idade3').checked) options.push('10+');
+            }
+            else if (type === 'sexo') {
+                if (document.getElementById('sexoMale').checked) options.push('male');
+                if (document.getElementById('sexoFemale').checked) options.push('female');
+            }
+            else if (type === 'castrado') {
+                if (document.getElementById('castradoYes').checked) options.push('yes');
+                if (document.getElementById('castradoNo').checked) options.push('no');
+            }
+            else if (type === 'agressivo') {
+                if (document.getElementById('aggressivoNone').checked) options.push('none');
+                if (document.getElementById('aggressivoHumans').checked) options.push('humans');
+                if (document.getElementById('aggressivoAnimals').checked) options.push('animals');
+                if (document.getElementById('aggressivoBoth').checked) options.push('both');
+            }
+            
             return options;
         }
         
@@ -917,6 +1341,9 @@
 
         // Modificar a inicialização do mapa para garantir que todos os elementos do DOM estejam carregados
         document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar funcionalidade de drag and drop para upload de fotos
+            setupDragAndDrop();
+            
             // Verificar se o Google Maps já foi carregado
             function checkGoogleMapsLoaded() {
                 if (window.google && window.google.maps) {
@@ -938,105 +1365,148 @@
             function initializeMap() {
                 // Verificar se o elemento do mapa existe
                 if (document.getElementById('map')) {
-                    // Verificar se o usuário já tem um abrigo registrado
-                    const allShelters = JSON.parse(localStorage.getItem('shelters') || '[]');
-                    const currentUserId = localStorage.getItem('currentUserId');
-                    const existingShelter = allShelters.find(s => s.userId === currentUserId);
-                    
-                    if (existingShelter && existingShelter.location) {
-                        // Usar localização do abrigo existente
-                        initMap();
-                        
-                        // Definir a localização selecionada
-                        selectedLocation = {
-                            lat: existingShelter.location.lat,
-                            lng: existingShelter.location.lng
-                        };
-                        
-                        // Mostrar endereco
-                        document.getElementById('locationText').textContent = existingShelter.endereco || 'Localização selecionada';
-                        
-                        // Carregar foto se existir
-                        if (existingShelter.photoUrl) {
-                            const previewImage = document.getElementById('previewImage');
-                            previewImage.src = existingShelter.photoUrl;
-                            previewImage.style.display = 'block';
-                            document.querySelector('#photoPreview i').style.display = 'none';
-                        }
-                        
-                        // Preencher os campos selecionados
-                        if (existingShelter.aceita) {
-                            // Porte
-                            existingShelter.aceita.porte.forEach(value => {
-                                const porteCorrectedId = 'porte' + value.charAt(0).toUpperCase() + value.slice(1);
-                                if (document.getElementById(porteCorrectedId)) {
-                                    document.getElementById(porteCorrectedId).checked = true;
-                                }
-                            });
-                            
-                            // Idade
-                            existingShelter.aceita.idade.forEach(value => {
-                                let idadeId = '';
-                                if (value === '0-5') idadeId = 'idade1';
-                                else if (value === '5-10') idadeId = 'idade2';
-                                else if (value === '10+') idadeId = 'idade3';
-                                
-                                if (idadeId && document.getElementById(idadeId)) {
-                                    document.getElementById(idadeId).checked = true;
-                                }
-                            });
-                            
-                            // Sexo
-                            existingShelter.aceita.sexo.forEach(value => {
-                                const sexoCorrectedId = 'sexo' + value.charAt(0).toUpperCase() + value.slice(1);
-                                if (document.getElementById(sexoCorrectedId)) {
-                                    document.getElementById(sexoCorrectedId).checked = true;
-                                }
-                            });
-                            
-                            // Castrado
-                            existingShelter.aceita.castrado.forEach(value => {
-                                const castradoCorrectedId = 'castrado' + value.charAt(0).toUpperCase() + value.slice(1);
-                                if (document.getElementById(castradoCorrectedId)) {
-                                    document.getElementById(castradoCorrectedId).checked = true;
-                                }
-                            });
-                            
-                            // Agressividade
-                            existingShelter.aceita.agressivo.forEach(value => {
-                                const agressivoCorrectedId = 'aggressivo' + value.charAt(0).toUpperCase() + value.slice(1);
-                                if (document.getElementById(agressivoCorrectedId)) {
-                                    document.getElementById(agressivoCorrectedId).checked = true;
-                                }
-                            });
-                        }
-                    } else {
-                        // Tentar obter a localização do usuário
-                        if (navigator.geolocation) {
-                            navigator.geolocation.getCurrentPosition(
-                                (position) => {
-                                    initMap();
-                                },
-                                (error) => {
-                                    console.error('Erro ao obter localização:', error);
-                                    initMap(); // Usar coordenadas padrão de Lisboa
-                                },
-                                {
-                                    enableHighAccuracy: true,
-                                    timeout: 5000,
-                                    maximumAge: 0
-                                }
-                            );
-                        } else {
-                            console.log('Geolocalização não suportada');
-                            initMap(); // Usar coordenadas padrão de Lisboa
-                        }
-                    }
+                    // Verificar se o usuário já tem um abrigo registrado no Supabase
+                    loadExistingShelterData();
                 } else {
                     console.error('Elemento do mapa não encontrado no DOM');
                 }
             }
         });
+        
+        // Função para carregar dados existentes do abrigo do Supabase
+        async function loadExistingShelterData() {
+            try {
+                    const currentUserId = localStorage.getItem('currentUserId');
+                if (!currentUserId) {
+                    console.log('Usuário não logado, inicializando mapa padrão');
+                    initMap();
+                    return;
+                }
+                
+                console.log('Verificando se usuário já tem abrigo registrado...');
+                
+                // Buscar abrigo existente do usuário
+                const { data: existingShelters, error } = await window.supabase
+                    .from('shelters')
+                    .select('*')
+                    .eq('user_id', currentUserId);
+                
+                if (error) {
+                    console.error('Erro ao buscar abrigo existente:', error);
+                        initMap();
+                    return;
+                }
+                
+                if (existingShelters && existingShelters.length > 0) {
+                    const existingShelter = existingShelters[0];
+                    console.log('Abrigo existente encontrado:', existingShelter);
+                    
+                    // Inicializar mapa
+                    initMap();
+                    
+                    // Carregar localização existente
+                    if (existingShelter.location) {
+                        selectedLocation = {
+                            lat: existingShelter.location.lat,
+                            lng: existingShelter.location.lng
+                        };
+                        
+                        // Centralizar mapa na localização do abrigo
+                        map.setCenter(selectedLocation);
+                        map.setZoom(15);
+                        
+                        // Colocar marcador
+                        placeMarker(selectedLocation);
+                        
+                        // Mostrar endereço
+                        document.getElementById('locationText').textContent = existingShelter.endereco || 'Localização selecionada';
+                    }
+                        
+                        // Carregar foto se existir
+                    if (existingShelter.photo_url) {
+                            const previewImage = document.getElementById('previewImage');
+                        const photoPreview = document.getElementById('photoPreview');
+                        
+                        if (existingShelter.photo_url.startsWith('local:')) {
+                            // Imagem local
+                            const imageKey = existingShelter.photo_url.replace('local:', '');
+                            const base64Data = localStorage.getItem(imageKey);
+                            if (base64Data) {
+                                previewImage.src = base64Data;
+                            previewImage.style.display = 'block';
+                                photoPreview.querySelector('i').style.display = 'none';
+                            }
+                        } else {
+                            // Imagem remota
+                            previewImage.src = existingShelter.photo_url;
+                            previewImage.style.display = 'block';
+                            photoPreview.querySelector('i').style.display = 'none';
+                        }
+                        }
+                        
+                    // Preencher preferências
+                    fillPreferences(existingShelter);
+                    
+                } else {
+                    console.log('Nenhum abrigo existente encontrado, inicializando mapa padrão');
+                    initMap();
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados existentes:', error);
+                initMap();
+            }
+        }
+        
+        // Função para preencher as preferências do abrigo existente
+        function fillPreferences(shelter) {
+                            // Porte
+            if (shelter.aceita_porte) {
+                shelter.aceita_porte.forEach(value => {
+                    const element = document.getElementById(`porte${value.charAt(0).toUpperCase() + value.slice(1)}`);
+                    if (element) element.checked = true;
+                            });
+            }
+                            
+                            // Idade
+            if (shelter.aceita_idade) {
+                shelter.aceita_idade.forEach(value => {
+                                let idadeId = '';
+                                if (value === '0-5') idadeId = 'idade1';
+                                else if (value === '5-10') idadeId = 'idade2';
+                                else if (value === '10+') idadeId = 'idade3';
+                                
+                    if (idadeId) {
+                        const element = document.getElementById(idadeId);
+                        if (element) element.checked = true;
+                                }
+                            });
+            }
+                            
+                            // Sexo
+            if (shelter.aceita_sexo) {
+                shelter.aceita_sexo.forEach(value => {
+                    const element = document.getElementById(`sexo${value.charAt(0).toUpperCase() + value.slice(1)}`);
+                    if (element) element.checked = true;
+                            });
+            }
+                            
+                            // Castrado
+            if (shelter.aceita_castrado) {
+                shelter.aceita_castrado.forEach(value => {
+                    const element = document.getElementById(`castrado${value.charAt(0).toUpperCase() + value.slice(1)}`);
+                    if (element) element.checked = true;
+                            });
+            }
+                            
+                            // Agressividade
+            if (shelter.aceita_agressivo) {
+                shelter.aceita_agressivo.forEach(value => {
+                    const element = document.getElementById(`aggressivo${value.charAt(0).toUpperCase() + value.slice(1)}`);
+                    if (element) element.checked = true;
+                            });
+                        }
+        }
     </script>
 </body>
 </html> 

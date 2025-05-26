@@ -6,6 +6,17 @@
     <title>DogList - Detalhes do Animal</title>
     <link rel="icon" href="Images/DogList-Logo.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Inicializar o cliente Supabase
+        const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+        
+        // Inicializar o cliente Supabase
+        const { createClient } = supabase;
+        window.supabase = createClient(supabaseUrl, supabaseKey);
+    </script>
     <style>
         * {
             margin: 0;
@@ -238,9 +249,41 @@
                 font-size: 18px;
             }
         }
+
+        /* Adicionar estilo para botão de loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #FF7F50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
     <div class="container">
         <div class="header">
             <button class="back-button" onclick="window.history.back()">
@@ -365,7 +408,67 @@
             'Shih Tzu', 'Yorkshire Terrier', 'Indefinido'
         ];
 
-        document.addEventListener('DOMContentLoaded', function() {
+        // Função para extrair contato da descrição ou nome
+        function extractContactFromDog(dog) {
+            let contact = null;
+            
+            // Tentar extrair do campo descrição (formato "Contato: 123456789")
+            if (dog.descricao && dog.descricao.includes("Contato:")) {
+                const match = dog.descricao.match(/Contato: (\d+)/);
+                if (match && match[1]) {
+                    contact = match[1];
+                }
+            }
+            
+            // Se não encontrou na descrição, tentar no campo nome (formato "Animal adicionado por: 123456789")
+            if (!contact && dog.nome && dog.nome.includes("adicionado por:")) {
+                const match = dog.nome.match(/adicionado por: (\d+)/);
+                if (match && match[1]) {
+                    contact = match[1];
+                }
+            }
+            
+            return contact;
+        }
+
+        // Função para buscar os dados do animal no Supabase
+        async function fetchAnimalDetails(animalId) {
+            try {
+                // Mostrar loading
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                
+                // Buscar o animal no Supabase
+                const { data: dog, error } = await window.supabase
+                    .from('dogs')
+                    .select(`
+                        *,
+                        users (
+                            name
+                        )
+                    `)
+                    .eq('id', animalId)
+                    .single();
+                
+                if (error) {
+                    console.error('Erro ao buscar dados do animal:', error);
+                    throw error;
+                }
+                
+                // Esconder loading
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                return dog;
+            } catch (error) {
+                console.error('Erro ao buscar detalhes do animal:', error);
+                
+                // Esconder loading
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                return null;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
             // Obter o ID do animal da URL
             const urlParams = new URLSearchParams(window.location.search);
             const animalId = urlParams.get('id');
@@ -373,114 +476,100 @@
             // Verificar se o ID é válido
             if (!animalId || animalId === 'undefined') {
                 // Exibir informações padrão quando o ID é inválido
-                document.getElementById('animalBreed').textContent = 'Não disponível';
-                document.getElementById('animalSize').textContent = 'Não disponível';
-                document.getElementById('animalGender').textContent = 'Não disponível';
-                document.getElementById('animalAge').textContent = 'Não disponível';
-                document.getElementById('animalNeutered').textContent = 'Não disponível';
-                document.getElementById('animalAggressive').textContent = 'Não disponível';
-                document.getElementById('animalLocation').textContent = 'Não disponível';
-                document.getElementById('animalStatus').textContent = 'Não disponível';
-                document.getElementById('animalContact').textContent = 'Não disponível';
-                document.getElementById('animalDate').textContent = 'Não disponível';
-                document.getElementById('animalUser').textContent = 'Não disponível';
-                
-                // Carregar a imagem padrão
-                document.getElementById('animalImage').src = 'Images/DogList-Logo.png';
-                
-                // Atualizar o título da página
-                document.querySelector('.title').textContent = 'Animal não encontrado';
-                
-                console.log('ID inválido ou indefinido:', animalId);
+                displayNotFoundInfo();
                 return;
             }
 
-            // Obter os dados do animal do localStorage
-            const animals = JSON.parse(localStorage.getItem('allDogs')) || [];
-            console.log('Todos os animais:', animals); // Para debug
-            
-            const dog = animals.find(d => d.id === animalId);
-
-            if (dog) {
-                console.log('Dados do animal encontrado:', dog); // Para debug
-
-                // Atualizar a imagem
-                const animalImage = document.getElementById('animalImage');
-                const animalImageContainer = document.querySelector('.animal-image');
+            try {
+                // Buscar dados do animal no Supabase
+                const dog = await fetchAnimalDetails(animalId);
                 
-                if (dog.image) {
-                    // Mostra o contêiner de imagem
-                    animalImageContainer.style.display = 'flex';
+                if (dog) {
+                    console.log('Dados do animal encontrado:', dog); // Para debug
+                    console.log('Dados do usuário:', dog.users); // Para debug da relação com usuário
                     
-                    // Verifica se a imagem é um data URL (base64)
-                    if (dog.image.startsWith('data:image')) {
-                        animalImage.src = dog.image;
+                    // Extrair o número de contato do nome ou descrição
+                    const contactNumber = extractContactFromDog(dog);
+
+                    // Atualizar a imagem
+                    updateAnimalImage(dog);
+
+                    // Obter nome do usuário (para exibição)
+                    const userName = localStorage.getItem('userName') || 'Usuário';
+
+                    // Atualizar os detalhes do animal
+                    document.getElementById('animalBreed').textContent = dog.raca || 'Não especificado';
+                    document.getElementById('animalSize').textContent = translateSize(dog.porte) || dog.porte || 'Não especificado';
+                    document.getElementById('animalGender').textContent = translateGender(dog.sexo) || dog.sexo || 'Não especificado';
+                    document.getElementById('animalAge').textContent = translateAge(dog.idade) || dog.idade || 'Não especificado';
+                    document.getElementById('animalNeutered').textContent = translateNeutered(dog.castrado ? 'yes' : 'no') || (dog.castrado ? 'Sim' : 'Não') || 'Não especificado';
+                    document.getElementById('animalAggressive').textContent = translateAggressive(dog.agressivo) || dog.agressivo || 'Não especificado';
+                    document.getElementById('animalLocation').textContent = dog.endereco || 'Local não especificado';
+                    document.getElementById('animalStatus').textContent = translateStatus(dog.estado) || dog.estado || 'Não especificado';
+                    document.getElementById('animalContact').textContent = contactNumber || 'Não especificado';
+                    document.getElementById('animalDate').textContent = formatDate(dog.data_adicao || dog.created_at) || 'Não especificado';
+                    
+                    // Exibir o nome do usuário se disponível, caso contrário mostrar o ID
+                    if (dog.users && dog.users.name) {
+                        document.getElementById('animalUser').textContent = dog.users.name;
                     } else {
-                        // Se não for base64, assume que é o nome do arquivo na pasta Images/
-                        animalImage.src = 'Images/' + dog.image;
+                        document.getElementById('animalUser').textContent = dog.user_id || 'Não especificado';
                     }
-                } else if (dog.selectedImage) {
-                    // Mostra o contêiner de imagem
-                    animalImageContainer.style.display = 'flex';
-                    animalImage.src = dog.selectedImage;
                 } else {
-                    // Oculta completamente o contêiner de imagem quando não há foto
-                    animalImageContainer.style.display = 'none';
+                    // Caso o animal não seja encontrado
+                    displayNotFoundInfo();
                 }
-
-                // Obter o nome do usuário atual
-                const userName = localStorage.getItem('userName') || 'Usuário';
-
-                // Atualizar os detalhes usando os nomes exatos das propriedades
-                document.getElementById('animalBreed').textContent = dog.raca || dog.breed || 'Não especificado';
-                document.getElementById('animalSize').textContent = translateSize(dog.porte || dog.size) || dog.porte || dog.size || 'Não especificado';
-                document.getElementById('animalGender').textContent = translateGender(dog.sexo || dog.gender) || dog.sexo || dog.gender || 'Não especificado';
-                document.getElementById('animalAge').textContent = translateAge(dog.idade || dog.age) || dog.idade || dog.age || 'Não especificado';
-                document.getElementById('animalNeutered').textContent = translateNeutered(dog.castrado || dog.neutered) || dog.castrado || dog.neutered || 'Não especificado';
-                document.getElementById('animalAggressive').textContent = translateAggressive(dog.agressivo || dog.aggressive) || dog.agressivo || dog.aggressive || 'Não especificado';
-                document.getElementById('animalLocation').textContent = dog.endereco || (dog.location && typeof dog.location === 'object' ? dog.location.address : (typeof dog.location === 'string' ? dog.location : null)) || dog.local || 'Local não especificado';
-                document.getElementById('animalStatus').textContent = translateStatus(dog.estado || dog.status) || dog.estado || dog.status || 'Não especificado';
-                document.getElementById('animalContact').textContent = dog.contacto || dog.contact || 'Não especificado';
-                document.getElementById('animalDate').textContent = formatDate(dog.date || dog.dataAdicao) || 'Não especificado';
-                document.getElementById('animalUser').textContent = dog.user || dog.userName || userName || 'Não especificado';
-
-                // Log para debug
-                console.log('Detalhes atualizados:', {
-                    raca: dog.raca,
-                    porte: dog.porte,
-                    sexo: dog.sexo,
-                    idade: dog.idade,
-                    castrado: dog.castrado,
-                    agressivo: dog.agressivo,
-                    local: dog.local,
-                    estado: dog.estado,
-                    contacto: dog.contacto,
-                    date: dog.date || dog.dataAdicao,
-                    user: dog.user || userName
-                });
-            } else {
-                // Caso o animal não seja encontrado
-                document.getElementById('animalBreed').textContent = 'Não disponível';
-                document.getElementById('animalSize').textContent = 'Não disponível';
-                document.getElementById('animalGender').textContent = 'Não disponível';
-                document.getElementById('animalAge').textContent = 'Não disponível';
-                document.getElementById('animalNeutered').textContent = 'Não disponível';
-                document.getElementById('animalAggressive').textContent = 'Não disponível';
-                document.getElementById('animalLocation').textContent = 'Não disponível';
-                document.getElementById('animalStatus').textContent = 'Não disponível';
-                document.getElementById('animalContact').textContent = 'Não disponível';
-                document.getElementById('animalDate').textContent = 'Não disponível';
-                document.getElementById('animalUser').textContent = 'Não disponível';
-                
-                // Carregar a imagem padrão
-                document.getElementById('animalImage').src = 'Images/DogList-Logo.png';
-                
-                // Atualizar o título da página
-                document.querySelector('.title').textContent = 'Animal não encontrado';
-                
-                console.log('Animal não encontrado com ID:', animalId);
+            } catch (error) {
+                console.error('Erro ao processar dados do animal:', error);
+                displayNotFoundInfo();
             }
         });
+
+        // Função para atualizar a imagem do animal
+        function updateAnimalImage(dog) {
+            const animalImage = document.getElementById('animalImage');
+            const animalImageContainer = document.querySelector('.animal-image');
+            
+            if (dog.image) {
+                // Mostra o contêiner de imagem
+                animalImageContainer.style.display = 'flex';
+                
+                // Verifica se a imagem é um data URL (base64)
+                if (typeof dog.image === 'string' && dog.image.startsWith('data:image')) {
+                    animalImage.src = dog.image;
+                } else {
+                    // Se não for base64, usar imagem padrão
+                    animalImage.src = 'Images/DogList-Logo.png';
+                }
+            } else {
+                // Oculta completamente o contêiner de imagem quando não há foto
+                animalImageContainer.style.display = 'none';
+            }
+        }
+
+        // Função para exibir informações de "não encontrado"
+        function displayNotFoundInfo() {
+            document.getElementById('animalBreed').textContent = 'Não disponível';
+            document.getElementById('animalSize').textContent = 'Não disponível';
+            document.getElementById('animalGender').textContent = 'Não disponível';
+            document.getElementById('animalAge').textContent = 'Não disponível';
+            document.getElementById('animalNeutered').textContent = 'Não disponível';
+            document.getElementById('animalAggressive').textContent = 'Não disponível';
+            document.getElementById('animalLocation').textContent = 'Não disponível';
+            document.getElementById('animalStatus').textContent = 'Não disponível';
+            document.getElementById('animalContact').textContent = 'Não disponível';
+            document.getElementById('animalDate').textContent = 'Não disponível';
+            document.getElementById('animalUser').textContent = 'Não disponível';
+            
+            // Carregar a imagem padrão
+            document.getElementById('animalImage').src = 'Images/DogList-Logo.png';
+            
+            // Atualizar o título da página
+            document.querySelector('.title').textContent = 'Animal não encontrado';
+            
+            // Esconder loading
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
 
         function formatDate(dateString) {
             if (!dateString) return null;
@@ -552,111 +641,11 @@
             return statuses[status];
         }
 
-        // Função para calcular distância entre dois pontos (usando fórmula de Haversine)
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Raio da Terra em km
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c; // Distância em km
-        }
-
-        // Função para encontrar a clínica mais próxima
-        function findNearestClinic(dogLat, dogLng) {
-            if (!clinicMarkers || clinicMarkers.length === 0) return null;
-
-            let nearestClinic = clinicMarkers[0];
-            let shortestDistance = calculateDistance(
-                dogLat, 
-                dogLng, 
-                nearestClinic.getLngLat().lat,
-                nearestClinic.getLngLat().lng
-            );
-
-            clinicMarkers.forEach(clinic => {
-                const distance = calculateDistance(
-                    dogLat,
-                    dogLng,
-                    clinic.getLngLat().lat,
-                    clinic.getLngLat().lng
-                );
-
-                if (distance < shortestDistance) {
-                    shortestDistance = distance;
-                    nearestClinic = clinic;
-                }
-            });
-
-            return nearestClinic;
-        }
-
-        // Função para mostrar a clínica mais próxima
-        function showNearestClinic() {
-            if (!map || !clinicMarkers || clinicMarkers.length === 0) {
-                alert('Não foi possível encontrar clínicas veterinárias próximas.');
-                return;
-            }
-
-            // Obter localização atual do cachorro
-            const dogLocation = map.getCenter();
-            
-            // Encontrar a clínica mais próxima
-            const nearestClinic = findNearestClinic(dogLocation.lat, dogLocation.lng);
-            
-            if (nearestClinic) {
-                // Primeiro, dar zoom out para mostrar ambos os pontos
-                map.flyTo({
-                    center: [
-                        (dogLocation.lng + nearestClinic.getLngLat().lng) / 2,
-                        (dogLocation.lat + nearestClinic.getLngLat().lat) / 2
-                    ],
-                    zoom: 12,
-                    duration: 1000,
-                    essential: true
-                });
-
-                // Depois de 1 segundo, dar zoom na clínica
-                setTimeout(() => {
-                    map.flyTo({
-                        center: nearestClinic.getLngLat(),
-                        zoom: 15,
-                        duration: 1000,
-                        essential: true
-                    });
-
-                    // Adicionar animação visual ao marcador da clínica
-                    const element = nearestClinic.getElement();
-                    if (element) {
-                        element.classList.add('marker-zoom');
-                        setTimeout(() => {
-                            element.classList.remove('marker-zoom');
-                        }, 500);
-                    }
-
-                    // Mostrar informações da clínica
-                    const clinicInfo = nearestClinic.getPopup();
-                    if (clinicInfo) {
-                        clinicInfo.addTo(map);
-                    }
-                }, 1000);
-            } else {
-                alert('Não foi possível encontrar uma clínica veterinária próxima.');
-            }
-        }
-
-        // Remover eventos de clique dos marcadores vermelhos
-        if (typeof markers !== 'undefined') {
-            markers.forEach(marker => {
-                const element = marker.getElement();
-                if (element) {
-                    element.style.pointerEvents = 'none';
-                }
-            });
-        }
+        // Quando a página terminar de carregar completamente
+        window.onload = function() {
+            // Esconder o loading overlay
+            document.getElementById('loadingOverlay').style.display = 'none';
+        };
     </script>
 </body>
 </html>

@@ -5,14 +5,423 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DogList - Minha Conta</title>
     <link rel="icon" href="Images/DogList-Logo.png" type="image/png">
+    <!-- Preconnect to CDN for faster loading -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Verifica se está logado
+        // Função para limpar completamente dados corrompidos e forçar logout
+        function forceCleanLogout() {
+            console.log('Forçando limpeza completa e logout...');
+            
+            // Limpar TODOS os dados do localStorage
+            const keysToRemove = [
+                'loggedIn', 'currentUserId', 'userName', 'userPhone',
+                'tempUserId', 'tempUserName', 'tempUserPhone',
+                'tempRegisterName', 'tempRegisterPhone', 'tempRegisterPassword', 'tempRegisterConfirmPassword',
+                'termsAccepted'
+            ];
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            // Limpar completamente o localStorage
+            localStorage.clear();
+            
+            alert('Dados de sessão corrompidos detectados. Por favor, faça login novamente.');
+            window.location.href = 'index.html';
+        }
+
+        // Verificar e limpar dados corrompidos do localStorage PRIMEIRO
+        function cleanCorruptedData() {
+            const currentUserId = localStorage.getItem('currentUserId');
+            const isLoggedIn = localStorage.getItem('loggedIn');
+            
+            if (isLoggedIn && (!currentUserId || currentUserId.length === 0)) {
+                // Se está marcado como logado mas não tem UUID, é corrupção
+                console.warn('Estado inconsistente: logado sem UUID');
+                forceCleanLogout();
+                return false;
+            }
+            
+            if (currentUserId && currentUserId.length > 0) {
+                // Verificar se o UUID tem formato válido
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                if (!uuidRegex.test(currentUserId)) {
+                    console.warn('UUID corrompido detectado no localStorage:', currentUserId);
+                    forceCleanLogout();
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Executar limpeza ANTES de qualquer outra verificação
+        if (!cleanCorruptedData()) {
+            // Se dados foram corrompidos, parar execução
+            throw new Error('Dados corrompidos detectados - redirecionando');
+        }
+
+        // Verificar se está logado (após limpeza)
         if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'index.html';
         }
+        
+        // Inicializar o cliente Supabase corretamente
+        const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+        
+        // Aguardar o carregamento do Supabase antes de inicializar
+        let supabaseClient = null;
+        
+        function initializeSupabase() {
+            try {
+                if (typeof supabase !== 'undefined' && supabase.createClient) {
+                    const { createClient } = supabase;
+                    supabaseClient = createClient(supabaseUrl, supabaseKey);
+                    window.supabase = supabaseClient;
+                    console.log('Supabase inicializado com sucesso');
+                    return true;
+                } else {
+                    console.error('Supabase não carregado ainda');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Erro ao inicializar Supabase:', error);
+                return false;
+            }
+        }
+        
+        // Tentar inicializar imediatamente
+        if (!initializeSupabase()) {
+            // Se falhar, tentar novamente após um delay
+            setTimeout(() => {
+                if (!initializeSupabase()) {
+                    console.error('Falha ao inicializar Supabase após retry');
+                    alert('Erro de conectividade. Por favor, recarregue a página.');
+                }
+            }, 1000);
+        }
+
+        // ===== FUNÇÃO PARA VALIDAR FORMATO UUID =====
+        function isValidUUID(uuid) {
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            return uuidRegex.test(uuid);
+        }
+
+        // ===== FUNÇÃO PARA OBTER DADOS DO UTILIZADOR =====
+        async function fetchUserData() {
+            // Obter o ID do utilizador actual do localStorage
+            const currentUserId = localStorage.getItem('currentUserId');
+            
+            // Verificar se o ID é válido
+            if (!currentUserId || !isValidUUID(currentUserId)) {
+                console.error('ID de utilizador inválido ou não encontrado');
+                alert('Erro interno: dados de sessão inválidos. A redirecionar...');
+                setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                return;
+            }
+            
+            // Verificar se temos ligação à base de dados
+            if (!supabaseClient) {
+                console.error('Cliente Supabase não inicializado');
+                alert('Erro de conectividade. Por favor, recarregue a página.');
+                return;
+            }
+            
+            try {
+                // Buscar dados do utilizador na base de dados
+                const { data, error } = await supabaseClient
+                    .from('users') // Tabela de utilizadores
+                    .select('*') // Seleccionar todos os campos
+                    .eq('id', currentUserId) // Onde o ID é igual ao actual
+                    .maybeSingle(); // Esperar no máximo um resultado
+                
+                if (error) {
+                    throw new Error(`Erro ao buscar dados: ${error.message}`);
+                }
+                
+                // Verificar se os dados foram encontrados
+                if (!data) {
+                    console.error('Utilizador não encontrado na base de dados');
+                    alert('Erro interno: dados de utilizador não encontrados. A redirecionar...');
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                    return;
+                }
+                
+                // Actualizar os campos do formulário com os dados obtidos
+                document.getElementById('name').value = data.name || '';
+                document.getElementById('phone').value = data.phone || '';
+                
+                // Guardar os dados actuais para comparação posterior
+                window.originalUserData = { ...data };
+                
+                console.log('Dados do utilizador carregados com sucesso');
+                
+            } catch (error) {
+                console.error('Erro ao buscar dados do utilizador:', error);
+                alert('Erro ao carregar dados. Por favor, tente novamente.');
+            }
+        }
+
+        // ===== FUNÇÃO PARA ACTUALIZAR DADOS DO UTILIZADOR =====
+        async function updateUserData() {
+            // Obter o ID do utilizador actual
+            const currentUserId = localStorage.getItem('currentUserId');
+            
+            // Verificar se o ID é válido
+            if (!currentUserId || !isValidUUID(currentUserId)) {
+                console.error('ID de utilizador inválido ou não encontrado');
+                alert('Erro interno: dados de sessão inválidos. A redirecionar...');
+                setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                return;
+            }
+            
+            // Verificar se temos ligação à base de dados
+            if (!supabaseClient) {
+                console.error('Cliente Supabase não inicializado');
+                alert('Erro de conectividade. Por favor, recarregue a página.');
+                return;
+            }
+            
+            // Obter os valores actuais dos campos
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            
+            // Verificar se os campos estão preenchidos
+            if (!name || !phone) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+            
+            // Validar formato do número de telefone
+            if (!/^[2-9][0-9]{8}$/.test(phone)) {
+                alert('Número de telefone inválido. Por favor, forneça um número com 9 dígitos.');
+                return;
+            }
+            
+            // Verificar se o telefone foi alterado
+            if (phone !== window.originalUserData.phone) {
+                // Verificar se o novo telefone já está registado
+                const { data: existingUser, error: checkError } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('phone', phone)
+                    .neq('id', currentUserId) // Excluir o utilizador actual
+                    .maybeSingle();
+                
+                if (checkError) {
+                    console.error('Erro ao verificar telefone:', checkError);
+                    alert('Erro ao verificar disponibilidade do telefone. Tente novamente.');
+                    return;
+                }
+                
+                if (existingUser) {
+                    alert('Este número de telefone já está registado por outro utilizador.');
+                    return;
+                }
+            }
+            
+            try {
+                // Actualizar os dados na base de dados
+                const { data, error } = await supabaseClient
+                    .from('users')
+                    .update({ name, phone })
+                    .eq('id', currentUserId)
+                    .select();
+                
+                if (error) {
+                    throw new Error(`Erro ao actualizar dados: ${error.message}`);
+                }
+                
+                // Verificar se a actualização foi bem-sucedida
+                if (!data || data.length === 0) {
+                    throw new Error('Resposta vazia do servidor ao actualizar dados');
+                }
+                
+                // Actualizar dados no localStorage
+                localStorage.setItem('userName', data[0].name);
+                localStorage.setItem('userPhone', data[0].phone);
+                
+                // Actualizar dados originais para comparação
+                window.originalUserData = { ...data[0] };
+                
+                alert('Dados actualizados com sucesso!');
+                console.log('Dados do utilizador actualizados com sucesso');
+                
+            } catch (error) {
+                console.error('Erro ao actualizar dados:', error);
+                alert('Erro ao actualizar dados. Por favor, tente novamente.');
+            }
+        }
+
+        // ===== FUNÇÃO PARA ACTUALIZAR PALAVRA-PASSE =====
+        async function updatePassword() {
+            // Obter o ID do utilizador actual
+            const currentUserId = localStorage.getItem('currentUserId');
+            
+            // Verificar se o ID é válido
+            if (!currentUserId || !isValidUUID(currentUserId)) {
+                console.error('ID de utilizador inválido ou não encontrado');
+                alert('Erro interno: dados de sessão inválidos. A redirecionar...');
+                setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                return;
+            }
+            
+            // Verificar se temos ligação à base de dados
+            if (!supabaseClient) {
+                console.error('Cliente Supabase não inicializado');
+                alert('Erro de conectividade. Por favor, recarregue a página.');
+                return;
+            }
+            
+            // Obter os valores dos campos de palavra-passe
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            
+            // Verificar se todos os campos estão preenchidos
+            if (!currentPassword || !newPassword || !confirmNewPassword) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+            
+            // Verificar se as novas palavras-passe coincidem
+            if (newPassword !== confirmNewPassword) {
+                alert('As novas palavras-passe não coincidem.');
+                return;
+            }
+            
+            // Validar força da nova palavra-passe
+            if (!/^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[a-zA-Z0-9]).{7,}$/.test(newPassword)) {
+                alert('A nova palavra-passe deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial.');
+                return;
+            }
+            
+            try {
+                // Buscar dados actuais do utilizador
+                const { data: userData, error: fetchError } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('id', currentUserId)
+                    .maybeSingle();
+                
+                if (fetchError) {
+                    throw new Error(`Erro ao buscar dados: ${fetchError.message}`);
+                }
+                
+                // Verificar se a palavra-passe actual está correcta
+                if (userData.password !== currentPassword) {
+                    alert('Palavra-passe actual incorrecta.');
+                    return;
+                }
+                
+                // Actualizar a palavra-passe na base de dados
+                const { data, error } = await supabaseClient
+                    .from('users')
+                    .update({ password: newPassword })
+                    .eq('id', currentUserId)
+                    .select();
+                
+                if (error) {
+                    throw new Error(`Erro ao actualizar palavra-passe: ${error.message}`);
+                }
+                
+                // Verificar se a actualização foi bem-sucedida
+                if (!data || data.length === 0) {
+                    throw new Error('Resposta vazia do servidor ao actualizar palavra-passe');
+                }
+                
+                // Limpar os campos de palavra-passe
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmNewPassword').value = '';
+                
+                alert('Palavra-passe actualizada com sucesso!');
+                console.log('Palavra-passe do utilizador actualizada com sucesso');
+                
+            } catch (error) {
+                console.error('Erro ao actualizar palavra-passe:', error);
+                alert('Erro ao actualizar palavra-passe. Por favor, tente novamente.');
+            }
+        }
+
+        // ===== FUNÇÃO PARA ELIMINAR CONTA =====
+        async function deleteAccount() {
+            // Obter o ID do utilizador actual
+            const currentUserId = localStorage.getItem('currentUserId');
+            
+            // Verificar se o ID é válido
+            if (!currentUserId || !isValidUUID(currentUserId)) {
+                console.error('ID de utilizador inválido ou não encontrado');
+                alert('Erro interno: dados de sessão inválidos. A redirecionar...');
+                setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                return;
+            }
+            
+            // Verificar se temos ligação à base de dados
+            if (!supabaseClient) {
+                console.error('Cliente Supabase não inicializado');
+                alert('Erro de conectividade. Por favor, recarregue a página.');
+                return;
+            }
+            
+            // Pedir confirmação ao utilizador
+            if (!confirm('Tem a certeza que deseja eliminar a sua conta? Esta acção não pode ser desfeita.')) {
+                return;
+            }
+            
+            try {
+                // Eliminar o utilizador da base de dados
+                const { error } = await supabaseClient
+                    .from('users')
+                    .delete()
+                    .eq('id', currentUserId);
+                
+                if (error) {
+                    throw new Error(`Erro ao eliminar conta: ${error.message}`);
+                }
+                
+                // Limpar dados da sessão
+                localStorage.clear();
+                
+                alert('Conta eliminada com sucesso. Obrigado por ter utilizado o DogList!');
+                console.log('Conta do utilizador eliminada com sucesso');
+                
+                // Redirecionar para a página inicial
+                window.location.href = 'index.html';
+                
+            } catch (error) {
+                console.error('Erro ao eliminar conta:', error);
+                alert('Erro ao eliminar conta. Por favor, tente novamente.');
+            }
+        }
+
+        // ===== FUNÇÃO PARA FAZER LOGOUT =====
+        function logout() {
+            // Limpar dados da sessão
+            localStorage.clear();
+            
+            // Redirecionar para a página de login
+            window.location.href = 'index.html';
+        }
+
+        // ===== INICIALIZAÇÃO QUANDO O DOCUMENTO ESTIVER PRONTO =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar dados do utilizador
+            fetchUserData();
+            
+            // Adicionar eventos aos botões
+            document.getElementById('updateDataButton').addEventListener('click', updateUserData);
+            document.getElementById('updatePasswordButton').addEventListener('click', updatePassword);
+            document.getElementById('deleteAccountButton').addEventListener('click', deleteAccount);
+            document.getElementById('logoutButton').addEventListener('click', logout);
+        });
     </script>
     <style>
         * {
@@ -384,6 +793,19 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .modal-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .cancel-button {
@@ -391,13 +813,86 @@
             color: #333;
         }
 
+        .cancel-button:hover:not(:disabled) {
+            background-color: #d0d0d0;
+        }
+
         .confirm-button {
             background-color: #f44336;
             color: white;
         }
 
+        .confirm-button:hover:not(:disabled) {
+            background-color: #d32f2f;
+        }
+
         .confirm-button.password-button {
             background-color: #4a90e2;
+        }
+
+        .confirm-button.password-button:hover:not(:disabled) {
+            background-color: #357abd;
+        }
+
+        /* Validação visual para campos de senha */
+        .input-field.error {
+            border-color: #f44336;
+            background-color: #ffebee;
+        }
+
+        .input-field.success {
+            border-color: #4CAF50;
+            background-color: #f1f8e9;
+        }
+
+        .password-strength {
+            margin-top: 5px;
+            font-size: 12px;
+            padding: 5px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .password-strength.weak {
+            background-color: #ffebee;
+            color: #d32f2f;
+            display: block;
+        }
+
+        .password-strength.medium {
+            background-color: #fff3e0;
+            color: #f57c00;
+            display: block;
+        }
+
+        .password-strength.strong {
+            background-color: #f1f8e9;
+            color: #388e3c;
+            display: block;
+        }
+
+        /* Animação de loading nos botões */
+        .modal-button.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .modal-button.loading {
+            color: transparent;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @keyframes slideIn {
@@ -551,7 +1046,7 @@
                 <div class="button-group">
                     <button class="button change-password-button" onclick="openPasswordModal()">
                         <i class="fas fa-key"></i>
-                        Alterar Senha
+                        Alterar Palavra-passe
                     </button>
                     <button class="button logout-button" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i>
@@ -592,9 +1087,9 @@
     <!-- Modal Alterar Senha -->
     <div id="passwordModal" class="modal">
         <div class="modal-content">
-            <h2 class="modal-title">Alterar Senha</h2>
+            <h2 class="modal-title">Alterar Palavra-passe</h2>
             <div class="input-group">
-                <label class="input-label" for="currentPassword">Senha Atual</label>
+                <label class="input-label" for="currentPassword">Palavra-passe Actual</label>
                 <div class="password-field-container">
                     <input type="password" id="currentPassword" class="input-field">
                     <button type="button" class="toggle-password" onclick="togglePasswordVisibility('currentPassword')">
@@ -603,22 +1098,24 @@
                 </div>
             </div>
             <div class="input-group">
-                <label class="input-label" for="newPassword">Nova Senha</label>
+                <label class="input-label" for="newPassword">Nova Palavra-passe</label>
                 <div class="password-field-container">
-                    <input type="password" id="newPassword" class="input-field">
+                    <input type="password" id="newPassword" class="input-field" oninput="checkPasswordStrength()">
                     <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPassword')">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
+                <div id="passwordStrength" class="password-strength"></div>
             </div>
             <div class="input-group">
-                <label class="input-label" for="confirmPassword">Confirmar Nova Senha</label>
+                <label class="input-label" for="confirmPassword">Confirmar Nova Palavra-passe</label>
                 <div class="password-field-container">
-                    <input type="password" id="confirmPassword" class="input-field">
+                    <input type="password" id="confirmPassword" class="input-field" oninput="checkPasswordMatch()">
                     <button type="button" class="toggle-password" onclick="togglePasswordVisibility('confirmPassword')">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
+                <div id="passwordMatch" class="password-strength"></div>
             </div>
             <div class="modal-buttons">
                 <button class="modal-button cancel-button" onclick="closePasswordModal()">Cancelar</button>
@@ -631,72 +1128,187 @@
     <div id="deleteModal" class="modal">
         <div class="modal-content">
             <h2 class="modal-title">Eliminar Conta</h2>
-            <p>Tem certeza que deseja eliminar sua conta? Esta ação não pode ser desfeita e todos os seus dados serão perdidos.</p>
+            <div style="margin-bottom: 20px;">
+                <p style="margin-bottom: 15px; font-weight: 600; color: #d32f2f;">⚠️ ATENÇÃO: Esta ação é irreversível!</p>
+                <p style="margin-bottom: 10px;">Ao eliminar a sua conta, os seguintes dados serão <strong>permanentemente removidos</strong>:</p>
+                <ul style="margin: 10px 0 15px 20px; color: #666;">
+                    <li>Informações pessoais (nome, telefone)</li>
+                    <li>Todos os animais registados</li>
+                    <li>Registo de abrigo temporário (se existir)</li>
+                    <li>Histórico de atividades</li>
+                    <li>Dados de localização</li>
+                </ul>
+                <p style="margin-bottom: 15px; font-size: 14px; color: #d32f2f;">
+                    <strong>Esta operação não pode ser desfeita.</strong>
+                </p>
+                <p style="font-size: 14px; color: #666;">
+                    Após confirmar, ser-lhe-á solicitado que escreva "ELIMINAR" e a sua palavra-passe atual para concluir a operação.
+                </p>
+            </div>
             <div class="modal-buttons">
                 <button class="modal-button cancel-button" onclick="closeDeleteModal()">Cancelar</button>
-                <button class="modal-button confirm-button" onclick="deleteAccount()">Eliminar</button>
+                <button class="modal-button confirm-button" onclick="deleteAccount()" style="background-color: #d32f2f;">Eliminar Conta</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Carrega as informações do usuário
-        window.onload = function() {
+        // Função para validar UUID
+        function isValidUUID(uuid) {
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            return uuidRegex.test(uuid);
+        }
+
+        // Carrega as informações do usuário do Supabase
+        async function loadUserInfo() {
             const currentUserId = localStorage.getItem('currentUserId');
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const currentUser = users.find(user => user.id === currentUserId);
+            console.log('ID do usuário atual:', currentUserId);
             
-            if (currentUser) {
-                document.getElementById('name').value = currentUser.name || '';
-                document.getElementById('phone').value = currentUser.phone || '';
-            } else {
-                // Fallback para compatibilidade com versão anterior
-                document.getElementById('name').value = localStorage.getItem('userName') || '';
-                document.getElementById('phone').value = localStorage.getItem('userPhone') || '';
+            if (!currentUserId) {
+                console.error('ID do usuário não encontrado no localStorage');
+                alert('Erro: Sessão expirada. Redirecionando para login...');
+                window.location.href = 'index.html';
+                return;
             }
+            
+            // Validar formato do UUID
+            if (!isValidUUID(currentUserId)) {
+                console.error('UUID inválido:', currentUserId);
+                alert('Erro: ID de usuário inválido. Redirecionando para login...');
+                localStorage.clear(); // Limpar dados corrompidos
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            try {
+                console.log('Buscando dados do usuário no Supabase...');
+                
+                // Buscar dados do usuário
+                const { data, error } = await window.supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', currentUserId)
+                    .single();
+            
+                console.log('Resposta do Supabase:', { data, error });
+                
+                if (error) {
+                    console.error('Erro do Supabase:', error);
+                    
+                    // Se o erro for relacionado ao UUID, limpar dados e redirecionar
+                    if (error.message && error.message.includes('invalid input syntax for type uuid')) {
+                        console.error('UUID corrompido detectado, limpando dados...');
+                        localStorage.clear();
+                        alert('Dados de sessão corrompidos. Por favor, faça login novamente.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    throw error;
+                }
+                
+                if (!data) {
+                    console.error('Nenhum dado de usuário encontrado');
+                    alert('Usuário não encontrado. Redirecionando para login...');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                console.log('Dados do usuário encontrados:', data);
+                
+                // Preencher campos
+                document.getElementById('name').value = data.name || '';
+                document.getElementById('phone').value = data.phone || '';
+                
+                console.log('Campos preenchidos com:', {
+                    name: data.name,
+                    phone: data.phone
+                });
 
-            // Verificar se o usuário já é um abrigo temporário
+                // Verificar se o usuário é um abrigo temporário
             checkTemporaryShelterStatus();
-        };
+            } catch (error) {
+                console.error('Erro ao carregar informações do usuário:', error);
 
-        // Função para verificar se o usuário já é um abrigo temporário
-        function checkTemporaryShelterStatus() {
+                // Tentar usar dados do localStorage como fallback
+                const userName = localStorage.getItem('userName');
+                const userPhone = localStorage.getItem('userPhone');
+                
+                if (userName || userPhone) {
+                    console.log('Usando dados do localStorage como fallback');
+                    document.getElementById('name').value = userName || '';
+                    document.getElementById('phone').value = userPhone || '';
+                    
+                    // Ainda verificar status do abrigo
+                    checkTemporaryShelterStatus();
+                } else {
+                    console.error('Nenhum dado disponível no localStorage');
+                    alert('Erro ao carregar informações do usuário. Por favor, faça login novamente.');
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+
+        // Verificar se o usuário já é um abrigo temporário
+        async function checkTemporaryShelterStatus() {
             const currentUserId = localStorage.getItem('currentUserId');
-            const shelters = JSON.parse(localStorage.getItem('shelters') || '[]');
             
-            // Verifica se o usuário atual tem um abrigo registrado
-            const userShelter = shelters.find(shelter => shelter.userId === currentUserId);
+            if (!currentUserId || !isValidUUID(currentUserId)) {
+                console.error('UUID inválido para verificação de abrigo:', currentUserId);
+                return;
+            }
             
-            if (userShelter) {
-                // Usuário já tem um abrigo temporário registrado
+            try {
+                const { data, error } = await window.supabase
+                    .from('shelters')
+                    .select('*')
+                    .eq('user_id', currentUserId);
+                
+                if (error) {
+                    console.error('Erro ao verificar status do abrigo:', error);
+                    
+                    // Se o erro for relacionado ao UUID, não fazer nada (já tratado na função principal)
+                    if (error.message && error.message.includes('invalid input syntax for type uuid')) {
+                        return;
+                    }
+                    
+                    throw error;
+                }
+                
+                // Atualizar interface com base nos resultados
+                if (data && data.length > 0) {
+                    // Usuário é um abrigo temporário
                 document.getElementById('temporaryShelterButton').style.display = 'none';
                 document.getElementById('updateShelterButton').style.display = 'flex';
                 document.getElementById('removeShelterButton').style.display = 'flex';
-                
-                // Adicionar evento de clique ao botão de remover abrigo
-                document.getElementById('removeShelterButton').onclick = function() {
-                    if (confirm('Tem certeza que deseja remover seu abrigo temporário?')) {
-                        removeTemporaryShelter();
-                    }
-                };
             } else {
-                // Usuário não tem abrigo temporário
+                    // Usuário não é um abrigo
                 document.getElementById('temporaryShelterButton').style.display = 'flex';
                 document.getElementById('updateShelterButton').style.display = 'none';
                 document.getElementById('removeShelterButton').style.display = 'none';
             }
+            } catch (error) {
+                console.error('Erro ao verificar status do abrigo:', error);
+                // Não mostrar alert aqui para não incomodar o usuário
+            }
         }
         
-        // Função para remover o abrigo temporário
-        function removeTemporaryShelter() {
+        // Remover o abrigo temporário
+        async function removeTemporaryShelter() {
+            if (!confirm('Tem certeza que deseja remover seu abrigo temporário?')) {
+                return;
+            }
+            
             const currentUserId = localStorage.getItem('currentUserId');
-            const shelters = JSON.parse(localStorage.getItem('shelters') || '[]');
             
-            // Filtrar para remover o abrigo do usuário atual
-            const updatedShelters = shelters.filter(shelter => shelter.userId !== currentUserId);
+            try {
+                // Remover o abrigo do banco de dados
+                const { error } = await window.supabase
+                    .from('shelters')
+                    .delete()
+                    .eq('user_id', currentUserId);
             
-            // Salvar de volta no localStorage
-            localStorage.setItem('shelters', JSON.stringify(updatedShelters));
+                if (error) throw error;
             
             alert('Seu abrigo temporário foi removido com sucesso!');
             
@@ -704,6 +1316,10 @@
             document.getElementById('temporaryShelterButton').style.display = 'flex';
             document.getElementById('updateShelterButton').style.display = 'none';
             document.getElementById('removeShelterButton').style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao remover abrigo:', error);
+                alert('Erro ao remover o abrigo. Tente novamente.');
+            }
         }
 
         function openPasswordModal() {
@@ -711,58 +1327,268 @@
             document.getElementById('currentPassword').value = '';
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
+            
+            // Limpar indicadores visuais
+            clearPasswordValidation();
         }
 
         function closePasswordModal() {
             document.getElementById('passwordModal').style.display = 'none';
+            clearPasswordValidation();
         }
 
-        function changePassword() {
+        // Função para limpar validação visual
+        function clearPasswordValidation() {
+            const fields = ['currentPassword', 'newPassword', 'confirmPassword'];
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                field.classList.remove('error', 'success');
+            });
+            
+            document.getElementById('passwordStrength').style.display = 'none';
+            document.getElementById('passwordMatch').style.display = 'none';
+        }
+
+        // Função para verificar força da palavra-passe
+        function checkPasswordStrength() {
+            const password = document.getElementById('newPassword').value;
+            const strengthIndicator = document.getElementById('passwordStrength');
+            const passwordField = document.getElementById('newPassword');
+            
+            if (password.length === 0) {
+                strengthIndicator.style.display = 'none';
+                passwordField.classList.remove('error', 'success');
+                return;
+            }
+            
+            let strength = 0;
+            let feedback = [];
+            
+            // Verificar comprimento
+            if (password.length >= 8) {
+                strength += 1;
+            } else {
+                feedback.push('pelo menos 8 caracteres');
+            }
+            
+            // Verificar letras maiúsculas
+            if (/[A-Z]/.test(password)) {
+                strength += 1;
+            } else {
+                feedback.push('uma letra maiúscula');
+            }
+            
+            // Verificar letras minúsculas
+            if (/[a-z]/.test(password)) {
+                strength += 1;
+            } else {
+                feedback.push('uma letra minúscula');
+            }
+            
+            // Verificar números
+            if (/[0-9]/.test(password)) {
+                strength += 1;
+            } else {
+                feedback.push('um número');
+            }
+            
+            // Verificar caracteres especiais
+            if (/[^A-Za-z0-9]/.test(password)) {
+                strength += 1;
+            } else {
+                feedback.push('um caractere especial');
+            }
+            
+            // Atualizar indicador visual
+            strengthIndicator.className = 'password-strength';
+            
+            if (strength <= 2) {
+                strengthIndicator.classList.add('weak');
+                strengthIndicator.textContent = `Palavra-passe fraca. Adicione: ${feedback.join(', ')}`;
+                passwordField.classList.remove('success');
+                passwordField.classList.add('error');
+            } else if (strength <= 3) {
+                strengthIndicator.classList.add('medium');
+                strengthIndicator.textContent = `Palavra-passe média. Para melhorar, adicione: ${feedback.join(', ')}`;
+                passwordField.classList.remove('error', 'success');
+            } else {
+                strengthIndicator.classList.add('strong');
+                strengthIndicator.textContent = 'Palavra-passe forte!';
+                passwordField.classList.remove('error');
+                passwordField.classList.add('success');
+            }
+            
+            // Verificar correspondência se o campo de confirmação não estiver vazio
+            if (document.getElementById('confirmPassword').value) {
+                checkPasswordMatch();
+            }
+        }
+
+        // Função para verificar correspondência de palavras-passe
+        function checkPasswordMatch() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const matchIndicator = document.getElementById('passwordMatch');
+            const confirmField = document.getElementById('confirmPassword');
+            
+            if (confirmPassword.length === 0) {
+                matchIndicator.style.display = 'none';
+                confirmField.classList.remove('error', 'success');
+                return;
+            }
+            
+            matchIndicator.className = 'password-strength';
+            
+            if (newPassword === confirmPassword) {
+                matchIndicator.classList.add('strong');
+                matchIndicator.textContent = 'Palavras-passe coincidem!';
+                confirmField.classList.remove('error');
+                confirmField.classList.add('success');
+            } else {
+                matchIndicator.classList.add('weak');
+                matchIndicator.textContent = 'Palavras-passe não coincidem';
+                confirmField.classList.remove('success');
+                confirmField.classList.add('error');
+            }
+        }
+
+        // Alterar palavra-passe com Supabase - versão corrigida
+        async function changePassword() {
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
+            // Validações básicas
             if (!currentPassword || !newPassword || !confirmPassword) {
                 alert('Por favor, preencha todos os campos.');
                 return;
             }
             
             if (newPassword !== confirmPassword) {
-                alert('As novas senhas não coincidem.');
+                alert('As novas palavras-passe não coincidem.');
                 return;
             }
             
-            // Obter o usuário atual
+            // Validar força da nova senha
+            if (newPassword.length < 6) {
+                alert('A nova palavra-passe deve ter pelo menos 6 caracteres.');
+                return;
+            }
+            
+            if (newPassword === currentPassword) {
+                alert('A nova palavra-passe deve ser diferente da palavra-passe actual.');
+                return;
+            }
+            
             const currentUserId = localStorage.getItem('currentUserId');
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const userIndex = users.findIndex(user => user.id === currentUserId);
             
-            if (userIndex === -1) {
-                alert('Erro ao encontrar usuário.');
-                return;
-            }
-            
-            // Verifica se a senha atual está correta
-            if (users[userIndex].password !== currentPassword) {
-                alert('Senha atual incorreta.');
-                return;
-            }
-            
-            // Atualiza a senha no array de usuários
-            users[userIndex].password = newPassword;
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            alert('Senha alterada com sucesso! Você será redirecionado para a página de login.');
-            closePasswordModal();
-            
-            // Forçar logout para garantir que o usuário faça login com a nova senha
-            setTimeout(function() {
-                localStorage.removeItem('loggedIn');
-                localStorage.removeItem('currentUserId');
-                localStorage.removeItem('userName');
-                localStorage.removeItem('userPhone');
+            if (!currentUserId || !isValidUUID(currentUserId)) {
+                alert('Erro: Sessão inválida. Por favor, faça login novamente.');
                 window.location.href = 'index.html';
-            }, 1000);
+                return;
+            }
+            
+            // Mostrar indicador de carregamento
+            const confirmButton = document.querySelector('.password-button');
+            if (!confirmButton) {
+                alert('Erro: Botão não encontrado.');
+                return;
+            }
+            
+            const originalText = confirmButton.textContent;
+            confirmButton.textContent = 'Alterando...';
+            confirmButton.disabled = true;
+            confirmButton.classList.add('loading');
+            
+            try {
+                console.log('Verificando senha atual...');
+            
+                // Buscar dados do usuário para verificar senha atual
+                const { data: userData, error: fetchError } = await window.supabase
+                    .from('users')
+                    .select('password')
+                    .eq('id', currentUserId)
+                    .single();
+            
+                if (fetchError) {
+                    console.error('Erro ao buscar dados do usuário:', fetchError);
+                    
+                    // Verificar se é erro de UUID corrompido
+                    if (fetchError.message && fetchError.message.includes('invalid input syntax for type uuid')) {
+                        localStorage.clear();
+                        alert('Dados de sessão corrompidos. Por favor, faça login novamente.');
+                window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    throw new Error('Erro ao verificar senha atual: ' + (fetchError.message || 'Erro desconhecido'));
+                }
+                
+                if (!userData) {
+                    throw new Error('Usuário não encontrado no banco de dados.');
+                }
+                
+                console.log('Dados do usuário encontrados, verificando senha...');
+                
+                // Verificar senha atual
+                if (userData.password !== currentPassword) {
+                    alert('Palavra-passe actual incorreta. Por favor, verifique e tente novamente.');
+                    return;
+                }
+                
+                console.log('Palavra-passe actual verificada, actualizando para nova palavra-passe...');
+                
+                // Atualizar senha no banco de dados
+                const { error: updateError } = await window.supabase
+                    .from('users')
+                    .update({ 
+                        password: newPassword
+                    })
+                    .eq('id', currentUserId);
+                
+                if (updateError) {
+                    console.error('Erro ao actualizar palavra-passe:', updateError);
+                    throw new Error('Erro ao actualizar palavra-passe: ' + (updateError.message || 'Erro desconhecido'));
+                }
+                
+                console.log('Palavra-passe actualizada com sucesso na base de dados');
+                
+                // Fechar modal
+                closePasswordModal();
+                
+                // Mostrar mensagem de sucesso
+                alert('Palavra-passe alterada com sucesso! Por segurança, será redirecionado para a página de login.');
+                
+                // Logout após alteração de senha por segurança
+                setTimeout(() => {
+                    logout();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Erro completo ao alterar senha:', error);
+                
+                // Mostrar erro mais específico
+                let errorMessage = 'Erro ao alterar palavra-passe. ';
+                
+                if (error.message) {
+                    errorMessage += error.message;
+                } else {
+                    errorMessage += 'Tente novamente ou entre em contacto com o suporte.';
+                }
+                
+                alert(errorMessage);
+            } finally {
+                // Sempre restaurar o botão, mesmo em caso de erro
+                try {
+                    if (confirmButton) {
+                        confirmButton.textContent = originalText;
+                        confirmButton.disabled = false;
+                        confirmButton.classList.remove('loading');
+                    }
+                } catch (restoreError) {
+                    console.error('Erro ao restaurar botão:', restoreError);
+                }
+            }
         }
 
         function togglePasswordVisibility(inputId) {
@@ -788,36 +1614,86 @@
             document.getElementById('deleteModal').style.display = 'none';
         }
 
-        function deleteAccount() {
+        // Excluir conta com Supabase - versão melhorada
+        async function deleteAccount() {
+            // Obter o ID do utilizador actual
             const currentUserId = localStorage.getItem('currentUserId');
             
-            // Remove o usuário da lista de usuários
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const updatedUsers = users.filter(user => user.id !== currentUserId);
-            localStorage.setItem('users', JSON.stringify(updatedUsers));
+            // Verificar se o ID é válido
+            if (!currentUserId || !isValidUUID(currentUserId)) {
+                console.error('ID de utilizador inválido ou não encontrado');
+                alert('Erro interno: dados de sessão inválidos. A redirecionar...');
+                setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                return;
+            }
             
-            // Remove os animais do usuário
-            const allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
-            const updatedDogs = allDogs.filter(dog => dog.userId !== currentUserId);
-            localStorage.setItem('allDogs', JSON.stringify(updatedDogs));
+            // Verificar se temos ligação à base de dados
+            if (!supabaseClient) {
+                console.error('Cliente Supabase não inicializado');
+                alert('Erro de conectividade. Por favor, recarregue a página.');
+                return;
+            }
             
-            // Limpa dados da sessão
-            localStorage.removeItem('loggedIn');
-            localStorage.removeItem('currentUserId');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userPhone');
+            // Pedir confirmação ao utilizador
+            if (!confirm('Tem a certeza que deseja eliminar a sua conta? Esta acção não pode ser desfeita.')) {
+                return;
+            }
             
-            alert('Sua conta foi eliminada com sucesso.');
+            try {
+                // Eliminar o utilizador da base de dados
+                const { error } = await supabaseClient
+                    .from('users')
+                    .delete()
+                    .eq('id', currentUserId);
+                
+                if (error) {
+                    throw new Error(`Erro ao eliminar conta: ${error.message}`);
+                }
+                
+                // Limpar dados da sessão
+                localStorage.clear();
+                
+                alert('Conta eliminada com sucesso. Obrigado por ter utilizado o DogList!');
+                console.log('Conta do utilizador eliminada com sucesso');
+                
+                // Redirecionar para a página inicial
             window.location.href = 'index.html';
+                
+            } catch (error) {
+                console.error('Erro ao eliminar conta:', error);
+                alert('Erro ao eliminar conta. Por favor, tente novamente.');
+            }
         }
 
         function logout() {
-            localStorage.removeItem('loggedIn');
-            localStorage.removeItem('currentUserId');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userPhone');
+            // Limpar dados da sessão
+            localStorage.clear();
+            
+            // Redirecionar para a página de login
             window.location.href = 'index.html';
         }
+        
+        // Inicializar a página
+        window.onload = function() {
+            // Aguardar o Supabase estar pronto antes de carregar dados
+            function waitForSupabaseAndLoad() {
+                if (window.supabase) {
+                    console.log('Supabase pronto, carregando dados do usuário...');
+                    loadUserInfo();
+                    
+                    // Adicionar evento para o botão de remover abrigo
+                    const removeShelterButton = document.getElementById('removeShelterButton');
+                    if (removeShelterButton) {
+                        removeShelterButton.addEventListener('click', removeTemporaryShelter);
+                    }
+                } else {
+                    console.log('Aguardando Supabase...');
+                    setTimeout(waitForSupabaseAndLoad, 500);
+                }
+            }
+            
+            waitForSupabaseAndLoad();
+        };
     </script>
 </body>
 </html>

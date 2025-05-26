@@ -11,6 +11,17 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <!-- Google Maps Script -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYiAXh7HwQgCEudiSzPR3bUuYQ1mnS3b4&libraries=geometry" async defer></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Inicializar o cliente Supabase corretamente
+        const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+        
+        // Inicializar o cliente Supabase de forma correta e explícita
+        const { createClient } = supabase;
+        window.supabase = createClient(supabaseUrl, supabaseKey);
+    </script>
     <style>
         * {
             margin: 0;
@@ -465,13 +476,13 @@
                 <h2 class="section-title">Localização</h2>
                 <div class="input-group">
                     <div class="location-search">
-                        <input type="text" id="locationSearch" placeholder="Pesquisar endereço..." autocomplete="off">
+                        <input type="text" id="locationSearch" placeholder="Pesquisar morada..." autocomplete="off">
                         <div id="locationSuggestions" class="location-suggestions"></div>
                     </div>
                     <div class="map-container" id="map"></div>
                     <div class="location-info">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span id="locationText">Clique no mapa ou pesquise um endereço</span>
+                        <span id="locationText">Clique no mapa ou pesquise uma morada</span>
                     </div>
                     <button type="button" class="use-my-location" onclick="useMyLocation()">
                         <i class="fas fa-location-arrow"></i>
@@ -858,7 +869,7 @@
                 locationButton.textContent = 'A obter localização...';
                 
                 // Mostrar indicador de carregamento
-                document.getElementById('locationText').textContent = 'Obtendo sua localização...';
+                document.getElementById('locationText').textContent = 'A obter a sua localização...';
                 document.querySelector('.location-info').style.border = '2px solid #3498db';
 
                 navigator.geolocation.getCurrentPosition(
@@ -921,7 +932,7 @@
                                 // Mesmo sem um endereço, usamos as coordenadas
                                 console.error('Geocodificação falhou:', status);
                                 const coords = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-                                document.getElementById('locationText').textContent = `Localização atual (${coords})`;
+                                document.getElementById('locationText').textContent = `Localização actual (${coords})`;
                                 
                                 // Atualizar mapa
                                 map.setCenter({lat, lng});
@@ -943,25 +954,20 @@
                     },
                     (error) => {
                         console.error('Erro ao obter localização:', error);
-                        let errorMsg = 'Não foi possível obter sua localização.';
+                        let errorMsg = 'Não foi possível obter a sua localização.';
                         
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                errorMsg += ' Você negou a permissão de localização.';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                errorMsg += ' Informações de localização indisponíveis.';
-                                break;
-                            case error.TIMEOUT:
-                                errorMsg += ' O tempo para obter a localização expirou.';
-                                break;
-                            case error.UNKNOWN_ERROR:
-                                errorMsg += ' Ocorreu um erro desconhecido.';
-                                break;
+                        if (error.code === error.PERMISSION_DENIED) {
+                            errorMsg += ' Negou a permissão de localização.';
+                        } else if (error.code === error.POSITION_UNAVAILABLE) {
+                            errorMsg += ' Informações de localização indisponíveis.';
+                        } else if (error.code === error.TIMEOUT) {
+                            errorMsg += ' O tempo para obter a localização expirou.';
                         }
                         
-                        alert(errorMsg + ' Por favor, selecione manualmente no mapa ou use a pesquisa de endereço.');
-                        document.getElementById('locationText').textContent = 'Clique no mapa ou pesquise um endereço';
+                        console.error('Erro de geolocalização:', error);
+                        
+                        alert(errorMsg + ' Por favor, seleccione manualmente no mapa ou use a pesquisa de morada.');
+                        document.getElementById('locationText').textContent = 'Clique no mapa ou pesquise uma morada';
                         document.querySelector('.location-info').style.border = '';
                         
                         locationButton.disabled = false;
@@ -974,7 +980,7 @@
                     }
                 );
             } else {
-                alert('Seu navegador não suporta geolocalização.');
+                alert('O seu navegador não suporta geolocalização.');
             }
         }
 
@@ -1062,197 +1068,72 @@
             }
         }
 
-        document.getElementById('addDogForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Check for required fields first
-            const requiredFields = ["estado", "idade", "sexo", "castrado", "agressivo", "porte"];
-            let hasErrors = false;
-            
-            // Verificar o campo de contato primeiro
-            const contactInput = document.getElementById('contact');
-            const contactError = document.getElementById('contactError');
-            
-            if (!contactInput.value.match(/^[2-9][0-9]{8}$/)) {
-                contactError.style.display = 'block';
-                contactInput.focus();
-                hasErrors = true;
-            } else {
-                contactError.style.display = 'none';
-            }
-            
-            requiredFields.forEach(field => {
-                const radioButtons = document.querySelectorAll(`input[name="${field}"]`);
-                let isChecked = false;
-                radioButtons.forEach(radio => {
-                    if (radio.checked) isChecked = true;
-                });
-                
-                if (!isChecked) {
-                    // Display error for radio button group
-                    const label = document.querySelector(`label.option-label[for="${field}"]`) || 
-                                  document.querySelector(`.options-group:has(input[name="${field}"]) .option-label`);
-                    
-                    if (label) {
-                        label.style.color = '#e74c3c';
-                        setTimeout(() => {
-                            label.style.color = '';
-                        }, 3000);
-                    }
-                    hasErrors = true;
-                }
-            });
-            
-            // Check location - verificação para garantir que temos pelo menos uma localização
-            if (!document.getElementById('latitude').value || !document.getElementById('longitude').value) {
-                document.querySelector('.location-info').style.border = '2px solid #e74c3c';
-                document.querySelector('.location-info').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Por favor, selecione uma localização no mapa ou use o campo de busca.';
-                
-                // Adicionar botão para tentar usar localização atual
-                const retryButton = document.createElement('button');
-                retryButton.type = 'button';
-                retryButton.className = 'use-my-location';
-                retryButton.style.marginTop = '10px';
-                retryButton.innerHTML = '<i class="fas fa-location-arrow"></i> Usar a minha localização atual';
-                retryButton.onclick = function() {
-                    useMyLocation();
-                };
-                document.querySelector('.location-info').appendChild(retryButton);
-                
-                setTimeout(() => {
-                    document.querySelector('.location-info').style.border = '';
-                    document.querySelector('.location-info').innerHTML = '<i class="fas fa-map-marker-alt"></i><span id="locationText">Clique no mapa ou pesquise um endereço</span>';
-                }, 5000);
-                hasErrors = true;
-                
-                // Scroll para a seção do mapa
-                document.querySelector('.map-container').scrollIntoView({ behavior: 'smooth' });
-            }
-            
-            if (hasErrors) {
-                return;
-            }
-            
-            const formData = new FormData(this);
-            const imageFile = document.getElementById('photoInput').files[0];
-            
-            // Get breed value (might be empty now)
-            const breedValue = document.getElementById('breedSearch').value.trim();
-            
-            // Preparar os dados de localização
-            const locationData = {
-                lat: parseFloat(document.getElementById('latitude').value),
-                lng: parseFloat(document.getElementById('longitude').value)
-            };
-            
-            // Obter o endereço completo
-            const endereco = document.getElementById('locationText').textContent;
-
+        document.addEventListener('DOMContentLoaded', async function() {
             try {
-                let imageData = null;
-                // Process image only if one was selected
-                if (imageFile) {
-                const compressedImage = await compressImage(imageFile);
-                    imageData = await blobToBase64(compressedImage);
-                }
+                // SOLUÇÃO RADICAL: Verificar a tabela diretamente
+                console.log("Verificando conexão com Supabase...");
                 
-                const dog = {
-                    id: generateUniqueId(),
-                    userId: localStorage.getItem('currentUserId'),
-                    image: imageData || null,
-                    estado: formData.get('estado'),
-                    location: locationData,
-                    endereco: endereco, // Armazenar o endereço como string separada
-                    raca: breedValue || "Não especificada",
-                    idade: formData.get('idade'),
-                    sexo: formData.get('sexo'),
-                    castrado: formData.get('castrado'),
-                    agressivo: formData.get('agressivo'),
-                    porte: formData.get('porte'),
-                    contacto: document.getElementById('contact').value,
-                    dataAdicao: new Date().toISOString(),
-                    userName: localStorage.getItem('userName') || 'Utilizador'
-                };
-
-                let allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
-                allDogs.push(dog);
-                
-                try {
-                    localStorage.setItem('allDogs', JSON.stringify(allDogs));
-                    alert('Animal adicionado com sucesso!');
-                    window.location.href = 'home.html';
-                } catch (error) {
-                    if (error.name === 'QuotaExceededError') {
-                        alert('Não foi possível guardar. Armazenamento cheio. Por favor, remova alguns itens antigos.');
-                    } else {
-                        alert('Erro ao guardar. Por favor, tente novamente.');
+                // Verificar se a tabela dogs existe e qual é seu esquema
+                const { data: tablesData, error: tablesError } = await window.supabase
+                    .from('information_schema.tables')
+                    .select('table_name')
+                    .eq('table_schema', 'public');
+                    
+                if (tablesError) {
+                    console.error("Erro ao verificar tabelas:", tablesError);
+                } else {
+                    console.log("Tabelas disponíveis:", tablesData);
+                    
+                    // Verificar se a tabela dogs existe
+                    const dogsTableExists = tablesData.some(t => t.table_name === 'dogs');
+                    console.log("Tabela 'dogs' existe:", dogsTableExists);
+                    
+                    if (dogsTableExists) {
+                        // Verificar o esquema da tabela dogs para ver as colunas reais
+                        const { data: columnsData, error: columnsError } = await window.supabase
+                            .from('information_schema.columns')
+                            .select('column_name, data_type')
+                            .eq('table_schema', 'public')
+                            .eq('table_name', 'dogs');
+                        
+                        if (columnsError) {
+                            console.error("Erro ao verificar colunas:", columnsError);
+                        } else {
+                            console.log("Colunas da tabela 'dogs':", columnsData);
+                            
+                            // Verificar se a coluna 'contacto' existe
+                            const contactoExists = columnsData.some(c => c.column_name === 'contacto');
+                            console.log("Coluna 'contacto' existe:", contactoExists);
+                            
+                            // Verificar todas as variações possíveis do campo de contato
+                            const contactVariations = ['contact', 'telefone', 'phone', 'telefono', 'phone_number'];
+                            contactVariations.forEach(variation => {
+                                const exists = columnsData.some(c => c.column_name === variation);
+                                console.log(`Coluna '${variation}' existe:`, exists);
+                            });
+                            
+                            // Armazenar o nome correto da coluna para uso posterior
+                            if (contactoExists) {
+                                window.contactColumnName = 'contacto';
+                            } else {
+                                // Verificar se alguma variação existe
+                                for (const variation of contactVariations) {
+                                    if (columnsData.some(c => c.column_name === variation)) {
+                                        window.contactColumnName = variation;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            console.log("Nome da coluna de contato a ser usado:", window.contactColumnName || "Não encontrado");
+                        }
                     }
                 }
-            } catch (error) {
-                console.error('Erro ao processar imagem:', error);
-                alert('Erro ao processar a imagem. Por favor, tente novamente.');
+            } catch (e) {
+                console.error("Erro ao verificar esquema:", e);
             }
-        });
-
-        // Função para comprimir imagem
-        async function compressImage(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        
-                        // Redimensionar se a imagem for muito grande
-                        const MAX_WIDTH = 800;
-                        const MAX_HEIGHT = 800;
-                        
-                        if (width > height) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
-                        } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
-                            }
-                        }
-                        
-                        canvas.width = width;
-                        canvas.height = height;
-                        
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        canvas.toBlob(resolve, 'image/jpeg', 0.7);
-                    };
-                    img.onerror = reject;
-                    img.src = e.target.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // Função para converter Blob para Base64
-        function blobToBase64(blob) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function() {
-                    resolve(reader.result);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
-
-        // Modificar a inicialização do mapa para garantir que todos os elementos do DOM estejam carregados
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM totalmente carregado');
             
+            // Resto do código de inicialização...
             // Configurar a pesquisa de raças
             setupBreedSearch();
             
@@ -1317,9 +1198,231 @@
             }
         });
 
-        // Função para gerar um ID único
-        function generateUniqueId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        // Função para salvar no Supabase - adaptada para a estrutura real da tabela
+        async function saveDog(dogData) {
+            console.log("Tentando salvar com estrutura correta da tabela:", dogData);
+            
+            try {
+                // Usar apenas os campos que realmente existem na tabela
+                const { data, error } = await window.supabase
+                    .from('dogs')
+                    .insert([{
+                        user_id: dogData.user_id,
+                        nome: dogData.nome || null,
+                        raca: dogData.raca || null,
+                        idade: dogData.idade || null,
+                        sexo: dogData.sexo || null,
+                        porte: dogData.porte || null,
+                        estado: dogData.estado,
+                        descricao: dogData.descricao || null,
+                        caracteristicas: dogData.caracteristicas || null,
+                        castrado: dogData.castrado,
+                        agressivo: dogData.agressivo || null,
+                        endereco: dogData.endereco || null,
+                        image: dogData.image,
+                        location: dogData.location
+                        // Não incluir contacto pois não existe na tabela
+                        // created_at é gerenciado automaticamente pelo banco de dados
+                    }]);
+                
+                if (error) {
+                    console.error("Erro ao salvar:", error);
+                    throw error;
+                }
+                
+                return data;
+            } catch (error) {
+                console.error("Erro completo:", error);
+                throw error;
+            }
+        }
+
+        // Event listener do formulário
+        document.getElementById('addDogForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validações básicas
+            const requiredFields = ["estado", "idade", "sexo", "castrado", "agressivo", "porte"];
+            let hasErrors = false;
+            
+            // Validação de contato - vamos manter para fins de UX, mas não vamos salvar
+            const contactInput = document.getElementById('contact');
+            const contactError = document.getElementById('contactError');
+            
+            if (!contactInput.value.match(/^[2-9][0-9]{8}$/)) {
+                contactError.style.display = 'block';
+                contactInput.focus();
+                hasErrors = true;
+            } else {
+                contactError.style.display = 'none';
+            }
+            
+            // Validar outros campos obrigatórios
+            requiredFields.forEach(field => {
+                const radioButtons = document.querySelectorAll(`input[name="${field}"]`);
+                let isChecked = false;
+                radioButtons.forEach(radio => {
+                    if (radio.checked) isChecked = true;
+                });
+                
+                if (!isChecked) {
+                    const label = document.querySelector(`label.option-label[for="${field}"]`) || 
+                                  document.querySelector(`.options-group:has(input[name="${field}"]) .option-label`);
+                    
+                    if (label) {
+                        label.style.color = '#e74c3c';
+                        setTimeout(() => {
+                            label.style.color = '';
+                        }, 3000);
+                    }
+                    hasErrors = true;
+                }
+            });
+            
+            // Validar localização
+            if (!document.getElementById('latitude').value || !document.getElementById('longitude').value) {
+                document.querySelector('.location-info').style.border = '2px solid #e74c3c';
+                document.getElementById('locationText').textContent = "Por favor, selecione uma localização no mapa";
+                hasErrors = true;
+                
+                setTimeout(() => {
+                    document.querySelector('.location-info').style.border = '';
+                }, 3000);
+            }
+            
+            if (hasErrors) {
+                return;
+            }
+            
+            // Mostrar indicador de carregamento
+            const saveButton = document.querySelector('.save-button');
+            saveButton.disabled = true;
+            saveButton.textContent = 'Salvando...';
+            saveButton.style.backgroundColor = '#ccc';
+            
+            try {
+                // Preparar dados básicos
+                const formData = new FormData(this);
+                const imageFile = document.getElementById('photoInput').files[0];
+                
+                // Processar imagem
+                let imageData = null;
+                if (imageFile) {
+                    const compressedImage = await compressImage(imageFile);
+                    imageData = await blobToBase64(compressedImage);
+                }
+                
+                // Obter ID do usuário
+                const userId = localStorage.getItem('currentUserId');
+                if (!userId) {
+                    throw new Error('Usuário não logado');
+                }
+                
+                // Obter número de contato para usar como nome ou descrição
+                const contacto = document.getElementById('contact').value;
+                
+                // Criar objeto de dados que corresponde EXATAMENTE à tabela do banco de dados
+                const dogData = {
+                    user_id: userId,
+                    // Usar o número de contato como nome para fins de referência
+                    nome: "Animal adicionado por: " + contacto,
+                    raca: document.getElementById('breedSearch').value || null,
+                    idade: formData.get('idade') || null,
+                    sexo: formData.get('sexo') || null,
+                    porte: formData.get('porte') || null,
+                    estado: formData.get('estado'),
+                    // Adicionar o contato na descrição já que não temos campo específico
+                    descricao: "Contato: " + contacto,
+                    caracteristicas: null,
+                    castrado: formData.get('castrado') === 'yes',
+                    agressivo: formData.get('agressivo') || null,
+                    endereco: document.getElementById('locationText').textContent,
+                    image: imageData,
+                    location: {
+                        lat: parseFloat(document.getElementById('latitude').value),
+                        lng: parseFloat(document.getElementById('longitude').value)
+                    }
+                };
+                
+                console.log("Tentando salvar dados com estrutura correta:", dogData);
+                
+                // Usar a função adaptada
+                await saveDog(dogData);
+                
+                alert('Animal adicionado com sucesso!');
+                window.location.href = 'home.html';
+            } catch (error) {
+                console.error('Erro ao adicionar animal:', error);
+                
+                let errorMsg = 'Erro ao adicionar animal: ';
+                if (error.message) {
+                    errorMsg += error.message;
+                } else {
+                    errorMsg += 'Erro desconhecido';
+                }
+                
+                alert(errorMsg);
+                
+                // Restaurar botão
+                saveButton.disabled = false;
+                saveButton.textContent = 'Adicionar Animal';
+                saveButton.style.backgroundColor = '#FF7F50';
+            }
+        });
+
+        // Função para comprimir imagem
+        async function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // Redimensionar se a imagem for muito grande
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 800;
+                        
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        canvas.toBlob(resolve, 'image/jpeg', 0.7);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Função para converter Blob para Base64
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    resolve(reader.result);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
         }
     </script>
 </body>

@@ -7,6 +7,7 @@
     <link rel="icon" href="Images/DogList-Logo.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -259,6 +260,23 @@
                 transform: translateY(0px);
             }
         }
+        
+        /* Estilo para mensagem de erro */
+        .error-message {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+            animation: pulse 1s;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -287,6 +305,8 @@
         </div>
 
         <div class="input-container">
+            <div id="errorContainer" style="display:none;" class="error-message"></div>
+            
             <div class="input-group">
                 <div class="input-label">Nome</div>
                 <input 
@@ -311,30 +331,32 @@
             </div>
 
             <div class="input-group">
-                <div class="input-label">Password</div>
-                <div style="position: relative;">
+                <div class="input-label">Palavra-passe</div>
+                <div class="password-group">
                     <input 
                         type="password" 
                         id="password"
-                        placeholder="Escreva aqui a sua Password"
+                        class="input-field"
+                        placeholder="Escreva aqui a sua palavra-passe"
                         required
-                        pattern="^(?=.*[!@#$%^&*(),.?:{}\|<>])(?=.*[a-zA-Z0-9]).{7,}$"
-                        title="A senha deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial"
+                        minlength="7"
+                        title="A palavra-passe deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial"
                     >
                     <button type="button" class="toggle-password" onclick="togglePassword('password')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #333; z-index: 10;" aria-label="Toggle password visibility">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
-                <span id="passwordError" style="color: red; display: none; font-size: 14px; margin-top: 5px;">A senha deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial</span>
+                <span id="passwordError" style="color: red; display: none; font-size: 14px; margin-top: 5px;">A palavra-passe deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial</span>
             </div>
 
             <div class="input-group">
-                <div class="input-label">Confirmar Password</div>
-                <div style="position: relative;">
+                <div class="input-label">Confirmar Palavra-passe</div>
+                <div class="password-group">
                     <input 
                         type="password" 
                         id="confirmPassword"
-                        placeholder="Confirmar Password"
+                        class="input-field"
+                        placeholder="Confirmar palavra-passe"
                         required
                     >
                     <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #333; z-index: 10;" aria-label="Toggle password visibility">
@@ -349,25 +371,6 @@
                     Aceito os <a href="javascript:void(0)" onclick="saveFormDataAndRedirectToTerms()">Termos</a>
                 </label>
             </div>
-            <script>
-                // Restaurar os dados do formulário se existirem
-                document.addEventListener('DOMContentLoaded', function() {
-                    const savedName = localStorage.getItem('tempRegisterName');
-                    const savedPhone = localStorage.getItem('tempRegisterPhone');
-                    const savedPassword = localStorage.getItem('tempRegisterPassword');
-                    const savedConfirmPassword = localStorage.getItem('tempRegisterConfirmPassword');
-                    
-                    if (savedName) document.getElementById('name').value = savedName;
-                    if (savedPhone) document.getElementById('phone').value = savedPhone;
-                    if (savedPassword) document.getElementById('password').value = savedPassword;
-                    if (savedConfirmPassword) document.getElementById('confirmPassword').value = savedConfirmPassword;
-                    
-                    // Verificar se os termos foram aceitos
-                    if (localStorage.getItem('termsAccepted') === 'true') {
-                        document.getElementById('termsAccepted').checked = true;
-                    }
-                });
-            </script>
 
             <button id="registerButton">Criar</button>
 
@@ -378,161 +381,254 @@
         </div>
     </div>
 
+    <!-- Supabase SDK - carregado no final para melhor performance -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
+        // ===== FUNÇÃO PARA GUARDAR DADOS E REDIRECIONAR PARA TERMOS =====
         function saveFormDataAndRedirectToTerms() {
-            // Salvar os dados do formulário temporariamente
+            // Obter os valores actuais dos campos do formulário
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
+            // Guardar temporariamente no localStorage para não perder os dados
+            // quando o utilizador for ver os termos e voltar
             localStorage.setItem('tempRegisterName', name);
             localStorage.setItem('tempRegisterPhone', phone);
             localStorage.setItem('tempRegisterPassword', password);
             localStorage.setItem('tempRegisterConfirmPassword', confirmPassword);
             
-            // Redirecionar para a página de termos
+            // Redirecionar para a página de termos e condições
             window.location.href = 'termos.html';
         }
         
+        // ===== FUNÇÃO PARA ALTERNAR VISIBILIDADE DA PALAVRA-PASSE =====
         function togglePassword(inputId) {
+            // Obter o campo de palavra-passe pelo ID
             const passwordInput = document.getElementById(inputId);
+            // Obter o ícone do botão de mostrar/esconder
             const toggleButton = passwordInput.parentElement.querySelector('.toggle-password i');
             
+            // Verificar o tipo actual do campo e alternar
             if (passwordInput.type === 'password') {
+                // Se está escondida, mostrar a palavra-passe
                 passwordInput.type = 'text';
+                // Mudar ícone para "olho cortado" (indicando que está visível)
                 toggleButton.classList.remove('fa-eye');
                 toggleButton.classList.add('fa-eye-slash');
             } else {
+                // Se está visível, esconder a palavra-passe
                 passwordInput.type = 'password';
+                // Mudar ícone para "olho normal" (indicando que está escondida)
                 toggleButton.classList.remove('fa-eye-slash');
                 toggleButton.classList.add('fa-eye');
             }
         }
 
-        document.getElementById('registerButton').addEventListener('click', function() {
-            // Obter os valores dos campos
-            const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const termsAccepted = document.getElementById('termsAccepted').checked;
+        // ===== INICIALIZAÇÃO QUANDO O DOCUMENTO ESTIVER PRONTO =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // ===== RESTAURAR DADOS DO FORMULÁRIO SE EXISTIREM =====
+            // Verificar se há dados guardados temporariamente (quando volta dos termos)
+            const savedName = localStorage.getItem('tempRegisterName');
+            const savedPhone = localStorage.getItem('tempRegisterPhone');
+            const savedPassword = localStorage.getItem('tempRegisterPassword');
+            const savedConfirmPassword = localStorage.getItem('tempRegisterConfirmPassword');
             
-            // Validações
-            let error = '';
+            // Restaurar os valores nos campos se existirem
+            if (savedName) document.getElementById('name').value = savedName;
+            if (savedPhone) document.getElementById('phone').value = savedPhone;
+            if (savedPassword) document.getElementById('password').value = savedPassword;
+            if (savedConfirmPassword) document.getElementById('confirmPassword').value = savedConfirmPassword;
             
-            if (!name || !phone || !password || !confirmPassword) {
-                error = 'Por favor, preencha todos os campos.';
-            }
-            else if (!/^[2-9][0-9]{8}$/.test(phone)) {
-                error = 'Número de telefone inválido. Por favor, forneça um número com 9 dígitos.';
-            }
-            else if (password !== confirmPassword) {
-                error = 'As senhas não coincidem.';
-            }
-            else if (!/^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[a-zA-Z0-9]).{7,}$/.test(password)) {
-                error = 'A senha deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial.';
-            }
-            else if (!termsAccepted) {
-                error = 'Por favor, aceite os termos para continuar.';
+            // Verificar se os termos foram aceites (vem da página de termos)
+            if (localStorage.getItem('termsAccepted') === 'true') {
+                document.getElementById('termsAccepted').checked = true;
             }
             
-            // Verificar se já existe um usuário com este telefone
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            if (!error && users.some(user => user.phone === phone)) {
-                error = 'Este número de telefone já está cadastrado.';
+            // ===== OBTER REFERÊNCIAS DOS ELEMENTOS HTML =====
+            const registerButton = document.getElementById('registerButton');
+            const nameInput = document.getElementById('name');
+            const phoneInput = document.getElementById('phone');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const termsAcceptedCheckbox = document.getElementById('termsAccepted');
+            const errorContainer = document.getElementById('errorContainer');
+            
+            // ===== CONFIGURAÇÃO DA BASE DE DADOS SUPABASE =====
+            const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
+            
+            // Variável para guardar a ligação à base de dados
+            let supabaseClient;
+            
+            // ===== FUNÇÃO PARA MOSTRAR MENSAGENS DE ERRO =====
+            function showError(message) {
+                // Mostrar a mensagem no contentor de erro
+                errorContainer.textContent = message;
+                errorContainer.style.display = 'block';
+                
+                // Fazer scroll para o erro para o utilizador ver
+                errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Esconder a mensagem automaticamente após 5 segundos
+                setTimeout(() => {
+                    errorContainer.style.opacity = '0';
+                    errorContainer.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => {
+                        errorContainer.style.display = 'none';
+                        errorContainer.style.opacity = '1';
+                    }, 500);
+                }, 5000);
             }
             
-            // Se houver erro, mostrar e parar
-            if (error) {
-                showError(error);
+            // ===== INICIALIZAR LIGAÇÃO À BASE DE DADOS =====
+            try {
+                // Verificar se a biblioteca Supabase foi carregada
+                if (typeof supabase === 'undefined') {
+                    throw new Error('Biblioteca Supabase não carregada. Verifique a sua ligação à internet.');
+                }
+                
+                // Criar a ligação à base de dados
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+                console.log('Cliente Supabase inicializado com sucesso');
+            } catch (error) {
+                console.error('Erro ao inicializar Supabase:', error);
+                showError('Erro ao conectar com o servidor. Por favor, tente novamente mais tarde.');
+            }
+            
+            // ===== EVENTO PARA O BOTÃO DE REGISTO =====
+            if (registerButton) {
+                registerButton.addEventListener('click', async function() {
+                    try {
+                        // ===== OBTER VALORES DOS CAMPOS =====
+                        const name = nameInput.value.trim();
+                        const phone = phoneInput.value.trim();
+                        const password = passwordInput.value;
+                        const confirmPassword = confirmPasswordInput.value;
+                        const termsAccepted = termsAcceptedCheckbox.checked;
+                        
+                        // ===== VALIDAÇÕES DOS DADOS INSERIDOS =====
+                        // Verificar se todos os campos estão preenchidos
+                        if (!name || !phone || !password || !confirmPassword) {
+                            showError('Por favor, preencha todos os campos.');
+                            return;
+            }
+                        
+                        // Validar formato do número de telefone (9 dígitos, começando por 2-9)
+                        if (!/^[2-9][0-9]{8}$/.test(phone)) {
+                            showError('Número de telefone inválido. Por favor, forneça um número com 9 dígitos.');
+                            return;
+            }
+                        
+                        // Verificar se as palavras-passe coincidem
+                        if (password !== confirmPassword) {
+                            showError('As palavras-passe não coincidem.');
+                            return;
+            }
+                        
+                        // Validar força da palavra-passe (mínimo 7 caracteres + 1 especial)
+                        if (!/^(?=.*[!@#$%^&*(),.?:{}|<>])(?=.*[a-zA-Z0-9]).{7,}$/.test(password)) {
+                            showError('A palavra-passe deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial.');
+                            return;
+            }
+            
+                        // Verificar se os termos foram aceites
+                        if (!termsAccepted) {
+                            showError('Por favor, aceite os termos para continuar.');
                 return;
             }
             
-            // Função auxiliar para criar hash
-            function createHash(password) {
-                try {
-                    // Tentativa de usar bcrypt
-                    if (typeof bcrypt !== 'undefined') {
-                        // Salt rounds = 10 (valor recomendado)
-                        return bcrypt.hashSync(password, 10);
-                    } else {
-                        // Fallback simples se bcrypt não estiver disponível
-                        console.warn("bcrypt não está disponível. Usando hash simples.");
-                        return password; // Não é seguro, apenas para testes
-                    }
-                } catch (err) {
-                    console.error("Erro ao criar hash:", err);
-                    return password; // Fallback em caso de erro
-                }
-            }
+                        // Verificar se a ligação à base de dados está disponível
+                        if (!supabaseClient) {
+                            throw new Error('Cliente Supabase não inicializado.');
+                        }
             
-            // Prosseguir com a criação do usuário
-            try {
-                // Criar hash da senha
-                const hashedPassword = createHash(password);
-                
-                // Criar novo usuário com ID único
-                const newUser = {
-                    id: Date.now().toString(),
-                    name: name,
-                    phone: phone,
-                    password: hashedPassword,
-                    dateCreated: new Date().toISOString(),
-                    dogs: []
-                };
-                
-                // Adicionar o novo usuário
-                users.push(newUser);
-                localStorage.setItem('users', JSON.stringify(users));
-                
-                // Guardar informações de login
-                localStorage.setItem('currentUserId', newUser.id);
-                localStorage.setItem('userName', name);
-                localStorage.setItem('userPhone', phone);
+                        // ===== MOSTRAR INDICADOR DE CARREGAMENTO =====
+                        registerButton.disabled = true;
+                        registerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...';
+                        
+                        // ===== VERIFICAR SE O TELEFONE JÁ ESTÁ REGISTADO =====
+                        const { data: existingUsers, error: checkError } = await supabaseClient
+                            .from('users') // Tabela de utilizadores
+                            .select('*') // Seleccionar todos os campos
+                            .eq('phone', phone) // Onde o telefone é igual ao inserido
+                            .maybeSingle(); // Esperar no máximo um resultado
+                        
+                        if (checkError) {
+                            throw new Error(`Erro ao verificar telefone: ${checkError.message}`);
+                        }
+                        
+                        // Se já existe um utilizador com este telefone
+                        if (existingUsers) {
+                            showError('Este número de telefone já está registado.');
+                            registerButton.disabled = false;
+                            registerButton.textContent = 'Criar';
+                            return;
+                        }
+                        
+                        // ===== REGISTAR NOVO UTILIZADOR =====
+                        const { data, error: insertError } = await supabaseClient
+                            .from('users') // Tabela de utilizadores
+                            .insert([
+                                { name, phone, password } // Dados a inserir
+                            ])
+                            .select(); // Retornar os dados inseridos
+                        
+                        if (insertError) {
+                            throw new Error(`Erro ao criar utilizador: ${insertError.message}`);
+                        }
+                        
+                        // Verificar se os dados foram inseridos correctamente
+                        if (!data || data.length === 0) {
+                            throw new Error('Resposta vazia do servidor ao criar utilizador');
+                        }
+                        
+                        // ===== VALIDAR ID RETORNADO =====
+                        // Verificar se o ID gerado é um UUID válido
+                        const userId = data[0].id;
+                        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                        
+                        if (!uuidRegex.test(userId)) {
+                            console.error('UUID inválido retornado do Supabase:', userId);
+                            throw new Error('Erro interno: ID de utilizador inválido gerado');
+                        }
+                        
+                        console.log('Utilizador criado com sucesso, ID:', userId);
+                        
+                        // ===== LOGIN AUTOMÁTICO APÓS REGISTO =====
+                        // Guardar dados da sessão no localStorage
                 localStorage.setItem('loggedIn', 'true');
+                        localStorage.setItem('currentUserId', userId);
+                        localStorage.setItem('userName', data[0].name);
+                        localStorage.setItem('userPhone', data[0].phone);
                 
-                // Limpar quaisquer dados temporários
+                        // ===== LIMPAR DADOS TEMPORÁRIOS =====
                 localStorage.removeItem('tempRegisterName');
                 localStorage.removeItem('tempRegisterPhone');
                 localStorage.removeItem('tempRegisterPassword');
                 localStorage.removeItem('tempRegisterConfirmPassword');
                 
-                // Mensagem de sucesso e redirecionamento
-                alert("Conta criada com sucesso!");
+                        // ===== MOSTRAR FEEDBACK DE SUCESSO =====
+                        registerButton.innerHTML = '<i class="fas fa-check"></i> Conta criada!';
+                        registerButton.style.backgroundColor = '#27ae60';
+                        
+                        // Redirecionar após 1 segundo para mostrar o feedback
+                        setTimeout(() => {
                 window.location.href = 'home.html';
+                        }, 1000);
+                        
             } catch (error) {
-                console.error("Erro ao criar usuário:", error);
-                showError("Erro ao criar conta. Tente novamente.");
-            }
-        });
-
-        // Função para mostrar mensagens de erro
-        function showError(message) {
-            // Criar ou usar um elemento para mostrar o erro
-            let errorDiv = document.getElementById('form-error');
-            if (!errorDiv) {
-                errorDiv = document.createElement('div');
-                errorDiv.id = 'form-error';
-                errorDiv.style.color = 'red';
-                errorDiv.style.marginTop = '10px';
-                errorDiv.style.marginBottom = '10px';
-                errorDiv.style.textAlign = 'center';
-                errorDiv.style.fontWeight = 'bold';
-                
-                // Inserir antes do botão de registro
-                const registerButton = document.getElementById('registerButton');
-                registerButton.parentNode.insertBefore(errorDiv, registerButton);
-            }
-            
-            // Mostrar a mensagem
-            errorDiv.textContent = message;
-            
-            // Esconder a mensagem após 3 segundos
-            setTimeout(() => {
-                errorDiv.textContent = '';
-            }, 5000);
+                        // ===== TRATAMENTO DE ERROS =====
+                        console.error('Erro no registo:', error);
+                        registerButton.disabled = false;
+                        registerButton.textContent = 'Criar';
+                        showError(`Erro ao registar: ${error.message || 'Tente novamente.'}`);
+                    }
+                });
         }
+        });
     </script>
 </body>
 </html> 
