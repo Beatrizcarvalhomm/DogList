@@ -142,6 +142,28 @@
             transition: all 0.3s ease;
         }
 
+        /* Reduzir z-index da legenda quando popup está aberto */
+        .map-legend.popup-open {
+            z-index: 100 !important;
+        }
+
+        /* Garantir que InfoWindows ficam acima da legenda */
+        .gm-style-iw-c {
+            z-index: 2000 !important;
+        }
+        
+        .gm-style-iw {
+            z-index: 2000 !important;
+        }
+        
+        .gm-style-iw-d {
+            z-index: 2000 !important;
+        }
+        
+        .gm-style-iw-tc {
+            z-index: 2000 !important;
+        }
+
         .map-legend:hover {
             background-color: rgba(255, 255, 255, 0.98);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
@@ -441,6 +463,29 @@
                 left: 15px;
                 padding: 12px;
                 min-width: 220px;
+            }
+            
+            /* Garantir que InfoWindows ficam acima de tudo em mobile */
+            .gm-style-iw-c {
+                z-index: 9999 !important;
+            }
+            
+            .gm-style-iw {
+                z-index: 9999 !important;
+            }
+            
+            .gm-style-iw-d {
+                z-index: 9999 !important;
+            }
+            
+            .gm-style-iw-tc {
+                z-index: 9999 !important;
+            }
+            
+            /* Tornar legenda mais transparente quando popup está aberto em mobile */
+            .map-legend.popup-open {
+                opacity: 0.3 !important;
+                z-index: 50 !important;
             }
             
             .legend-item {
@@ -1009,13 +1054,22 @@
                 const infoWindow = new google.maps.InfoWindow({
                     content: contentString,
                     maxWidth: 240,
-                    pixelOffset: new google.maps.Size(0, -35),
+                    pixelOffset: new google.maps.Size(0, -50),
                     disableAutoPan: false
                 });
                 
                 // Adicionar evento para aplicar estilos após abrir
                 google.maps.event.addListener(infoWindow, 'domready', function() {
                     styleInfoWindow();
+                });
+                
+                // Adicionar evento para quando InfoWindow é fechado
+                google.maps.event.addListener(infoWindow, 'closeclick', function() {
+                    const legend = document.querySelector('.map-legend');
+                    if (legend) {
+                        legend.classList.remove('popup-open');
+                    }
+                    currentOpenInfoWindow = null;
                 });
                 
                 // Armazenar o infoWindow no marcador para referência futura
@@ -1031,21 +1085,20 @@
                         currentOpenInfoWindow.close();
                     }
                     
+                    // Adicionar classe para reduzir z-index da legenda
+                    const legend = document.querySelector('.map-legend');
+                    if (legend) {
+                        legend.classList.add('popup-open');
+                    }
+                    
                     // Centralizar o mapa no marcador clicado
                     const markerPosition = marker.getPosition();
                     
-                    // Calcular offset baseado no tamanho da tela para evitar sobreposição com a legenda
-                    let offsetLat = 0.001; // Offset padrão para desktop
-                    
-                    // Detectar se é dispositivo móvel e ajustar offset
-                    if (window.innerWidth <= 768) {
-                        // Em modo móvel, usar offset maior para puxar o popup mais para cima
-                        // evitando sobreposição com a legenda que fica na parte inferior
-                        offsetLat = 0.003; // Offset maior para móvel - puxa o popup mais para cima
-                    }
-                    
+                    // Calcular offset para que o popup apareça centralizado na tela
+                    // Mover o mapa para CIMA para que o popup apareça mais alto na tela
+                    const offsetLat = 0.035; // Offset muito grande para CIMA para posicionar o popup bem no topo da tela
                     const centerPosition = {
-                        lat: markerPosition.lat() - offsetLat,
+                        lat: markerPosition.lat() + offsetLat,
                         lng: markerPosition.lng()
                     };
                     
@@ -1427,7 +1480,17 @@
                     // Criar infoWindow com conteúdo básico inicial
                     const infoWindow = new google.maps.InfoWindow({
                         content: basicContent,
-                        maxWidth: 220
+                        maxWidth: 220,
+                        pixelOffset: new google.maps.Size(0, -50)
+                    });
+                    
+                    // Adicionar evento para quando InfoWindow é fechado
+                    google.maps.event.addListener(infoWindow, 'closeclick', function() {
+                        const legend = document.querySelector('.map-legend');
+                        if (legend) {
+                            legend.classList.remove('popup-open');
+                        }
+                        currentOpenInfoWindow = null;
                     });
                     
                     // Guardar referência ao marcador e ao infoWindow
@@ -1442,21 +1505,19 @@
                             currentOpenInfoWindow.close();
                         }
                         
+                        // Adicionar classe para reduzir z-index da legenda quando popup abre
+                        const legend = document.querySelector('.map-legend');
+                        if (legend) {
+                            legend.classList.add('popup-open');
+                        }
+                        
                         // Centralizar o mapa no marcador clicado
                         const markerPosition = marker.getPosition();
                         
-                        // Calcular offset baseado no tamanho da tela para evitar sobreposição com a legenda
-                        let offsetLat = 0.001; // Offset padrão para desktop
-                        
-                        // Detectar se é dispositivo móvel e ajustar offset
-                        if (window.innerWidth <= 768) {
-                            // Em modo móvel, usar offset maior para puxar o popup mais para cima
-                            // evitando sobreposição com a legenda que fica na parte inferior
-                            offsetLat = 0.003; // Offset maior para móvel - puxa o popup mais para cima
-                        }
-                        
+                        // Calcular offset para que o popup apareça centralizado na tela
+                        const offsetLat = 0.035; // Offset muito grande para CIMA para posicionar o popup bem no topo da tela
                         const centerPosition = {
-                            lat: markerPosition.lat() - offsetLat,
+                            lat: markerPosition.lat() + offsetLat,
                             lng: markerPosition.lng()
                         };
                         
@@ -1980,6 +2041,12 @@
             if (currentOpenInfoWindow) {
                 currentOpenInfoWindow.close();
                 currentOpenInfoWindow = null;
+            }
+            
+            // Remover classe da legenda quando popup é fechado
+            const legend = document.querySelector('.map-legend');
+            if (legend) {
+                legend.classList.remove('popup-open');
             }
         }
 
