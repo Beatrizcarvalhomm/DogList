@@ -136,7 +136,7 @@
             border-radius: 15px;
             background-color: rgba(255, 255, 255, 0.92);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            z-index: 999; /* Z-index menor que os InfoWindows (10001) para evitar sobreposição */
+            z-index: 1000;
             min-width: 230px;
             border: 1px solid rgba(255, 255, 255, 0.8);
             transition: all 0.3s ease;
@@ -441,7 +441,6 @@
                 left: 15px;
                 padding: 12px;
                 min-width: 220px;
-                z-index: 999; /* Z-index menor que os InfoWindows para evitar sobreposição */
             }
             
             .legend-item {
@@ -488,7 +487,6 @@
                 left: 12px;
                 padding: 10px;
                 min-width: 210px;
-                z-index: 999; /* Z-index menor que os InfoWindows para evitar sobreposição */
             }
             
             .legend-item {
@@ -694,25 +692,6 @@
                     setTimeout(() => {
                         applyVisibilityState();
                     }, 500);
-                });
-                
-                // Adicionar evento de clique no mapa para restaurar a legenda em dispositivos móveis
-                map.addListener('click', function() {
-                    // Fechar qualquer InfoWindow aberto
-                    if (currentOpenInfoWindow) {
-                        currentOpenInfoWindow.close();
-                        currentOpenInfoWindow = null;
-                    }
-                    
-                    // Restaurar a legenda em dispositivos móveis
-                    const isMobile = window.innerWidth <= 767;
-                    if (isMobile) {
-                        const legend = document.querySelector('.map-legend');
-                        if (legend) {
-                            legend.style.opacity = '1';
-                            legend.style.pointerEvents = 'auto';
-                        }
-                    }
                 });
                 
                 console.log("Função initMap concluída com sucesso");
@@ -1052,22 +1031,19 @@
                         currentOpenInfoWindow.close();
                     }
                     
-                    // Em dispositivos móveis, esconder temporariamente a legenda para evitar sobreposição
-                    const isMobile = window.innerWidth <= 767;
-                    if (isMobile) {
-                        const legend = document.querySelector('.map-legend');
-                        if (legend) {
-                            legend.style.opacity = '0.3';
-                            legend.style.pointerEvents = 'none';
-                        }
-                    }
-                    
                     // Centralizar o mapa no marcador clicado
                     const markerPosition = marker.getPosition();
                     
-                    // Calcular offset para que o popup apareça centralizado na tela
-                    // Ajustar a posição ligeiramente para baixo para compensar a altura do popup
-                    const offsetLat = 0.001; // Pequeno offset para baixo para centralizar melhor o popup
+                    // Calcular offset baseado no tamanho da tela para evitar sobreposição com a legenda
+                    let offsetLat = 0.001; // Offset padrão para desktop
+                    
+                    // Detectar se é dispositivo móvel e ajustar offset
+                    if (window.innerWidth <= 768) {
+                        // Em modo móvel, usar offset maior para puxar o popup mais para cima
+                        // evitando sobreposição com a legenda que fica na parte inferior
+                        offsetLat = 0.003; // Offset maior para móvel - puxa o popup mais para cima
+                    }
+                    
                     const centerPosition = {
                         lat: markerPosition.lat() - offsetLat,
                         lng: markerPosition.lng()
@@ -1123,7 +1099,6 @@
                         container.style.borderRadius = '12px !important';
                         container.style.overflow = 'hidden !important';
                         container.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.12) !important';
-                        container.style.zIndex = '10001 !important'; // Z-index alto para ficar acima da legenda
                     });
                     
                     // Estilizar os containers internos
@@ -1132,7 +1107,6 @@
                         innerContainer.style.overflow = 'hidden !important';
                         innerContainer.style.padding = '0 !important';
                         innerContainer.style.margin = '0 !important';
-                        innerContainer.style.zIndex = '10001 !important';
                     });
 
                     // Estilizar o wrapper principal do InfoWindow
@@ -1140,7 +1114,6 @@
                     wrappers.forEach(wrapper => {
                         wrapper.style.padding = '0 !important';
                         wrapper.style.margin = '0 !important';
-                        wrapper.style.zIndex = '10001 !important'; // Z-index alto para ficar acima da legenda
                     });
 
                     // Estilizar elementos específicos do Google Maps
@@ -1148,7 +1121,6 @@
                     iwContainers.forEach(container => {
                         container.style.padding = '0 !important';
                         container.style.margin = '0 !important';
-                        container.style.zIndex = '10001 !important';
                     });
 
                     // Estilizar o botão de fechar
@@ -1156,19 +1128,18 @@
                     closeButtons.forEach(button => {
                         button.style.top = '0px !important';
                         button.style.right = '0px !important';
-                        button.style.zIndex = '10002 !important'; // Z-index ainda mais alto para o botão de fechar
                     });
 
                     // Adicionar CSS para eliminar todos os espaços e forçar posicionamento correto
                     const style = document.createElement('style');
                     style.textContent = `
                         .gm-style-iw-d::-webkit-scrollbar { display: none; }
-                        .gm-style-iw { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
-                        .gm-style-iw-c { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
-                        .gm-style-iw-d { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
-                        .gm-style-iw-tc { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
-                        .gm-style-iw-t { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
-                        .gm-ui-hover-effect { opacity: 1 !important; z-index: 10002 !important; }
+                        .gm-style-iw { padding: 0 !important; margin: 0 !important; top: 0 !important; }
+                        .gm-style-iw-c { padding: 0 !important; margin: 0 !important; top: 0 !important; }
+                        .gm-style-iw-d { padding: 0 !important; margin: 0 !important; top: 0 !important; }
+                        .gm-style-iw-tc { padding: 0 !important; margin: 0 !important; top: 0 !important; }
+                        .gm-style-iw-t { padding: 0 !important; margin: 0 !important; top: 0 !important; }
+                        .gm-ui-hover-effect { opacity: 1 !important; }
                         .gm-ui-hover-effect img { opacity: 1 !important; }
                         .gm-style-iw-chr { display: none !important; }
                     `;
@@ -1471,21 +1442,19 @@
                             currentOpenInfoWindow.close();
                         }
                         
-                        // Em dispositivos móveis, esconder temporariamente a legenda para evitar sobreposição
-                        const isMobile = window.innerWidth <= 767;
-                        if (isMobile) {
-                            const legend = document.querySelector('.map-legend');
-                            if (legend) {
-                                legend.style.opacity = '0.3';
-                                legend.style.pointerEvents = 'none';
-                            }
-                        }
-                        
                         // Centralizar o mapa no marcador clicado
                         const markerPosition = marker.getPosition();
                         
-                        // Calcular offset para que o popup apareça centralizado na tela
-                        const offsetLat = 0.001; // Pequeno offset para baixo para centralizar melhor o popup
+                        // Calcular offset baseado no tamanho da tela para evitar sobreposição com a legenda
+                        let offsetLat = 0.001; // Offset padrão para desktop
+                        
+                        // Detectar se é dispositivo móvel e ajustar offset
+                        if (window.innerWidth <= 768) {
+                            // Em modo móvel, usar offset maior para puxar o popup mais para cima
+                            // evitando sobreposição com a legenda que fica na parte inferior
+                            offsetLat = 0.003; // Offset maior para móvel - puxa o popup mais para cima
+                        }
+                        
                         const centerPosition = {
                             lat: markerPosition.lat() - offsetLat,
                             lng: markerPosition.lng()
@@ -2011,16 +1980,6 @@
             if (currentOpenInfoWindow) {
                 currentOpenInfoWindow.close();
                 currentOpenInfoWindow = null;
-            }
-            
-            // Restaurar a legenda em dispositivos móveis
-            const isMobile = window.innerWidth <= 767;
-            if (isMobile) {
-                const legend = document.querySelector('.map-legend');
-                if (legend) {
-                    legend.style.opacity = '1';
-                    legend.style.pointerEvents = 'auto';
-                }
             }
         }
 
