@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -1276,25 +1276,6 @@
             border-top: 1px solid #eeeeee;
         }
 
-        .popup-button {
-            display: inline-block;
-            padding: 8px 20px;
-            background-color: #FF7F50 !important;
-            color: white !important;
-            text-decoration: none;
-            border-radius: 30px;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .popup-button:hover {
-            background-color: #ff6a35 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
         .status-indicator {
             display: inline-flex;
             align-items: center;
@@ -1634,11 +1615,6 @@
             transform: none;
         }
 
-        .legend-text {
-            font-weight: 500;
-            font-size: 16px;
-        }
-
         #nearestClinicLegend {
             cursor: pointer;
             border-left: 3px solid transparent;
@@ -1731,7 +1707,6 @@
                 </div>
                 <span class="legend-text">Atualizar localização</span>
             </div>
-            <!-- Removed "Ver na rua" legend item but kept Street View functionality -->
         </div>
     </div>
 
@@ -1754,7 +1729,6 @@
 
     <!-- No final do body, adicione esse div para o popup personalizado -->
     <div id="customLocationPopup" class="custom-location-popup" style="display: none;">
-        <div class="custom-location-popup-bar"></div>
         <i class="fas fa-map-marker-alt custom-location-popup-icon"></i>
         <span class="custom-location-popup-text">Você está aqui</span>
     </div>
@@ -1790,7 +1764,7 @@
         }
 
         // Primeiro definimos todas as funções do mapa
-        function initMap() {
+        async function initMap() {
             // Criar infoWindow reutilizável
             infoWindow = new google.maps.InfoWindow({ 
                 maxWidth: 300,
@@ -1800,7 +1774,7 @@
             // Inicializar o mapa com centro em uma localização padrão
             const defaultCenter = { lat: -23.5505, lng: -46.6333 }; // São Paulo (ou outra localização padrão)
                 map = new google.maps.Map(document.getElementById('map'), {
-                    zoom: 11,
+                    zoom: 15,
                 center: defaultCenter,
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
                     mapTypeControl: true,
@@ -1828,13 +1802,28 @@
             const savedLocation = getSavedLocation();
             
             if (savedLocation) {
+                console.log("Usando localização salva:", savedLocation);
                 // Usar localização salva sem solicitar permissão
                 userLocation = savedLocation;
                 addUserMarker(savedLocation);
                 searchVeterinaryClinics(savedLocation);
+                
+                // Esconder indicador de carregamento mais cedo
+                document.getElementById('loadingIndicator').style.display = 'none';
             } else {
-                // Tentar obter a localização atual sem mostrar banner
+                // Mostrar mensagem de que está a obter localização
+                const loadingText = document.querySelector('#loadingIndicator .loading-text');
+                if (loadingText) {
+                    loadingText.textContent = 'A obter a sua localização...';
+                }
+                // Tentar obter a localização atual com configurações otimizadas
                 if (navigator.geolocation) {
+                    const geoOptions = {
+                        enableHighAccuracy: false, // Usar GPS menos preciso mas mais rápido
+                        timeout: 3000, // Timeout de 3 segundos apenas para ser mais rápido
+                        maximumAge: 600000 // Aceitar localização de até 10 minutos atrás
+                    };
+                    
                     navigator.geolocation.getCurrentPosition(
                         function(position) {
                             // Sucesso na obtenção da localização
@@ -1846,19 +1835,51 @@
                             userLocation = pos;
                             addUserMarker(pos);
                             searchVeterinaryClinics(pos);
+                            
+                            // Esconder indicador de carregamento
+                            document.getElementById('loadingIndicator').style.display = 'none';
+                            
+                            // Mostrar notificação de sucesso
+                            showTemporaryNotification('✅ Localização obtida com sucesso!');
                         },
-                        function(error) {
-                            // Em caso de erro, usar a localização padrão
+                        async function(error) {
+                            // Em caso de erro, tentar localização aproximada via IP
                             console.log("Erro na geolocalização: ", error);
-                            userLocation = defaultCenter;
-                            searchVeterinaryClinics(defaultCenter);
-                        }
+                            
+                            const approximateLocation = await getApproximateLocation();
+                            if (approximateLocation) {
+                                console.log("Usando localização aproximada via IP");
+                                userLocation = approximateLocation;
+                                saveLocation(approximateLocation);
+                                addUserMarker(approximateLocation);
+                                searchVeterinaryClinics(approximateLocation);
+                                
+                                // Esconder indicador e mostrar notificação
+                                document.getElementById('loadingIndicator').style.display = 'none';
+                                showTemporaryNotification('📍 Localização aproximada obtida');
+                            } else {
+                                // Se tudo falhar, usar localização padrão
+                                console.log("Usando localização padrão");
+                                userLocation = defaultCenter;
+                                searchVeterinaryClinics(defaultCenter);
+                            }
+                        },
+                        geoOptions
                     );
                 } else {
-                    // Navegador não suporta geolocalização
-                    console.log("Navegador não suporta geolocalização");
-                    userLocation = defaultCenter;
-                    searchVeterinaryClinics(defaultCenter);
+                    // Navegador não suporta geolocalização - tentar IP
+                    console.log("Navegador não suporta geolocalização, tentando localização via IP");
+                    
+                    const approximateLocation = await getApproximateLocation();
+                    if (approximateLocation) {
+                        userLocation = approximateLocation;
+                        saveLocation(approximateLocation);
+                        addUserMarker(approximateLocation);
+                        searchVeterinaryClinics(approximateLocation);
+                    } else {
+                        userLocation = defaultCenter;
+                        searchVeterinaryClinics(defaultCenter);
+                    }
                 }
             }
             
@@ -1894,44 +1915,60 @@
             return savedLocation ? JSON.parse(savedLocation) : null;
         }
         
-        function requestUserLocation() {
-            if (navigator.geolocation) {
-                document.getElementById('loadingIndicator').style.display = 'flex';
-                    
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                        const location = {
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude
-                            };
-                            
-                        // Salvar localização para uso futuro
-                        saveUserLocation(location);
-                        
-                        // Atualizar localização do usuário
-                        userLocation = location;
-                            
-                            // Centralizar mapa na localização do usuário
-                        map.setCenter(location);
-
-                            // Adicionar marcador do usuário
-                        addUserMarker(location);
-                        
-                        // Buscar clínicas próximas
-                        searchVeterinaryClinics(location);
-                        
-                        document.getElementById('loadingIndicator').style.display = 'none';
-                        },
-                        (error) => {
-                        document.getElementById('loadingIndicator').style.display = 'none';
-                            handleLocationError(error);
-                        },
-                    { timeout: 10000, maximumAge: 600000 }
-                    );
-                } else {
-                alert('Seu navegador não suporta geolocalização.');
+        // Função para obter localização aproximada via IP (fallback rápido)
+        async function getApproximateLocation() {
+            try {
+                console.log('Tentando obter localização aproximada via IP...');
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                
+                if (data.latitude && data.longitude) {
+                    const location = {
+                        lat: parseFloat(data.latitude),
+                        lng: parseFloat(data.longitude)
+                    };
+                    console.log('Localização aproximada obtida:', location);
+                    return location;
+                }
+            } catch (error) {
+                console.log('Erro ao obter localização via IP:', error);
             }
+            return null;
         }
+        
+        // Função para mostrar notificação temporária
+        function showTemporaryNotification(message, duration = 3000) {
+            // Criar elemento de notificação se não existir
+            let notification = document.getElementById('tempNotification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'tempNotification';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 10000;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                `;
+                document.body.appendChild(notification);
+            }
+            
+            notification.textContent = message;
+            notification.style.transform = 'translateX(0)';
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+            }, duration);
+        }
+
         
         function handleLocationError(error) {
                     document.getElementById('loadingIndicator').style.display = 'none';
@@ -1954,8 +1991,6 @@
             
             // Não precisamos definir uma localização padrão aqui, pois já fizemos isso no início
         }
-
-        // ... manter o resto do código existente ...
     </script>
 
     <!-- Carregue a API do Google Maps separadamente para garantir melhor desempenho -->
@@ -1965,8 +2000,6 @@
     </script>
     
     <script>
-        // ... existing variables ...
-        
         function googleMapsError() {
             document.getElementById('loadingIndicator').style.display = 'none';
             showCustomAlert('Erro', 'Não foi possível carregar o Google Maps. Verifique sua conexão de internet.');
@@ -2002,11 +2035,6 @@
         // Centralizar novamente se a janela for redimensionada
         window.addEventListener('resize', centerLoadingIndicator);
         
-        // Verificar se está logado
-        if (!localStorage.getItem('loggedIn')) {
-            window.location.href = 'index.html';
-        }
-
         // Verificar se está logado
         if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'index.html';
@@ -2179,11 +2207,7 @@
                 }
             }, 3000);
         }
-        
-        function showSimpleLocationPopup() {
-            // Já não precisamos desta função, pois showLocationPopup já está usando a abordagem simples
-            showLocationPopup(null);
-        }
+
 
         function searchVeterinaryClinics(location) {
             // Verificar se o mapa está inicializado
@@ -2731,11 +2755,18 @@
                 clinicMarkers.push(marker);
             });
 
-                // Ajustar mapa para mostrar todos os marcadores
+                // Ajustar mapa para mostrar todos os marcadores com zoom mínimo
                 const bounds = new google.maps.LatLngBounds();
                 bounds.extend(userLocation);
                 clinicMarkers.forEach(marker => bounds.extend(marker.getPosition()));
                 map.fitBounds(bounds);
+                
+                // Garantir zoom mínimo para não mostrar área muito grande
+                google.maps.event.addListenerOnce(map, 'bounds_changed', function() {
+                    if (map.getZoom() < 13) {
+                        map.setZoom(13);
+                    }
+                });
                 
                 // Store clinics data for popup
                 window.clinicsData = clinicsData;
@@ -2843,7 +2874,7 @@
                 }
                 
                 // Animar a transição com zoom mais próximo
-                map.setZoom(18);
+                map.setZoom(17);
                 
                 // Remover classe active ou destacada após o clique
                 const legendItem = document.getElementById('myLocationLegend');
@@ -2880,7 +2911,7 @@
                 if (nearestMarker) {
                     // Centralizar mapa no marcador
                     map.setCenter(nearestMarker.getPosition());
-                    map.setZoom(16);
+                    map.setZoom(17);
                     
                     // Simular clique no marcador para mostrar infoWindow
                     google.maps.event.trigger(nearestMarker, 'click');
@@ -2907,6 +2938,13 @@
                     maximumAge: 0
                 };
                 
+            // Configurações otimizadas para refresh rápido
+            const refreshGeoOptions = {
+                enableHighAccuracy: false, // Priorizar velocidade sobre precisão
+                timeout: 3000, // Timeout ainda menor para refresh
+                maximumAge: 60000 // Aceitar localização de até 1 minuto atrás
+            };
+            
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                         // Atualizar a localização do usuário
@@ -2917,9 +2955,12 @@
                         
                         console.log("Localização atualizada:", userLocation);
                         
+                        // Salvar nova localização
+                        saveLocation(userLocation);
+                        
                         // Centralizar mapa na nova localização
                         map.setCenter(userLocation);
-                        map.setZoom(14);
+                        map.setZoom(16);
 
                         // Adicionar marcador do usuário na nova localização
                         addUserMarker(userLocation);
@@ -2953,7 +2994,7 @@
                         
                         showCustomAlert('Erro', errorMessage + ' Usando localização atual.');
                     },
-                    geoOptions
+                    refreshGeoOptions
             );
         } else {
                 hideLoadingPopup();
@@ -3161,11 +3202,18 @@
                 clinicMarkers.push(marker);
             });
             
-            // Ajustar mapa para mostrar todos os marcadores
+            // Ajustar mapa para mostrar todos os marcadores com zoom mínimo
             const bounds = new google.maps.LatLngBounds();
             bounds.extend(userLocation);
             clinicMarkers.forEach(marker => bounds.extend(marker.getPosition()));
             map.fitBounds(bounds);
+            
+            // Garantir zoom mínimo para não mostrar área muito grande
+            google.maps.event.addListenerOnce(map, 'bounds_changed', function() {
+                if (map.getZoom() < 13) {
+                    map.setZoom(13);
+                }
+            });
         }
 
         // Add the missing addClinicToList function - now used in the popup
