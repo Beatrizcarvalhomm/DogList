@@ -1080,7 +1080,8 @@
             
                 // Processar foto de perfil
             let photoUrl = null;
-                const photoFile = document.getElementById('photoInput').files[0];
+                // Usar a variável photoFile já declarada globalmente
+                photoFile = document.getElementById('photoInput').files[0];
                 
             if (photoFile) {
                     try {
@@ -1091,84 +1092,64 @@
                             throw new Error('Arquivo selecionado não é uma imagem válida');
                         }
                         
-                        // Validar tamanho (máximo 5MB)
-                        if (photoFile.size > 5 * 1024 * 1024) {
-                            throw new Error('Imagem muito grande. Máximo permitido: 5MB');
+                        // Comprimir imagem se for muito grande
+                        let processedFile = photoFile;
+                        if (photoFile.size > 1 * 1024 * 1024) { // Se maior que 1MB, comprimir
+                            console.log('Imagem grande detectada, comprimindo...');
+                            processedFile = await compressImage(photoFile);
                         }
                         
-                        // Gerar nome único para o arquivo
-                        const fileExt = photoFile.name.split('.').pop().toLowerCase();
-                        const fileName = `shelter-${currentUserId}-${Date.now()}.${fileExt}`;
-                        console.log('Nome do arquivo para upload:', fileName);
+                        // Validar tamanho após compressão (máximo 3MB)
+                        if (processedFile.size > 3 * 1024 * 1024) {
+                            throw new Error('Imagem muito grande mesmo após compressão. Tente usar uma imagem menor.');
+                        }
                         
-                        // Tentar upload no bucket principal primeiro
-                        console.log('Tentando upload no bucket "dog-images"...');
-                        
-                        const { data: uploadData, error: uploadError } = await window.supabase.storage
-                            .from('dog-images')
-                            .upload(fileName, photoFile, { 
-                                upsert: true,
-                                cacheControl: '3600',
-                                contentType: photoFile.type
-                            });
+                        console.log('Processando imagem final:', processedFile.size, 'bytes');
                             
-                        if (uploadError) {
-                            console.error('Erro no upload:', uploadError);
-                            
-                            // Se o erro for de bucket não encontrado, tentar criar ou usar outro método
-                            if (uploadError.message && uploadError.message.includes('not found')) {
-                                console.log('Bucket não encontrado, tentando método alternativo...');
+                        // Salvar diretamente na base de dados como base64
+                        console.log('Convertendo imagem para base64 para salvamento na base de dados...');
                                 
-                                // Converter imagem para base64 como fallback
+                        // Converter imagem para base64
                 const reader = new FileReader();
                                 const base64Promise = new Promise((resolve, reject) => {
-                                    reader.onload = () => resolve(reader.result);
-                                    reader.onerror = reject;
-                reader.readAsDataURL(photoFile);
+                            reader.onload = () => {
+                                console.log('Conversão para base64 concluída');
+                                resolve(reader.result);
+                            };
+                            reader.onerror = (error) => {
+                                console.error('Erro na conversão para base64:', error);
+                                reject(error);
+                            };
+                            reader.readAsDataURL(processedFile);
                                 });
                                 
                                 const base64Data = await base64Promise;
-                                console.log('Imagem convertida para base64, salvando localmente...');
+                        console.log('Imagem convertida para base64, tamanho:', base64Data.length, 'caracteres');
                                 
-                                // Salvar base64 no localStorage temporariamente
-                                const imageKey = `shelter-image-${currentUserId}`;
-                                localStorage.setItem(imageKey, base64Data);
-                                photoUrl = `local:${imageKey}`;
-                                
-                                console.log('Imagem salva localmente com chave:', imageKey);
-            } else {
-                                throw uploadError;
+                        // Salvar diretamente na base de dados (não usar localStorage)
+                        console.log('Salvando imagem diretamente na base de dados...');
+                        photoUrl = base64Data; // Usar o base64 diretamente
+                        
+                        // Atualizar preview imediatamente
+                        const previewImage = document.getElementById('previewImage');
+                        if (previewImage) {
+                            previewImage.src = base64Data;
+                            previewImage.style.display = 'block';
+                            
+                            const photoPreview = document.getElementById('photoPreview');
+                            if (photoPreview && photoPreview.querySelector('i')) {
+                                photoPreview.querySelector('i').style.display = 'none';
                             }
-                        } else {
-                            console.log('Upload bem-sucedido:', uploadData);
                             
-                            // Obter URL pública
-                            const { data: urlData } = window.supabase.storage
-                                .from('dog-images')
-                                .getPublicUrl(fileName);
-                                
-                            console.log('URL pública obtida:', urlData);
-                            
-                            if (urlData && urlData.publicUrl) {
-                                photoUrl = urlData.publicUrl;
-                                console.log('URL da foto definida:', photoUrl);
-                            } else {
-                                console.warn('URL pública não encontrada, usando método local');
-                
-                                // Fallback para base64
-                                const reader = new FileReader();
-                                const base64Promise = new Promise((resolve, reject) => {
-                                    reader.onload = () => resolve(reader.result);
-                                    reader.onerror = reject;
-                                    reader.readAsDataURL(photoFile);
-                                });
-                                
-                                const base64Data = await base64Promise;
-                                const imageKey = `shelter-image-${currentUserId}`;
-                                localStorage.setItem(imageKey, base64Data);
-                                photoUrl = `local:${imageKey}`;
+                            // Feedback visual
+                            const photoContainer = document.querySelector('.photo-upload-container');
+                            if (photoContainer) {
+                                photoContainer.style.borderColor = '#4CAF50';
+                                photoContainer.style.backgroundColor = '#f8fff8';
                             }
                         }
+                        
+                        console.log('Imagem preparada para salvamento na base de dados');
                         
                         console.log('Processamento de imagem concluído. URL final:', photoUrl);
                         
@@ -1339,8 +1320,50 @@
             return 'shelter-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
         }
 
+        // Funções de localStorage removidas - agora salvamos diretamente na base de dados
+
+        // Função para comprimir imagem se necessário
+        function compressImage(file, maxWidth = 800, maxHeight = 600, quality = 0.8) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    // Calcular novas dimensões mantendo proporção
+                    let { width, height } = img;
+                    
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width *= ratio;
+                        height *= ratio;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Desenhar imagem redimensionada
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Converter para blob
+                    canvas.toBlob((blob) => {
+                        console.log(`Imagem comprimida: ${file.size} bytes -> ${blob.size} bytes`);
+                        resolve(blob);
+                    }, 'image/jpeg', quality);
+                };
+                
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        // Funções de localStorage removidas - agora salvamos diretamente na base de dados
+
         // Modificar a inicialização do mapa para garantir que todos os elementos do DOM estejam carregados
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== INICIALIZANDO PÁGINA DE ABRIGO TEMPORÁRIO ===');
+            
+            console.log('Página de abrigo temporário carregada');
+            
             // Inicializar funcionalidade de drag and drop para upload de fotos
             setupDragAndDrop();
             
@@ -1382,6 +1405,8 @@
                     initMap();
                     return;
                 }
+                
+                console.log('Carregando dados do abrigo existente...');
                 
                 console.log('Verificando se usuário já tem abrigo registrado...');
                 
@@ -1427,25 +1452,81 @@
                             const previewImage = document.getElementById('previewImage');
                         const photoPreview = document.getElementById('photoPreview');
                         
-                        if (existingShelter.photo_url.startsWith('local:')) {
-                            // Imagem local
+                        console.log('Carregando foto existente:', existingShelter.photo_url.substring(0, 50) + '...');
+                        
+                        if (existingShelter.photo_url.startsWith('data:image/')) {
+                            // Imagem base64 direta da base de dados
+                            console.log('Carregando imagem base64 da base de dados...');
+                            
+                            // Carregar imagem com verificação de erro
+                            previewImage.onload = function() {
+                                console.log('Imagem carregada com sucesso no preview');
+                                previewImage.style.display = 'block';
+                                photoPreview.querySelector('i').style.display = 'none';
+                                
+                                // Adicionar feedback visual de que a imagem foi carregada
+                                const photoContainer = document.querySelector('.photo-upload-container');
+                                photoContainer.style.borderColor = '#4CAF50';
+                                photoContainer.style.backgroundColor = '#f8fff8';
+                            };
+                            
+                            previewImage.onerror = function() {
+                                console.error('Erro ao carregar imagem no preview');
+                                previewImage.style.display = 'none';
+                                photoPreview.querySelector('i').style.display = 'block';
+                            };
+                            
+                            previewImage.src = existingShelter.photo_url;
+                            
+                        } else if (existingShelter.photo_url.startsWith('local:')) {
+                            // Compatibilidade com versões antigas (localStorage)
                             const imageKey = existingShelter.photo_url.replace('local:', '');
+                            console.log('Procurando imagem local com chave:', imageKey);
+                            
                             const base64Data = localStorage.getItem(imageKey);
-                            if (base64Data) {
-                                previewImage.src = base64Data;
+                            
+                            if (base64Data && base64Data.startsWith('data:image/')) {
+                                console.log('Imagem local encontrada, carregando...');
+                                
+                                previewImage.onload = function() {
+                                    console.log('Imagem carregada com sucesso no preview');
                             previewImage.style.display = 'block';
                                 photoPreview.querySelector('i').style.display = 'none';
+                                    
+                                    const photoContainer = document.querySelector('.photo-upload-container');
+                                    photoContainer.style.borderColor = '#4CAF50';
+                                    photoContainer.style.backgroundColor = '#f8fff8';
+                                };
+                                
+                                previewImage.onerror = function() {
+                                    console.error('Erro ao carregar imagem no preview');
+                                    previewImage.style.display = 'none';
+                                    photoPreview.querySelector('i').style.display = 'block';
+                                };
+                                
+                                previewImage.src = base64Data;
+                            } else {
+                                console.warn('Imagem local não encontrada para chave:', imageKey);
                             }
                         } else {
-                            // Imagem remota
+                            // URL remota normal
+                            console.log('Carregando imagem remota...');
                             previewImage.src = existingShelter.photo_url;
                             previewImage.style.display = 'block';
                             photoPreview.querySelector('i').style.display = 'none';
+                            
+                            const photoContainer = document.querySelector('.photo-upload-container');
+                            photoContainer.style.borderColor = '#4CAF50';
+                            photoContainer.style.backgroundColor = '#f8fff8';
                         }
+                        } else {
+                            console.log('Nenhuma foto encontrada para este abrigo');
                         }
                         
                     // Preencher preferências
                     fillPreferences(existingShelter);
+                    
+                    console.log('Dados do abrigo carregados com sucesso');
                     
                 } else {
                     console.log('Nenhum abrigo existente encontrado, inicializando mapa padrão');

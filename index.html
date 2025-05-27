@@ -92,6 +92,10 @@
             color: #333;
         }
 
+        .password-group .input-field {
+            padding-right: 40px;
+        }
+
         .login-button {
             width: 100%;
             padding: 12px;
@@ -107,7 +111,6 @@
         
         .login-button:hover {
             background-color: #ff6a3c;
-            transform: translateY(-2px);
         }
 
         .register-container {
@@ -201,13 +204,33 @@
         
         .toggle-password {
             position: absolute;
-            right: 12px;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
-            background: none;
-            border: none;
+            background: none !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
             cursor: pointer;
             font-size: 18px;
+            padding: 6px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888 !important;
+            z-index: 10;
+            border-radius: 0 !important;
+        }
+
+        .toggle-password:hover,
+        .toggle-password:focus,
+        .toggle-password:active {
+            background: none !important;
+            color: #888 !important;
+            outline: none !important;
+            box-shadow: none !important;
         }
         
         /* Responsive improvements */
@@ -359,7 +382,7 @@
                     <input type="password" class="input-field" id="password" 
                             placeholder="Escreva aqui a sua palavra-passe" required minlength="7"
                             title="A palavra-passe deve ter pelo menos 7 caracteres e incluir ao menos um caractere especial">
-                    <button type="button" id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 20px;" aria-label="Toggle password visibility">
+                    <button type="button" id="togglePassword" class="toggle-password" aria-label="Toggle password visibility">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>

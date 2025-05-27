@@ -1860,9 +1860,9 @@
                             } else {
                                 // Se tudo falhar, usar localização padrão
                                 console.log("Usando localização padrão");
-                                userLocation = defaultCenter;
-                                searchVeterinaryClinics(defaultCenter);
-                            }
+                            userLocation = defaultCenter;
+                            searchVeterinaryClinics(defaultCenter);
+                        }
                         },
                         geoOptions
                     );
@@ -1877,8 +1877,8 @@
                         addUserMarker(approximateLocation);
                         searchVeterinaryClinics(approximateLocation);
                     } else {
-                        userLocation = defaultCenter;
-                        searchVeterinaryClinics(defaultCenter);
+                    userLocation = defaultCenter;
+                    searchVeterinaryClinics(defaultCenter);
                     }
                 }
             }
@@ -1923,7 +1923,7 @@
                 const data = await response.json();
                 
                 if (data.latitude && data.longitude) {
-                    const location = {
+                        const location = {
                         lat: parseFloat(data.latitude),
                         lng: parseFloat(data.longitude)
                     };
@@ -1967,7 +1967,7 @@
             setTimeout(() => {
                 notification.style.transform = 'translateX(100%)';
             }, duration);
-        }
+            }
 
         
         function handleLocationError(error) {
@@ -2034,7 +2034,7 @@
         
         // Centralizar novamente se a janela for redimensionada
         window.addEventListener('resize', centerLoadingIndicator);
-        
+
         // Verificar se está logado
         if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'index.html';
@@ -2207,7 +2207,7 @@
                 }
             }, 3000);
         }
-
+        
 
         function searchVeterinaryClinics(location) {
             // Verificar se o mapa está inicializado
@@ -2249,8 +2249,8 @@
                 const processAllResults = () => {
                     searchesCompleted++;
                     if (searchesCompleted === totalSearches) {
-                        document.getElementById('loadingIndicator').style.display = 'none';
-                        
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    
                         if (allResults.length > 0) {
                             // Remover duplicatas baseado no place_id
                             const uniqueResults = allResults.filter((clinic, index, self) => 
@@ -2259,7 +2259,7 @@
                             
                             console.log("Total de clínicas únicas encontradas:", uniqueResults.length);
                             fetchDetailedClinicInfo(uniqueResults, location);
-                        } else {
+                    } else {
                             showCustomAlert('Aviso', 'Não foram encontradas clínicas veterinárias próximas. Exibindo exemplos.', displayDefaultClinics);
                         }
                     }
@@ -2267,12 +2267,12 @@
                 
                 // Busca central (localização atual)
                 const centralRequest = {
-                    location: location,
+                                location: location,
                     radius: 25000,
-                    type: 'veterinary_care',
+                                type: 'veterinary_care',
                     keyword: 'veterinário clínica veterinária hospital animal'
-                };
-                
+                            };
+                            
                 service.nearbySearch(centralRequest, (results, status) => {
                     if (status === google.maps.places.PlacesServiceStatus.OK && results) {
                         allResults = allResults.concat(results);
@@ -2943,8 +2943,8 @@
                 enableHighAccuracy: false, // Priorizar velocidade sobre precisão
                 timeout: 3000, // Timeout ainda menor para refresh
                 maximumAge: 60000 // Aceitar localização de até 1 minuto atrás
-            };
-            
+                };
+                
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                         // Atualizar a localização do usuário
