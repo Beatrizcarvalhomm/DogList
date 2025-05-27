@@ -1,26 +1,15 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DogList - Clínicas</title>
-    <link rel="icon" href="Images/DogList-Logo.png" type="image/png">
-    <!-- Preconnect to CDN for faster loading -->
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <title>Doglist - Veterinários</title>
+    <!-- Favicon em vários tamanhos para melhor suporte -->
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="96x96">
+    <link rel="icon" href="Images/DogList-Logo.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="Images/DogList-Logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYiAXh7HwQgCEudiSzPR3bUuYQ1mnS3b4&libraries=geometry" async defer></script>
-    
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // Inicializar o cliente Supabase corretamente
-        const supabaseUrl = 'https://jwyzbfbzxbedjskumgli.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3eXpiZmJ6eGJlZGpza3VtZ2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NjA4MDksImV4cCI6MjA2MzMzNjgwOX0.8GEehgGUF-9zv1WwneYZBs1K3VLEZtxB9v0R6An0GIc';
-        
-        // Inicializar o cliente Supabase de forma correta e explícita
-        const { createClient } = supabase;
-        window.supabase = createClient(supabaseUrl, supabaseKey);
-    </script>
     <style>
         * {
             margin: 0;
@@ -32,7 +21,7 @@
         body {
             background-color: #FFE4D6;
             min-height: 100vh;
-            overflow-x: hidden;
+            color: #333;
         }
 
         .container {
@@ -41,49 +30,236 @@
             display: flex;
             flex-direction: column;
             background-color: #FFE4D6;
-            position: relative;
         }
 
-        /* Mapa */
-        #map {
-            flex: 1;
-            width: 100%;
-            background: #f0f0f0;
-            z-index: 1;
-            height: calc(100vh - 80px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.7);
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Indicador de carregamento */
-        .loading-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 20px 25px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            z-index: 1001;
+        .header {
+            background-color: #FFFFFF;
+            padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin: 0 20px;
+            border-radius: 0 0 20px 20px;
+            height: 60px;
+            box-sizing: border-box;
         }
-        
-        .loading-indicator i {
+
+        .back-button {
+            font-size: 24px;
+            text-decoration: none;
             color: #FF7F50;
-            animation: spin 1s linear infinite;
-            font-size: 22px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background-color: #FFFFFF;
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
         }
-        
-        .loading-indicator span {
-            font-weight: 500;
+
+        .back-button:hover {
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .logo {
+            display: none;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
             color: #333;
+            letter-spacing: 0.5px;
+            text-align: center;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .title:hover {
+            color: #333;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .title:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 2px;
+            background-color: #FF7F50;
+            border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .title:hover:after {
+            width: 120px;
+            background-color: #FF6347;
+        }
+
+        #map {
+            flex: 1;
+            width: calc(100% - 40px);
+            min-height: 500px;
+            background-color: #FFE4D6;
+            border-radius: 20px;
+            margin: 20px auto;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #map:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .status-indicator {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-open {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .status-closed {
+            background: linear-gradient(135deg, #f44336, #e53935);
+            color: white;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            padding: 12px;
+            border-radius: 15px;
+            background-color: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .map-legend:hover {
+            background-color: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Media query para desktop - posiciona a legenda mais à direita e mais para baixo */
+        @media (min-width: 992px) {
+            .map-legend {
+                bottom: 120px;
+                left: 40px;
+            }
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 14px;
+            color: #333;
+            padding: 6px 10px;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+        }
+
+        .legend-item.clickable {
+            cursor: pointer;
+        }
+
+        .legend-item.clickable:hover {
+            background-color: rgba(255, 228, 214, 0.7);
+            transform: translateX(3px);
+            border-left: 3px solid #FF7F50;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .legend-item.clickable:hover .legend-color {
+            transform: scale(1.1);
+        }
+
+        .legend-text {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        #nearestClinicLegend {
+            cursor: pointer;
+        }
+
+        #nearestClinicLegend:hover {
+            background-color: rgba(255, 127, 80, 0.1);
+        }
+
+        .refresh-location {
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: 10px;
+            padding-top: 8px;
+        }
+
+        .refresh-location .legend-color {
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255, 127, 80, 0.2);
+        }
+
+        .refresh-location .legend-color i {
+            color: #FF7F50;
+            font-size: 16px;
+        }
+
+        .refresh-location:hover .legend-color i {
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
@@ -91,231 +267,1832 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Navegação */
+        @media (max-width: 768px) {
+            .map-legend {
+                bottom: 40px;
+                left: 50px;
+                padding: 8px;
+                border-radius: 15px;
+                max-width: calc(100% - 40px);
+                min-width: 120px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
+            }
+
+            .legend-item {
+                margin: 6px 0;
+                padding: 5px 8px;
+                font-size: 14px;
+            }
+            
+            .legend-color {
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
+            }
+            
+            .legend-text {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .map-legend {
+                bottom: 25px;
+                left: 15px;
+                padding: 5px;
+                border-radius: 15px;
+                max-width: calc(100% - 40px);
+                min-width: 90px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
+            }
+            
+            .legend-item {
+                margin: 6px 0;
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+            
+            .legend-color {
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
+            }
+            
+            .legend-text {
+                font-size: 14px;
+            }
+        }
+
         .navigation {
-            position: fixed;
-            bottom: 20px;
-            padding: 15px;
             background-color: #FFFFFF;
-            border-radius: 30px;
-            left: 0;
-            right: 0;
+            padding: 15px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1);
-            z-index: 9999;
-            margin: 0 20px 20px;
-            width: calc(100% - 40px);
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 20px 20px 0 0;
+            margin: 0 15px;
         }
 
         .nav-item {
-            color: #FF7F50;
+            color: #666;
             text-decoration: none;
-            font-size: 26px;
-            padding: 18px;
-            border-radius: 22px;
+            font-size: 22px;
             transition: all 0.3s ease;
-            width: 75px;
-            height: 75px;
+            position: relative;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 10px;
-            position: relative;
-            z-index: 10000;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
         }
 
-        .nav-item:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #FF7F50, #FF6347);
-            opacity: 0;
-            border-radius: 22px;
-            transition: opacity 0.3s ease;
-            z-index: -1;
-        }
-
-        .nav-item:hover:before, .nav-item:active:before {
-            opacity: 0.15;
-        }
-
-        .nav-item:hover, .nav-item:active {
-            color: #FF6347;
-            background-color: #fff;
-            box-shadow: 0 8px 20px rgba(255, 127, 80, 0.25);
+        .nav-item:hover {
+            color: #FF7F50;
+            background-color: rgba(255, 255, 255, 0.9);
             transform: translateY(-5px);
         }
 
         .nav-item.active {
             color: white;
-            background: linear-gradient(135deg, #FF7F50, #FF6347);
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(255, 127, 80, 0.3);
+            background-color: #FF7F50;
+            box-shadow: 0 4px 10px rgba(255, 127, 80, 0.3);
         }
 
-        .nav-item i {
+        .nav-item.active:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            background: #FF7F50;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translateX(-50%) scale(1); opacity: 1; }
+            70% { transform: translateX(-50%) scale(2); opacity: 0; }
+            100% { transform: translateX(-50%) scale(1); opacity: 0; }
+        }
+
+        .clinic-popup {
+            padding: 0;
+            width: 380px;
+            max-width: 400px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: none;
+            background: white;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            padding: 16px 18px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .popup-title a {
+            color: #333 !important;
+            text-decoration: none !important;
+            max-width: 70%;
+        }
+
+        .popup-info {
+            margin: 14px 18px;
+            font-size: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            color: #444;
+        }
+
+        .popup-info i {
+            color: #FF7F50 !important;
+            font-size: 16px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .popup-info span {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .popup-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 18px;
+            justify-content: center;
+            padding-top: 4px;
+        }
+
+        .popup-button {
+            padding: 12px 0;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            color: white !important;
+            background-color: #FF7F50;
+            border: none;
+            box-shadow: 0 2px 10px rgba(255, 127, 80, 0.25);
+            width: 100%;
+        }
+
+        .popup-button i {
+            margin-right: 0;
+            font-size: 16px;
+        }
+
+        .popup-button:hover {
+            background-color: #ff6b3d;
+            box-shadow: 0 4px 12px rgba(255, 127, 80, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .status-indicator {
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+        }
+
+        .status-open {
+            background-color: #4CAF50 !important;
+            color: white !important;
+        }
+
+        .status-closed {
+            background-color: #f44336 !important;
+            color: white !important;
+        }
+
+        /* Estilos para melhorar o InfoWindow do Google Maps */
+        .gm-style-iw {
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            background-color: transparent !important;
+            max-width: none !important;
+        }
+        
+        .gm-style-iw > div {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: none !important;
+        }
+        
+        .gm-style-iw-d {
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            max-height: none !important;
+        }
+        
+        .gm-style-iw-a, 
+        .gm-style-iw-t, 
+        .gm-style-iw-c, 
+        .gm-style-iw-d {
+            padding: 0 !important;
+            margin: 0 !important;
+            top: 0 !important;
+        }
+        
+        .gm-ui-hover-effect {
+            top: 0 !important;
+            right: 0 !important;
+            opacity: 0.7 !important;
+            transition: opacity 0.2s ease !important;
+            z-index: 10 !important;
+        }
+        
+        .gm-ui-hover-effect:hover {
+            opacity: 1 !important;
+        }
+
+        /* Ajustes adicionais para o InfoWindow */
+        .gm-style .gm-style-iw-c {
+            padding: 0 !important;
+            border-radius: 14px !important;
+            box-shadow: none !important;
+            background-color: transparent !important;
+            max-width: 400px !important;
+        }
+        
+        .gm-style .gm-style-iw-t::after {
+            display: none !important;
+        }
+        
+        /* Garantir que o popup preencha o InfoWindow */
+        .gm-style-iw .clinic-popup {
+            margin: 0 !important;
+            width: 320px !important;
+            max-width: 350px !important;
+            background-color: white !important;
+            border-radius: 14px !important;
+            overflow: hidden !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        /* Garantir que o botão Como chegar tenha cor correta */
+        .clinic-popup .popup-button,
+        .clinic-popup .popup-button:visited {
+            color: white !important;
+            background-color: #FF7F50 !important;
+        }
+        
+        /* Garantir que os ícones tenham a cor correta */
+        .clinic-popup .popup-info i {
+            color: #FF7F50 !important;
+        }
+        
+        /* Garantir que os badges de status tenham as cores corretas */
+        .clinic-popup .status-open {
+            background-color: #4CAF50 !important;
+            color: white !important;
+        }
+        
+        .clinic-popup .status-closed {
+            background-color: #f44336 !important;
+            color: white !important;
+        }
+
+        .loading-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease-out;
+            width: 280px;
+            margin: 0 auto;
+        }
+
+        .loading-indicator p {
+            color: #555;
+            font-weight: 500;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 127, 80, 0.2);
+            border-radius: 50%;
+            border-top-color: #FF7F50;
+            animation: spin 1.2s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .refresh-location {
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: 8px;
+            padding-top: 12px;
+        }
+
+        /* Ajustes para o botão de fechar no mobile */
+        @media (max-width: 768px) {
+            .gm-ui-hover-effect {
+                top: 5px !important;
+                right: 5px !important;
+            }
+            
+            .gm-style-iw {
+                max-width: 90vw !important;
+            }
+
+            .map-legend {
+                bottom: 40px;
+                left: 50px;
+                padding: 8px;
+                border-radius: 15px;
+                max-width: calc(100% - 40px);
+                min-width: 120px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
+            }
+
+            .legend-item {
+                margin: 6px 0;
+                padding: 5px 8px;
+                font-size: 14px;
+            }
+            
+            .legend-color {
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
+            }
+            
+            .legend-text {
+                font-size: 14px;
+            }
+        }
+
+        /* Ajustes adicionais para telas muito pequenas */
+        @media (max-width: 480px) {
+            .map-legend {
+                bottom: 25px;
+                left: 15px;
+                padding: 5px;
+                border-radius: 15px;
+                max-width: calc(100% - 40px);
+                min-width: 90px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
+            }
+            
+            .legend-item {
+                margin: 6px 0;
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+            
+            .legend-color {
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
+            }
+            
+            .legend-text {
+                font-size: 14px;
+            }
+        }
+
+        .clinic-card {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .clinic-card.nearest {
+            border-left: 3px solid #FF0000;
+            background-color: rgba(255, 0, 0, 0.03);
+        }
+
+        .clinic-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .clinic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .clinic-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+            color: #333;
+        }
+
+        .status-indicator {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .clinic-info {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .clinic-info p {
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .clinic-info i {
+            color: #FF7F50; /* Cor laranja para os ícones */
+            margin-right: 8px;
+            width: 14px;
+            text-align: center;
+        }
+
+        .clinic-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .clinic-card .popup-button {
+            background-color: #FF7F50;
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            border: none;
+        }
+
+        .clinic-card .popup-button:hover {
+            background-color: #ff6a33;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        .no-results-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #FF7F50;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        .no-results p {
+            margin: 10px 0;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .status-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+        }
+
+        .status-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .status-legend .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-legend .open {
+            background-color: #4CAF50;
+        }
+
+        .status-legend .closed {
+            background-color: #f44336;
+        }
+
+        .section-title {
+            font-size: 22px;
+            color: #333;
+            margin: 20px 0;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: #FF7F50;
+            border-radius: 3px;
+        }
+
+        /* Styles for the VER CLINICAS button and popup */
+        .show-clinics-btn {
+            background-color: #FF7F50;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 4px 15px rgba(255, 127, 80, 0.2);
+        }
+
+        .show-clinics-btn:hover {
+            background-color: #FF6347;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 127, 80, 0.3);
+        }
+
+        /* Clinics popup styling - design completamente simplificado */
+        .clinics-popup-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clinics-popup {
+            width: 85%;
+            max-width: 480px;
+            max-height: 80vh;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .clinics-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            border-bottom: 1px solid #eee;
+        }
+
+        .clinics-popup-header .popup-title {
+            margin: 0;
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .close-popup-btn {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .close-popup-btn:hover {
+            color: #555;
+        }
+
+        .popup-clinics-list {
+            padding: 10px 15px;
+            overflow-y: auto;
+            flex: 1;
+            margin: 0 10px 10px 10px;
+        }
+
+        /* Clinic card styling - design muito simplificado */
+        .clinic-card {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s ease;
+            position: relative;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .clinic-card:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .clinic-card.nearest {
+            border-left: 4px solid #FF0000;
+            padding-left: 16px;
+            background-color: rgba(255, 0, 0, 0.03);
+        }
+
+        .clinic-card.nearest::before {
+            content: "Mais próxima";
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: #FF0000;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 0 0 0 6px;
+        }
+
+        .clinic-card:hover {
+            background-color: #f8f8f8;
+        }
+
+        .clinic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .clinic-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+            color: #333;
+        }
+
+        .status-indicator {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .clinic-info {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .clinic-info p {
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .clinic-info i {
+            color: #FF7F50; /* Cor laranja para os ícones */
+            margin-right: 8px;
+            width: 14px;
+            text-align: center;
+        }
+
+        .clinic-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .direction-button {
+            background-color: #FF7F50;
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            border: none;
+        }
+
+        .direction-button:hover {
+            background-color: #ff6a33;
+        }
+
+        .direction-button i {
+            margin-right: 5px;
+            color: white;
+        }
+
+        /* Adicionar estilos para popups personalizados e centralizados */
+        .custom-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .custom-popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .custom-popup.show .popup-content {
+            transform: translateY(0);
+        }
+
+        .popup-title {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .popup-message {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .popup-button {
+            background: linear-gradient(135deg, #FF7F50, #FF6347);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .nav-item:hover i {
-            color: #FF6347;
+        .popup-button:hover {
+            background: linear-gradient(135deg, #ff6b3d, #ff5233);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 127, 80, 0.3);
         }
 
-        /* Estilos responsivos */
+        .popup-loader {
+            margin: 20px auto;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 127, 80, 0.2);
+            border-radius: 50%;
+            border-top-color: #FF7F50;
+            animation: spin 1.2s ease-in-out infinite;
+        }
+
+        /* Ajustes responsivos para telas menores */
         @media (max-width: 768px) {
-            .navigation {
-                padding: 12px;
-                margin: 0 15px 15px;
-                bottom: 15px;
+            .header {
+                flex-direction: row;
+                padding: 0 20px;
+                margin: 0 10px;
+                height: 60px;
             }
             
-            .nav-item {
-                width: 65px;
-                height: 65px;
-                font-size: 22px;
-                padding: 15px;
+            .title {
+                font-size: 20px;
+            }
+            
+            .back-button {
+                left: 15px;
+            }
+            
+            .show-clinics-btn {
+                right: 15px;
+                padding: 6px 12px;
+                font-size: 12px;
             }
         }
-        
+
         @media (max-width: 480px) {
-            .navigation {
-                padding: 10px;
-                margin: 0 10px 10px;
+            .header {
+                padding: 0 15px;
+                margin: 0 8px;
+                height: 50px;
             }
             
-            .nav-item {
-                width: 55px;
-                height: 55px;
-                font-size: 20px;
-                padding: 12px;
+            .title {
+                font-size: 18px;
             }
+            
+            .back-button {
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 10px;
+            }
+            
+            .show-clinics-btn {
+                right: 10px;
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+        }
+
+        /* Ajustes adicionais para telas muito pequenas */
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px;
+                flex-direction: row;
+                margin: 0 8px;
+                gap: 5px;
+                min-height: 48px;
+            }
+            
+            .title {
+                font-size: 18px;
+            }
+            
+            .back-button {
+                font-size: 22px;
+                width: 35px;
+                height: 35px;
+                left: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            
+            .title:after {
+                bottom: -3px;
+                height: 1px;
+                width: 30px;
+            }
+            
+            .map-legend {
+                bottom: 25px;
+                left: 15px;
+                padding: 5px;
+                border-radius: 15px;
+                max-width: calc(100% - 40px);
+                min-width: 90px;
+                background-color: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.8);
+            }
+            
+            .legend-item {
+                margin: 6px 0;
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+            
+            .legend-color {
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
+            }
+            
+            .legend-text {
+                font-size: 14px;
+            }
+            
+            #map {
+                width: calc(100% - 16px);
+                margin: 8px auto;
+                min-height: 350px;
+                border-radius: 15px;
+            }
+        }
+
+        .popup-title {
+            font-size: 16px;
+            font-weight: 600;
+            padding: 12px 15px;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eeeeee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .popup-info {
+            padding: 8px 15px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .popup-info i {
+            margin-right: 10px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .popup-buttons {
+            padding: 12px 15px;
+            background-color: #f9f9f9;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .popup-button {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #FF7F50 !important;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .popup-button:hover {
+            background-color: #ff6a35 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 5px;
+        }
+
+        .status-indicator i {
+            margin-right: 5px;
+            font-size: 12px;
+        }
+
+        .gm-style-iw .clinic-popup {
+            margin: 0 !important;
+            width: 320px !important;
+            max-width: 350px !important;
+            background-color: white !important;
+            border-radius: 14px !important;
+            overflow: hidden !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+            position: relative !important;
+        }
+
+        .popup-title {
+            font-size: 16px;
+            font-weight: 600;
+            padding: 15px;
+            padding-right: 35px; /* Make room for the X button */
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eeeeee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .popup-info {
+            padding: 10px 15px;
+            margin: 0;
+            display: flex;
+            align-items: flex-start;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .popup-info i {
+            margin-right: 12px;
+            min-width: 16px;
+            text-align: center;
+            margin-top: 3px;
+        }
+
+        .popup-buttons {
+            padding: 15px;
+            background-color: #f9f9f9;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+        }
+
+        /* Fix Google Maps InfoWindow container */
+        .gm-style .gm-style-iw-c {
+            padding: 0 !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+            background-color: white !important;
+            max-width: 350px !important;
+            top: -15px !important;
+        }
+
+        .gm-style .gm-style-iw-t::after {
+            display: none !important;
+        }
+
+        /* Garantir posicionamento correto do botão de fechar */
+        .gm-ui-hover-effect {
+            position: absolute !important;
+            top: 2px !important;
+            left: 2px !important; /* Alterado de right para left */
+            width: 30px !important;
+            height: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background-color: transparent !important; /* Removido o fundo branco */
+            border-radius: 0 !important; /* Removido o border-radius */
+            box-shadow: none !important; /* Removido o box-shadow */
+            cursor: pointer !important;
+            z-index: 10 !important;
+            opacity: 1 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .gm-ui-hover-effect img {
+            width: 16px !important;
+            height: 16px !important;
+            margin: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* Override Google Maps InfoWindow styles */
+        .gm-style .gm-style-iw-c {
+            padding: 0 !important;
+            border-radius: 14px !important;
+            background-color: white !important;
+            transform: translate(0, -40px) !important;
+        }
+
+        .gm-style .gm-style-iw-t::after {
+            display: none !important;
+        }
+
+        .gm-style .gm-ui-hover-effect {
+            top: 5px !important;
+            right: 5px !important;
+            opacity: 1 !important;
+            position: absolute !important;
+            z-index: 1000 !important;
+        }
+
+        .gm-style .gm-ui-hover-effect img {
+            width: 20px !important;
+            height: 20px !important;
+        }
+        
+        /* Removendo os estilos do banner */
+        .location-banner {
+            display: none !important; /* Ocultar completamente o banner */
+        }
+
+        /* Adicionar estilos para o popup de clínica centralizado */
+        .clinic-details-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            width: 90%;
+            max-width: 450px;
+            z-index: 10001;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: none;
+            overflow: hidden;
+        }
+
+        .clinic-details-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            display: none;
+        }
+
+        .clinic-details-header {
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            position: relative;
+            justify-content: space-between; /* Ensure proper spacing between elements */
+        }
+
+        .clinic-details-close {
+            font-size: 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #555;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            margin-left: 10px; /* Add margin to separate from status */
+            position: static; /* Remove absolute positioning */
+            transform: none; /* Remove transform */
+        }
+
+        .clinic-details-close:hover {
+            background-color: rgba(0,0,0,0.05);
+            color: #000;
+        }
+
+        .clinic-details-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            flex: 1; /* Use flex instead of flex-grow */
+            padding-right: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .clinic-details-status {
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            margin-left: auto; /* Push to right, before the close button */
+            margin-right: 10px; /* Add space before close button */
+        }
+
+        .clinic-details-status.open {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .clinic-details-status.closed {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .clinic-details-body {
+            padding: 20px;
+        }
+
+        .clinic-details-row {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .clinic-details-row i {
+            color: #FF7F50;
+            margin-right: 15px;
+            min-width: 16px;
+            margin-top: 3px;
+            font-size: 16px;
+        }
+
+        .clinic-details-address, 
+        .clinic-details-distance,
+        .clinic-details-hours {
+            color: #444;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .clinic-details-button {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            background-color: #FF7F50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 127, 80, 0.3);
+        }
+
+        .clinic-details-button:hover {
+            background-color: #ff6a33;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 127, 80, 0.4);
+        }
+
+        .clinic-details-button i {
+            margin-right: 8px;
+        }
+
+        /* Estilos para o popup personalizado de "Você está aqui" */
+        .custom-location-popup {
+            position: absolute;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            min-width: 130px;
+            z-index: 9999;
+            pointer-events: none;
+            border: 2px solid rgba(0, 123, 255, 0.5);
+            transform: translate(-50%, -130%);
+        }
+        
+        .custom-location-popup-icon {
+            color: #007bff;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+        
+        .custom-location-popup-text {
+            color: #333;
+            font-weight: 600;
+            font-size: 13px;
+            font-family: Arial, sans-serif;
+        }
+
+        .legend-text {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .legend-item.clickable {
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .legend-item.clickable:hover {
+            background-color: rgba(255, 127, 80, 0.08);
+            border-left: 3px solid rgba(255, 127, 80, 0.8);
+        }
+
+        .legend-color {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .legend-item.clickable:hover .legend-color {
+            transform: none;
+        }
+
+        .legend-text {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        #nearestClinicLegend {
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        #nearestClinicLegend:hover {
+            background-color: rgba(255, 127, 80, 0.08);
+            border-left: 3px solid rgba(255, 127, 80, 0.8);
+        }
+
+        /* Estilos para links clicáveis nos nomes das clínicas */
+        .popup-title a {
+            color: #333 !important;
+            text-decoration: none !important;
+            transition: color 0.3s ease;
+        }
+
+        .popup-title a:hover {
+            color: #FF7F50 !important;
+            text-decoration: underline !important;
+        }
+
+        .clinic-details-header h3 a {
+            color: #333 !important;
+            text-decoration: none !important;
+            transition: color 0.3s ease;
+        }
+
+        .clinic-details-header h3 a:hover {
+            color: #FF7F50 !important;
+            text-decoration: underline !important;
+        }
+
+        .clinic-name a {
+            color: #333 !important;
+            text-decoration: none !important;
+            transition: color 0.3s ease;
+        }
+
+        .clinic-name a:hover {
+            color: #FF7F50 !important;
+            text-decoration: underline !important;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="header">
+            <a href="home.html" class="back-button">←</a>
+            <span class="title">Veterinários</span>
+            <button id="showClinicsBtn" class="show-clinics-btn">VER CLÍNICAS</button>
+        </div>
+        
         <div id="map"></div>
-        <div class="loading-indicator" id="loadingIndicator">
-            <i class="fas fa-spinner"></i>
-            <span>Carregando clínicas veterinárias...</span>
+        <div id="loadingIndicator" class="loading-indicator">
+            <div class="spinner"></div>
         </div>
 
-        <nav class="navigation">
-            <a href="home.html" class="nav-item"><i class="fas fa-home"></i></a>
-            <a href="search.html" class="nav-item"><i class="fas fa-search"></i></a>
-            <a href="account.html" class="nav-item"><i class="fas fa-user"></i></a>
-            <a href="clinics.html" class="nav-item active"><i class="fas fa-hospital"></i></a>
-        </nav>
+        <!-- Popup for clinics list -->
+        <div id="clinics-popup" class="clinics-popup-container" style="display: none;">
+            <div class="clinics-popup">
+                <div class="clinics-popup-header">
+                    <h2 class="popup-title">Clínicas Veterinárias Próximas</h2>
+                    <button id="closePopupBtn" class="close-popup-btn"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="popup-clinics-list" class="popup-clinics-list"></div>
+            </div>
         </div>
 
+        <div class="map-legend">
+            <div class="legend-item clickable" id="myLocationLegend" onclick="centerMapOnUserLocation()">
+                <div class="legend-color" style="background-color: #007bff;"></div>
+                <span class="legend-text">Você está aqui</span>
+            </div>
+            <div class="legend-item clickable" id="nearestClinicLegend" onclick="showNearestClinic()">
+                <div class="legend-color" style="background-color: #FF0000;"></div>
+                <span class="legend-text">Clínica mais próxima</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4CAF50;"></div>
+                <span class="legend-text">Clínicas abertas</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FF9800;"></div>
+                <span class="legend-text">Clínicas fechadas</span>
+            </div>
+            <div class="legend-item clickable refresh-location" onclick="refreshUserLocation()">
+                <div class="legend-color" style="background-color: #ffffff; display: flex; justify-content: center; align-items: center;">
+                    <i class="fas fa-sync-alt" style="color: #FF7F50;"></i>
+                </div>
+                <span class="legend-text">Atualizar localização</span>
+            </div>
+            <!-- Removed "Ver na rua" legend item but kept Street View functionality -->
+        </div>
+    </div>
+
+    <!-- Popups personalizados -->
+    <div id="customAlertPopup" class="custom-popup">
+        <div class="popup-content">
+            <div class="popup-title" id="alertTitle">Aviso</div>
+            <div class="popup-message" id="alertMessage"></div>
+            <button class="popup-button" id="alertOkButton">OK</button>
+        </div>
+    </div>
+
+    <div id="loadingPopup" class="custom-popup">
+        <div class="popup-content">
+            <div class="popup-title" id="loadingTitle">Carregando</div>
+            <div class="popup-loader"></div>
+            <div class="popup-message" id="loadingMessage">Atualizando sua localização...</div>
+        </div>
+    </div>
+
+    <!-- No final do body, adicione esse div para o popup personalizado -->
+    <div id="customLocationPopup" class="custom-location-popup" style="display: none;">
+        <div class="custom-location-popup-bar"></div>
+        <i class="fas fa-map-marker-alt custom-location-popup-icon"></i>
+        <span class="custom-location-popup-text">Você está aqui</span>
+    </div>
+
+    <!-- Script do Google Maps -->
     <script>
+        // Adicionar esta função no topo do script
+        function removeThreeDotMenu() {
+            // Selecionar todos os botões com três pontos
+            const menuButtons = document.querySelectorAll('button');
+            menuButtons.forEach(button => {
+                if (button.textContent.includes('⋮') || button.innerText.includes('⋮') || 
+                    button.innerHTML.includes('⋮') || button.getAttribute('title') === 'Menu') {
+                    button.style.display = 'none';
+                    // Se possível, também remover o elemento pai
+                    if (button.parentElement) {
+                        button.parentElement.style.display = 'none';
+                    }
+                }
+            });
+
+            // Remover painéis de contexto do mapa
+            const contextPanels = document.querySelectorAll('.gm-style-iw-t, .gm-style-mtc, .gm-control-active');
+            contextPanels.forEach(panel => {
+                panel.style.display = 'none';
+            });
+
+            // Remover botões de fechar
+            const closeButtons = document.querySelectorAll('.gm-ui-hover-effect, .gm-style-cc');
+            closeButtons.forEach(button => {
+                button.style.display = 'none';
+            });
+        }
+
+        // Primeiro definimos todas as funções do mapa
+        function initMap() {
+            // Criar infoWindow reutilizável
+            infoWindow = new google.maps.InfoWindow({ 
+                maxWidth: 300,
+                disableAutoPan: false
+            });
+            
+            // Inicializar o mapa com centro em uma localização padrão
+            const defaultCenter = { lat: -23.5505, lng: -46.6333 }; // São Paulo (ou outra localização padrão)
+                map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 13,
+                center: defaultCenter,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    mapTypeControl: true,
+                    mapTypeControlOptions: {
+                        style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                        position: google.maps.ControlPosition.TOP_RIGHT
+                    },
+                streetViewControl: true,
+                streetViewControlOptions: {
+                    position: google.maps.ControlPosition.RIGHT_BOTTOM
+                },
+                    fullscreenControl: true,
+                    zoomControl: true
+                });
+                
+            // Aplicar estilos aos infowindows quando forem criados
+            google.maps.event.addListener(infoWindow, 'domready', function() {
+                styleInfoWindow();
+            });
+            
+            // Marcar que o mapa foi inicializado
+            mapInitialized = true;
+            
+            // Verificar se temos coordenadas salvas
+            const savedLocation = getSavedLocation();
+            
+            if (savedLocation) {
+                // Usar localização salva sem solicitar permissão
+                userLocation = savedLocation;
+                addUserMarker(savedLocation);
+                searchVeterinaryClinics(savedLocation);
+            } else {
+                // Tentar obter a localização atual sem mostrar banner
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            // Sucesso na obtenção da localização
+                            const pos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            saveLocation(pos); // Salvar para uso futuro
+                            userLocation = pos;
+                            addUserMarker(pos);
+                            searchVeterinaryClinics(pos);
+                        },
+                        function(error) {
+                            // Em caso de erro, usar a localização padrão
+                            console.log("Erro na geolocalização: ", error);
+                            userLocation = defaultCenter;
+                            searchVeterinaryClinics(defaultCenter);
+                        }
+                    );
+                } else {
+                    // Navegador não suporta geolocalização
+                    console.log("Navegador não suporta geolocalização");
+                    userLocation = defaultCenter;
+                    searchVeterinaryClinics(defaultCenter);
+                }
+            }
+            
+            // Esconder indicador de carregamento
+            document.getElementById('loadingIndicator').style.display = 'none';
+            
+            // Remover elementos de UI indesejados depois que o mapa carregar
+            google.maps.event.addListenerOnce(map, 'idle', function() {
+                // Remover menus de três pontos e outros elementos UI
+                removeThreeDotMenu();
+                
+                // Configurar um observador para remover continuamente o menu
+                const observer = new MutationObserver(function(mutations) {
+                    removeThreeDotMenu();
+                });
+                
+                // Observar o corpo do documento para mudanças
+                observer.observe(document.body, { 
+                    childList: true, 
+                    subtree: true 
+                });
+            });
+        }
+        
+        // Função para salvar localização no localStorage
+        function saveLocation(location) {
+            localStorage.setItem('userLocation', JSON.stringify(location));
+        }
+        
+        // Função para obter localização salva
+        function getSavedLocation() {
+            const savedLocation = localStorage.getItem('userLocation');
+            return savedLocation ? JSON.parse(savedLocation) : null;
+        }
+        
+        function requestUserLocation() {
+            if (navigator.geolocation) {
+                document.getElementById('loadingIndicator').style.display = 'flex';
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                        const location = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            
+                        // Salvar localização para uso futuro
+                        saveUserLocation(location);
+                        
+                        // Atualizar localização do usuário
+                        userLocation = location;
+                            
+                            // Centralizar mapa na localização do usuário
+                        map.setCenter(location);
+
+                            // Adicionar marcador do usuário
+                        addUserMarker(location);
+                        
+                        // Buscar clínicas próximas
+                        searchVeterinaryClinics(location);
+                        
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                        },
+                        (error) => {
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                            handleLocationError(error);
+                        },
+                    { timeout: 10000, maximumAge: 600000 }
+                    );
+                } else {
+                alert('Seu navegador não suporta geolocalização.');
+            }
+        }
+        
+        function handleLocationError(error) {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+            
+            let errorMessage = 'Erro desconhecido ao obter localização.';
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Permissão para geolocalização negada. Usando localização padrão.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Informação de localização indisponível. Usando localização padrão.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Tempo esgotado ao obter sua localização. Usando localização padrão.';
+                    break;
+            }
+            
+            alert(errorMessage);
+            
+            // Não precisamos definir uma localização padrão aqui, pois já fizemos isso no início
+        }
+
+        // ... manter o resto do código existente ...
+    </script>
+
+    <!-- Carregue a API do Google Maps separadamente para garantir melhor desempenho -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYiAXh7HwQgCEudiSzPR3bUuYQ1mnS3b4&libraries=places,geometry&callback=initMap"
+        onerror="googleMapsError()">
+    </script>
+    
+    <script>
+        // ... existing variables ...
+        
+        function googleMapsError() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+            showCustomAlert('Erro', 'Não foi possível carregar o Google Maps. Verifique sua conexão de internet.');
+            
+            // Exibir interface de erro no mapa
+            const mapDiv = document.getElementById('map');
+            mapDiv.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 20px; color: #FF7F50;">🐾</div>
+                    <h3 style="margin-bottom: 15px; color: #444;">Falha ao carregar o mapa</h3>
+                    <p style="margin-bottom: 20px; color: #666;">Não foi possível carregar o Google Maps. Verifique sua conexão com a internet.</p>
+                    <button onclick="window.location.reload()" style="padding: 10px 20px; background-color: #FF7F50; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-sync-alt" style="margin-right: 8px;"></i> Tentar novamente
+                    </button>
+                </div>
+            `;
+        }
+
+        // Garantir que o indicador de carregamento esteja sempre centralizado
+        function centerLoadingIndicator() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.position = 'fixed';
+                loadingIndicator.style.top = '50%';
+                loadingIndicator.style.left = '50%';
+                loadingIndicator.style.transform = 'translate(-50%, -50%)';
+            }
+        }
+
+        // Centralizar indicador ao carregar a página
+        document.addEventListener('DOMContentLoaded', centerLoadingIndicator);
+        
+        // Centralizar novamente se a janela for redimensionada
+        window.addEventListener('resize', centerLoadingIndicator);
+        
         // Verificar se está logado
         if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'index.html';
         }
+
+        // Verificar se está logado
+        if (!localStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+
+        // Funções para popups personalizados
+        function showCustomAlert(title, message, callback = null) {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('customAlertPopup').classList.add('show');
+            
+            document.getElementById('alertOkButton').onclick = function() {
+                document.getElementById('customAlertPopup').classList.remove('show');
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            };
+        }
         
-        // Variáveis globais
+        function showLoadingPopup(message = 'Carregando...', title = 'Aguarde') {
+            document.getElementById('loadingTitle').textContent = title;
+            document.getElementById('loadingMessage').textContent = message;
+            document.getElementById('loadingPopup').classList.add('show');
+        }
+        
+        function hideLoadingPopup() {
+            document.getElementById('loadingPopup').classList.remove('show');
+        }
+
         let map;
         let userMarker;
         let clinicMarkers = [];
+        let userLocation;
         let infoWindow;
-        let currentOpenInfoWindow = null;
-        
-        function initMap() {
-            try {
-                document.getElementById('loadingIndicator').style.display = 'flex';
+        let nearestClinic = null;
+        let mapInitialized = false;
+
+        // Add global timeout to hide loading indicator after 20 seconds regardless of what happens
+        setTimeout(() => {
+            if (document.getElementById('loadingIndicator').style.display !== 'none') {
+                console.warn('Global timeout - forcing loading indicator to hide');
+                document.getElementById('loadingIndicator').style.display = 'none';
                 
-                // Verificar se o elemento map existe
-                const mapElement = document.getElementById('map');
-                if (!mapElement) {
-                    console.error("Elemento 'map' não encontrado no DOM!");
-                    return;
-                }
-            
-                // Carregar mapa
-                map = new google.maps.Map(mapElement, {
-                    center: { lat: -23.550520, lng: -46.633308 }, // São Paulo
-                    zoom: 12,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP,
-                    mapTypeControl: true,
-                    mapTypeControlOptions: {
-                        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
-                        position: google.maps.ControlPosition.TOP_RIGHT
-                    },
-                    fullscreenControl: true,
-                    fullscreenControlOptions: {
-                        position: google.maps.ControlPosition.RIGHT_TOP
-                    },
-                streetViewControl: true,
-                streetViewControlOptions: {
-                        position: google.maps.ControlPosition.RIGHT_TOP
-                    },
-                    zoomControl: true,
-                    zoomControlOptions: {
-                        position: google.maps.ControlPosition.RIGHT_TOP
-                    }
-                });
-                
-                // Verificar se o mapa foi inicializado corretamente
-                if (!map) {
-                    console.error("Falha ao inicializar o mapa. O objeto do mapa é indefinido.");
-                    return;
-                }
-                
-                // Criar infowindow para uso global
-                infoWindow = new google.maps.InfoWindow({
-                    maxWidth: 300,
-                    disableAutoPan: false
-                });
-                
-                // Tentar obter localização salva
-            const savedLocation = getSavedLocation();
-            if (savedLocation) {
-                    // Centralizar mapa na localização salva
-                    map.setCenter(savedLocation);
+                // Show error message if map is not visible
+                if (!mapInitialized) {
+                    showCustomAlert('Erro', 'Ocorreu um erro ao carregar o mapa. Por favor, recarregue a página ou verifique sua conexão com a internet.');
                     
-                    // Adicionar marcador do usuário
-                addUserMarker(savedLocation);
-            } else {
-                    // Tentar obter localização do usuário
-                    requestUserLocation();
+                    // Add a manual refresh button
+                    const mapDiv = document.getElementById('map');
+                    mapDiv.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; text-align: center;">
+                            <div style="font-size: 48px; margin-bottom: 20px; color: #FF7F50;">🐾</div>
+                            <h3 style="margin-bottom: 15px; color: #444;">Falha ao carregar o mapa</h3>
+                            <p style="margin-bottom: 20px; color: #666;">Não foi possível carregar o mapa de clínicas veterinárias. Verifique sua conexão com a internet.</p>
+                            <button onclick="window.location.reload()" style="padding: 10px 20px; background-color: #FF7F50; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: 500;">
+                                <i class="fas fa-sync-alt" style="margin-right: 8px;"></i> Tentar novamente
+                            </button>
+                        </div>
+                    `;
                 }
-                
-                // Evento para marcar como finalizado o carregamento do mapa
-                google.maps.event.addListenerOnce(map, 'idle', function() {
+            }
+        }, 20000);
+
+        function handleLocationError(error) {
             document.getElementById('loadingIndicator').style.display = 'none';
             
-                    // Carregar clínicas veterinárias
-                    loadVeterinaryClinics();
-                });
-            } catch (error) {
-                console.error("ERRO ao inicializar o mapa:", error);
-                alert("Ocorreu um erro ao inicializar o mapa. Por favor, tente recarregar a página.");
-            }
-        }
-        
-        function getSavedLocation() {
-            const savedLat = localStorage.getItem('userLocationLat');
-            const savedLng = localStorage.getItem('userLocationLng');
+            let errorMessage = 'Erro desconhecido ao obter localização.';
             
-            if (savedLat && savedLng) {
-                return {
-                    lat: parseFloat(savedLat),
-                    lng: parseFloat(savedLng)
-                };
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Permissão para geolocalização negada. Usando localização padrão.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Informação de localização indisponível. Usando localização padrão.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Tempo esgotado ao obter sua localização. Usando localização padrão.';
+                    break;
             }
             
-            return null;
+            alert(errorMessage);
+            
+            // Usar localização padrão
+            userLocation = { lat: -23.5505, lng: -46.6333 }; // São Paulo
+            addUserMarker(userLocation);
+            searchVeterinaryClinics(userLocation);
         }
 
         function addUserMarker(location) {
@@ -328,177 +2105,1567 @@
             userMarker = new google.maps.Marker({
                 position: location,
                 map: map,
-                title: 'Sua localização',
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: '#4285F4',
-                    fillOpacity: 1,
-                    strokeWeight: 2,
+                    fillColor: '#007bff',
+                    fillOpacity: 0.9,
                     strokeColor: '#FFFFFF',
-                    scale: 12
+                    strokeWeight: 2,
+                    scale: 8
                 },
-                zIndex: 1
+                title: 'Você está aqui',
+                zIndex: 10
+            });
+            
+            // Adicionar círculo de precisão
+            new google.maps.Circle({
+                map: map,
+                center: location,
+                radius: 150, // 150 metros
+                strokeColor: '#007bff',
+                strokeOpacity: 0.3,
+                strokeWeight: 1,
+                fillColor: '#007bff',
+                fillOpacity: 0.08
+            });
+            
+            // Adicionar evento de clique ao marcador
+            userMarker.addListener('click', () => {
+                showLocationPopup(userMarker);
             });
             
             return userMarker;
         }
 
-        function requestUserLocation() {
+        // Nova função para mostrar o popup de localização
+        function showLocationPopup(marker) {
+            // Fechar qualquer infowindow aberta anteriormente
+            if (infoWindow) {
+                infoWindow.close();
+            }
+            
+            // Abordagem simples e confiável
+            const tempPopup = document.createElement('div');
+            tempPopup.style.cssText = `
+                position: fixed;
+                top: 45%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                padding: 10px 15px;
+                border-radius: 20px;
+                border: 2px solid rgba(0, 123, 255, 0.5);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                font-family: Arial, sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                color: #333;
+            `;
+            
+            tempPopup.innerHTML = `
+                <i class="fas fa-location-arrow" style="color: #007bff; margin-right: 8px;"></i>
+                Você está aqui
+            `;
+            
+            document.body.appendChild(tempPopup);
+            
+            // Remover após 3 segundos
+            setTimeout(() => {
+                if (document.body.contains(tempPopup)) {
+                    document.body.removeChild(tempPopup);
+                }
+            }, 3000);
+        }
+        
+        function showSimpleLocationPopup() {
+            // Já não precisamos desta função, pois showLocationPopup já está usando a abordagem simples
+            showLocationPopup(null);
+        }
+
+        function searchVeterinaryClinics(location) {
+            // Verificar se o mapa está inicializado
+            if (!mapInitialized || !map) {
+                console.error("Map not initialized yet!");
+                setTimeout(() => {
+                    if (mapInitialized && map) {
+                        searchVeterinaryClinics(location);
+                    } else {
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                        showCustomAlert('Erro', 'Ocorreu um erro ao carregar o mapa. Por favor, recarregue a página.');
+                    }
+                }, 1000);
+                return;
+            }
+            
+            // Exibir indicador de carregamento explicitamente no centro
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'flex';
+            loadingIndicator.style.position = 'fixed';
+            loadingIndicator.style.top = '50%';
+            loadingIndicator.style.left = '50%';
+            loadingIndicator.style.transform = 'translate(-50%, -50%)';
+            loadingIndicator.style.margin = '0';
+            
+            // Limpar marcadores existentes
+            clearClinicMarkers();
+            
+            try {
+                // Criar o serviço do Places
+                const service = new google.maps.places.PlacesService(map);
+                
+                // Realizar busca de clínicas veterinárias
+                const request = {
+                    location: location,
+                    radius: 10000, // Aumentado para 10 km para encontrar mais clínicas
+                    type: 'veterinary_care',
+                    keyword: 'veterinário clínica veterinária hospital animal'
+                };
+                
+                console.log("Searching for veterinary clinics...");
+                service.nearbySearch(request, (results, status) => {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    
+                    if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                        console.log("Clínicas encontradas:", results.length);
+                        
+                        // Buscar detalhes para cada clínica para obter horários de funcionamento
+                        fetchDetailedClinicInfo(results, location);
+                    } else {
+                        console.error('Erro na busca de clínicas veterinárias:', status);
+                        // Tente com um raio maior se não encontrar nada
+                        if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+                            const extendedRequest = {
+                                location: location,
+                                radius: 20000, // Tenta com 20km
+                                type: 'veterinary_care',
+                                keyword: 'veterinário'
+                            };
+                            
+                            service.nearbySearch(extendedRequest, (extResults, extStatus) => {
+                                if (extStatus === google.maps.places.PlacesServiceStatus.OK && extResults && extResults.length > 0) {
+                                    console.log("Clínicas encontradas com raio estendido:", extResults.length);
+                                    fetchDetailedClinicInfo(extResults, location);
+                                } else {
+                                    // Se ainda não encontrar, exibir clínicas padrão
+                                    showCustomAlert('Aviso', 'Não foram encontradas clínicas veterinárias próximas. Exibindo exemplos.', displayDefaultClinics);
+                                }
+                            });
+                        } else {
+                            showCustomAlert('Aviso', 'Ocorreu um erro ao buscar clínicas veterinárias. Exibindo exemplos.', displayDefaultClinics);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error searching for clinics:", error);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                showCustomAlert('Erro', 'Ocorreu um erro ao buscar clínicas veterinárias. Por favor, tente novamente mais tarde.', displayDefaultClinics);
+            }
+        }
+
+        function fetchDetailedClinicInfo(clinics, userLocation) {
+            console.log("Fetching detailed information for", clinics.length, "clinics");
+            
+            const detailedClinics = [];
+            let pendingRequests = clinics.length;
+
+            if (clinics.length === 0) {
+                processClinicResults([], userLocation);
+                return;
+            }
+
+            // Criar serviço para buscar detalhes
+            const service = new google.maps.places.PlacesService(map);
+            
+            // Reduzir o tempo de processamento entre requisições para melhorar performance
+            const requestDelay = 100; // Reduzido de 200ms para 100ms
+            
+            // Para cada clínica, buscar informações detalhadas
+            clinics.forEach((clinic, index) => {
+                setTimeout(() => {
+                    service.getDetails({
+                        placeId: clinic.place_id,
+                        fields: ['name', 'formatted_address', 'formatted_phone_number', 'opening_hours', 'rating', 'geometry']
+                    }, (place, status) => {
+                        if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+                            // Mesclar dados da busca original com os detalhes
+                            const detailedClinic = {
+                                ...clinic,
+                                formatted_address: place.formatted_address || clinic.vicinity,
+                                formatted_phone_number: place.formatted_phone_number || 'Telefone não disponível',
+                                opening_hours: place.opening_hours
+                            };
+                            
+                            // Verificar se está aberto agora - Lógica melhorada
+                            let isOpen = checkIfClinicIsOpen(place, clinic);
+                            
+                            detailedClinic.is_open = isOpen;
+                            
+                            // Adicionar horários de funcionamento realistas se não estiverem disponíveis
+                            if (!place.opening_hours || !place.opening_hours.weekday_text) {
+                                // Definir horários padrão baseados em se é 24h ou não
+                                const is24h = clinic.name.toLowerCase().includes('24h') || 
+                                    clinic.name.toLowerCase().includes('24 horas') ||
+                                    clinic.name.toLowerCase().includes('emergência') ||
+                                    clinic.name.toLowerCase().includes('plantão');
+                                
+                                if (is24h) {
+                                    detailedClinic.weekday_text = [
+                                        'Segunda-feira: 24 horas',
+                                        'Terça-feira: 24 horas',
+                                        'Quarta-feira: 24 horas',
+                                        'Quinta-feira: 24 horas',
+                                        'Sexta-feira: 24 horas',
+                                        'Sábado: 24 horas',
+                                        'Domingo: 24 horas'
+                                    ];
+                                } else {
+                                    detailedClinic.weekday_text = [
+                                        'Segunda-feira: 8:00 - 18:00',
+                                        'Terça-feira: 8:00 - 18:00',
+                                        'Quarta-feira: 8:00 - 18:00',
+                                        'Quinta-feira: 8:00 - 18:00',
+                                        'Sexta-feira: 8:00 - 18:00',
+                                        'Sábado: 9:00 - 14:00',
+                                        'Domingo: Fechado'
+                                    ];
+                                }
+                            } else {
+                                detailedClinic.weekday_text = place.opening_hours.weekday_text;
+                            }
+                            
+                            detailedClinics.push(detailedClinic);
+                        } else {
+                            // Se falhou em obter detalhes, usar dados básicos da clínica
+                            const now = new Date();
+                            const hour = now.getHours();
+                            const day = now.getDay();
+                            
+                            // Definir status de abertura simulado
+                            let isOpen = false;
+                            if (day === 0) {
+                                isOpen = false;
+                            } else if (day === 6) {
+                                isOpen = hour >= 9 && hour < 14;
+                            } else {
+                                isOpen = hour >= 8 && hour < 18;
+                            }
+                            
+                            // Verificar se o nome sugere que é 24 horas
+                            const nameIndicates24Hours = 
+                                clinic.name.toLowerCase().includes('24h') || 
+                                clinic.name.toLowerCase().includes('24 h') || 
+                                clinic.name.toLowerCase().includes('24 horas') ||
+                                clinic.name.toLowerCase().includes('24hr') ||
+                                clinic.name.toLowerCase().includes('24/7') ||
+                                clinic.name.toLowerCase().includes('plantão') ||
+                                clinic.name.toLowerCase().includes('emergência') ||
+                                clinic.name.toLowerCase().includes('emergency');
+                            
+                            if (nameIndicates24Hours) {
+                                isOpen = true;
+                            }
+                            
+                            clinic.is_open = isOpen;
+                            
+                            if (nameIndicates24Hours) {
+                                clinic.weekday_text = [
+                                    'Segunda-feira: 24 horas',
+                                    'Terça-feira: 24 horas',
+                                    'Quarta-feira: 24 horas',
+                                    'Quinta-feira: 24 horas',
+                                    'Sexta-feira: 24 horas',
+                                    'Sábado: 24 horas',
+                                    'Domingo: 24 horas'
+                                ];
+                            } else {
+                                clinic.weekday_text = [
+                                    'Segunda-feira: 8:00 - 18:00',
+                                    'Terça-feira: 8:00 - 18:00',
+                                    'Quarta-feira: 8:00 - 18:00',
+                                    'Quinta-feira: 8:00 - 18:00',
+                                    'Sexta-feira: 8:00 - 18:00',
+                                    'Sábado: 9:00 - 14:00',
+                                    'Domingo: Fechado'
+                                ];
+                            }
+                            
+                            detailedClinics.push(clinic);
+                        }
+                        
+                        // Verificar se todas as solicitações foram concluídas
+                        pendingRequests--;
+                        if (pendingRequests === 0) {
+                            // Processar resultados quando todos os detalhes forem buscados
+                            processClinicResults(detailedClinics, userLocation);
+                        }
+                    });
+                }, index * requestDelay);
+            });
+            
+            // Adicionar timeout para caso alguma solicitação falhe - reduzido para melhor performance
+            setTimeout(() => {
+                if (pendingRequests > 0) {
+                    console.warn(`Timeout - ainda há ${pendingRequests} solicitações pendentes, processando resultados disponíveis`);
+                    processClinicResults(detailedClinics, userLocation);
+                }
+            }, clinics.length * requestDelay + 3000); // Reduzido de 5000ms para 3000ms
+        }
+
+        // Nova função para melhorar a verificação de status de abertura
+        function checkIfClinicIsOpen(place, clinic) {
+            // Função para verificar horários complexos e determinar se a clínica está aberta
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const day = now.getDay(); // 0 = domingo, 6 = sábado
+            const currentDay = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][day];
+            
+            // Verificar se o nome da clínica indica funcionamento 24 horas
+            const nameIndicates24Hours = 
+                clinic.name.toLowerCase().includes('24h') || 
+                clinic.name.toLowerCase().includes('24 h') || 
+                clinic.name.toLowerCase().includes('24 horas') ||
+                clinic.name.toLowerCase().includes('24hr') ||
+                clinic.name.toLowerCase().includes('24/7') ||
+                clinic.name.toLowerCase().includes('plantão') ||
+                clinic.name.toLowerCase().includes('emergência') ||
+                clinic.name.toLowerCase().includes('emergency');
+            
+            // Se o nome indica 24 horas, considerar como aberto
+            if (nameIndicates24Hours) {
+                console.log("Clínica 24h detectada pelo nome:", clinic.name);
+                return true;
+            }
+            
+            // Verificar se há informações de horário disponíveis
+            if (place.opening_hours) {
+                // Tente usar a API diretamente
+                try {
+                    if (typeof place.opening_hours.isOpen === 'function') {
+                        const isOpenNow = place.opening_hours.isOpen();
+                        // Se estiver aberto segundo a API, confiar nessa informação
+                        if (isOpenNow) {
+                            return true;
+                        }
+                    }
+                } catch (e) {
+                    console.log("Erro ao verificar isOpen da API:", e);
+                }
+                
+                // Se chegou aqui, a API disse que está fechado ou falhou
+                // Fazer verificação manual usando os textos de horário
+                if (place.opening_hours.weekday_text) {
+                    // Verificar se algum dia tem 24 horas
+                    const has24HourDay = place.opening_hours.weekday_text.some(dayText => {
+                        return dayText.toLowerCase().includes('24h') || 
+                            dayText.toLowerCase().includes('24 hora') || 
+                            (dayText.toLowerCase().includes('00:00') && dayText.toLowerCase().includes('23:59'));
+                    });
+                    
+                    if (has24HourDay) {
+                        return true;
+                    }
+                    
+                    // Verificar o horário do dia atual
+                    const apiDay = day === 0 ? 6 : day - 1; // Converter para o formato da API (0=segunda, 6=domingo)
+                    if (apiDay >= 0 && apiDay < place.opening_hours.weekday_text.length) {
+                        const todayHours = place.opening_hours.weekday_text[apiDay].toLowerCase();
+                        
+                        // Se diz fechado, então está fechado
+                        if (todayHours.includes('fechado')) {
+                            return false;
+                        }
+                        
+                        // Verificar outros formatos comuns de horário
+                        // Padrão de horários divididos por vírgulas (ex: 9:00-12:00, 14:00-18:00)
+                        if (todayHours.includes(',')) {
+                            const periods = todayHours.split(':')[1].split(',').map(p => p.trim());
+                            
+                            for (const period of periods) {
+                                // Remover texto extra e manter só horários
+                                const cleanPeriod = period.replace(/[a-zA-Z]/g, '').trim();
+                                
+                                if (cleanPeriod.includes('-') || cleanPeriod.includes('–')) {
+                                    const separator = cleanPeriod.includes('-') ? '-' : '–';
+                                    const [start, end] = cleanPeriod.split(separator).map(t => t.trim());
+                                    
+                                    // Extrair horas e minutos de início
+                                    let startHour = 0, startMinute = 0;
+                                    if (start.includes(':')) {
+                                        [startHour, startMinute] = start.split(':').map(Number);
+                                    } else {
+                                        startHour = parseInt(start);
+                                    }
+                                    
+                                    // Extrair horas e minutos de fim
+                                    let endHour = 0, endMinute = 0;
+                                    if (end.includes(':')) {
+                                        [endHour, endMinute] = end.split(':').map(Number);
+                                    } else {
+                                        endHour = parseInt(end);
+                                    }
+                                    
+                                    // Verificar se o horário atual está dentro deste período
+                                    const isAfterStart = (currentHour > startHour) || 
+                                        (currentHour === startHour && currentMinute >= startMinute);
+                                    const isBeforeEnd = (currentHour < endHour) || 
+                                        (currentHour === endHour && currentMinute < endMinute);
+                                    
+                                    if (isAfterStart && isBeforeEnd) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        } 
+                        // Verificar formato padrão (ex: 9:00-18:00)
+                        else if (todayHours.includes('-') || todayHours.includes('–')) {
+                            // Encontrar a parte do horário após os dois pontos
+                            const timeStr = todayHours.split(':').slice(1).join(':').trim();
+                            const separator = timeStr.includes('-') ? '-' : '–';
+                            
+                            // Verificar se há vários períodos separados por outros caracteres
+                            if (timeStr.includes(';')) {
+                                const periods = timeStr.split(';');
+                                for (const period of periods) {
+                                    if (period.includes(separator)) {
+                                        const [start, end] = period.trim().split(separator).map(t => t.trim());
+                                        
+                                        // Extrair horas e minutos de início
+                                        let startHour = 0, startMinute = 0;
+                                        if (start.includes(':')) {
+                                            [startHour, startMinute] = start.split(':').map(Number);
+                                        } else {
+                                            startHour = parseInt(start);
+                                        }
+                                        
+                                        // Extrair horas e minutos de fim
+                                        let endHour = 0, endMinute = 0;
+                                        if (end.includes(':')) {
+                                            [endHour, endMinute] = end.split(':').map(Number);
+                                        } else {
+                                            endHour = parseInt(end);
+                                        }
+                                        
+                                        // Verificar se o horário atual está dentro deste período
+                                        const isAfterStart = (currentHour > startHour) || 
+                                            (currentHour === startHour && currentMinute >= startMinute);
+                                        const isBeforeEnd = (currentHour < endHour) || 
+                                            (currentHour === endHour && currentMinute < endMinute);
+                                        
+                                        if (isAfterStart && isBeforeEnd) {
+                                            return true;
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Formato simples: 9:00-18:00
+                                const parts = timeStr.split(separator);
+                                if (parts.length >= 2) {
+                                    const start = parts[0].trim();
+                                    const end = parts[1].trim();
+                                    
+                                    // Extrair horas e minutos de início
+                                    let startHour = 0, startMinute = 0;
+                                    if (start.includes(':')) {
+                                        [startHour, startMinute] = start.split(':').map(Number);
+                                    } else {
+                                        startHour = parseInt(start);
+                                    }
+                                    
+                                    // Extrair horas e minutos de fim
+                                    let endHour = 0, endMinute = 0;
+                                    if (end.includes(':')) {
+                                        [endHour, endMinute] = end.split(':').map(Number);
+                                    } else {
+                                        endHour = parseInt(end);
+                                    }
+                                    
+                                    // Verificar se o horário atual está dentro deste período
+                                    const isAfterStart = (currentHour > startHour) || 
+                                        (currentHour === startHour && currentMinute >= startMinute);
+                                    const isBeforeEnd = (currentHour < endHour) || 
+                                        (currentHour === endHour && currentMinute < endMinute);
+                                    
+                                    if (isAfterStart && isBeforeEnd) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Usar lógica padrão baseada no dia e hora para caso as verificações anteriores falhem
+            if (day === 0) {
+                return false; // Domingo fechado por padrão
+            } else if (day === 6) {
+                return currentHour >= 9 && currentHour < 14; // Sábado 9h-14h
+            } else {
+                return currentHour >= 8 && currentHour < 18; // Dias de semana 8h-18h
+            }
+        }
+
+        function processClinicResults(results, userLocation) {
+            // Esconder o indicador de carregamento
+            document.getElementById('loadingIndicator').style.display = 'none';
+            
+            // Create clinics array for popup
+            let clinicsData = [];
+            
+            if (results.length > 0) {
+                // Ordenar resultados - Clínicas abertas primeiro, depois por distância
+                results.sort((a, b) => {
+                    // Primeiro por status (aberto/fechado)
+                    if (a.is_open && !b.is_open) return -1;
+                    if (!a.is_open && b.is_open) return 1;
+                    
+                    // Depois por distância (assumindo que distance já está calculada)
+                    const distA = google.maps.geometry.spherical.computeDistanceBetween(
+                        new google.maps.LatLng(userLocation),
+                        new google.maps.LatLng(a.geometry.location)
+                    );
+                    const distB = google.maps.geometry.spherical.computeDistanceBetween(
+                        new google.maps.LatLng(userLocation),
+                        new google.maps.LatLng(b.geometry.location)
+                    );
+                    
+                    return distA - distB;
+                });
+                
+                // Adicionar clínicas na lista e marcadores no mapa
+                results.forEach((clinic, index) => {
+                const isNearest = index === 0;
+                    const isOpen = clinic.is_open;
+                    
+                    // Se for a clínica mais próxima, armazenar referência
+                if (isNearest) {
+                        nearestClinic = clinic;
+                    }
+                    
+                    // Obter distância em metros
+                    const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                        new google.maps.LatLng(userLocation),
+                        new google.maps.LatLng(clinic.geometry.location)
+                    );
+                    
+                    // Formatar distância
+                    let formattedDistance;
+                    if (distance < 1000) {
+                        formattedDistance = Math.round(distance) + 'm';
+                    } else {
+                        formattedDistance = (distance / 1000).toFixed(1) + 'km';
+                    }
+                    
+                    // Store clinic data for popup list
+                    clinicsData.push({
+                        clinic: clinic,
+                        distance: formattedDistance,
+                        isOpen: isOpen,
+                        isNearest: isNearest
+                    });
+                    
+                    // Cor do marcador
+                    let markerColor = '#FF9800'; // laranja/fechado por padrão
+                    if (isNearest) {
+                        markerColor = '#FF0000'; // vermelho para a mais próxima
+                    } else if (isOpen) {
+                        markerColor = '#4CAF50'; // verde para aberto
+                    }
+                    
+                    // Criar e adicionar marcador no mapa
+                    const marker = new google.maps.Marker({
+                        position: clinic.geometry.location,
+                        map: map,
+                        title: clinic.name + (isOpen ? ' (Aberto)' : ' (Fechado)'),
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            fillColor: markerColor,
+                            fillOpacity: 0.8,
+                            strokeColor: '#FFFFFF',
+                            strokeWeight: 2,
+                            scale: isNearest ? 10 : 8
+                        },
+                        animation: isNearest ? google.maps.Animation.DROP : null,
+                        zIndex: isNearest ? 5 : (isOpen ? 2 : 1)
+                    });
+                    
+                    // Adicionar evento de clique ao marcador
+                    marker.addListener('click', () => {
+                        // Em vez de usar o infoWindow, chamar nossa função de popup centralizado
+                        showClinicDetailsPopup(clinic, formattedDistance);
+                    });
+                    
+                    // Adicionar marcador ao array
+                clinicMarkers.push(marker);
+            });
+
+                // Ajustar mapa para mostrar todos os marcadores
+                const bounds = new google.maps.LatLngBounds();
+                bounds.extend(userLocation);
+                clinicMarkers.forEach(marker => bounds.extend(marker.getPosition()));
+                map.fitBounds(bounds);
+                
+                // Store clinics data for popup
+                window.clinicsData = clinicsData;
+            } else {
+                // No clinics found - empty array
+                window.clinicsData = [];
+            }
+        }
+
+        function clearClinicMarkers() {
+            // Limpar todos os marcadores existentes
+            clinicMarkers.forEach(marker => marker.setMap(null));
+            clinicMarkers = [];
+            nearestClinic = null;
+        }
+
+        // Adicionar a função styleInfoWindow primeiro, exatamente como está na home.html
+        function styleInfoWindow() {
+            setTimeout(() => {
+                try {
+                    // Remover a seta do InfoWindow
+                    const arrows = document.querySelectorAll('.gm-style-iw-t::after');
+                    arrows.forEach(arrow => {
+                        if (arrow) arrow.style.display = 'none';
+                    });
+                    
+                    // Estilizar o container principal
+                    const containers = document.querySelectorAll('.gm-style-iw-c');
+                    containers.forEach(container => {
+                        container.style.padding = '0';
+                        container.style.borderRadius = '8px';
+                        container.style.overflow = 'hidden';
+                        container.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+                    
+                        // Remover margens extras
+                        container.style.marginTop = '0';
+                        container.style.marginBottom = '0';
+                        container.style.marginRight = '0';
+                        container.style.marginLeft = '0';
+                    });
+                    
+                    // Estilizar os containers internos
+                    const innerContainers = document.querySelectorAll('.gm-style-iw-d');
+                    innerContainers.forEach(innerContainer => {
+                        innerContainer.style.overflow = 'hidden';
+                        innerContainer.style.padding = '0 !important';
+                        innerContainer.style.margin = '0 !important';
+                        innerContainer.style.maxWidth = '100%';
+                        innerContainer.style.maxHeight = 'none !important';
+                        
+                        // Remover scrollbars
+                        innerContainer.style.scrollbarWidth = 'none';
+                        innerContainer.style.msOverflowStyle = 'none';
+                    });
+
+                    // Ajustar conteúdo dentro do info window
+                    const infoContents = document.querySelectorAll('.clinic-info-content');
+                    infoContents.forEach(content => {
+                        if (content) {
+                            content.style.margin = '0';
+                            content.style.padding = '0';
+                        }
+                    });
+
+                    // Adicionar CSS para esconder scrollbars em todos os navegadores
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .gm-style-iw-d::-webkit-scrollbar { display: none; }
+                        .gm-style-iw { padding: 0 !important; margin: 0 !important; }
+                        .gm-style-iw-a { margin: 0 !important; }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    // Estilizar o botão de fechar de forma simples
+                    const closeButtons = document.querySelectorAll('button.gm-ui-hover-effect');
+                    closeButtons.forEach(button => {
+                        button.style.top = '1px';
+                        button.style.right = '1px';
+                        button.style.zIndex = '10';
+                    });
+                } catch (error) {
+                    console.error('Erro ao estilizar InfoWindow:', error);
+                }
+            }, 50);
+        }
+
+        // Agora substituir a função centerMapOnUserLocation pela versão da home.html
+        function centerMapOnUserLocation() {
+            // Obter a localização salva ou a atual do userMarker
+            const userLoc = userMarker ? userMarker.getPosition() : getSavedLocation();
+            
+            if (userLoc) {
+                // Centralizar mapa na localização
+                map.setCenter(userLoc);
+                
+                // Se não houver marcador, adicioná-lo
+                if (!userMarker) {
+                    addUserMarker(userLoc);
+                } else {
+                    // Animar marcador existente
+                    userMarker.setAnimation(google.maps.Animation.BOUNCE);
+                    setTimeout(() => {
+                        userMarker.setAnimation(null);
+                    }, 1400);
+                }
+                
+                // Animar a transição com zoom mais próximo
+                map.setZoom(18);
+                
+                // Remover classe active ou destacada após o clique
+                const legendItem = document.getElementById('myLocationLegend');
+                if (legendItem) {
+                    legendItem.classList.remove('active');
+                    
+                    // Prevenir comportamento de sticky selection
+                    setTimeout(() => {
+                        // Forçar blur para remover o foco
+                        legendItem.blur();
+                        
+                        // Aplicar estilo temporário e depois remover
+                        legendItem.style.backgroundColor = 'rgba(255, 127, 80, 0.1)';
+                        
+                        // Voltar ao estilo normal após um curto delay
+                        setTimeout(() => {
+                            legendItem.style.backgroundColor = '';
+                        }, 300);
+                    }, 100);
+                }
+                
+                // Mostrar popup de localização
+                showLocationPopup(userMarker);
+            } else {
+                // Se não tiver localização, solicitar
+                refreshUserLocation();
+            }
+        }
+
+        function showNearestClinic() {
+            if (nearestClinic) {
+                // Encontrar o marcador da clínica mais próxima (primeiro da lista)
+                const nearestMarker = clinicMarkers[0];
+                if (nearestMarker) {
+                    // Centralizar mapa no marcador
+                    map.setCenter(nearestMarker.getPosition());
+                    map.setZoom(16);
+                    
+                    // Simular clique no marcador para mostrar infoWindow
+                    google.maps.event.trigger(nearestMarker, 'click');
+                    
+                    // Animação do marcador
+                    nearestMarker.setAnimation(google.maps.Animation.BOUNCE);
+                    setTimeout(() => {
+                        nearestMarker.setAnimation(null);
+                    }, 1400);
+                }
+            } else {
+                alert('Não foi possível encontrar a clínica mais próxima.');
+            }
+        }
+
+        function refreshUserLocation() {
+            // Mostrar popup de carregamento personalizado
+            showLoadingPopup('Atualizando sua localização...', 'Aguarde');
+            
         if (navigator.geolocation) {
+                const geoOptions = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                };
+                
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                        const userLocation = {
+                        // Atualizar a localização do usuário
+                        userLocation = {
                             lat: position.coords.latitude,
                             lng: position.coords.longitude
                         };
                         
-                        // Salvar localização para uso futuro
-                        localStorage.setItem('userLocationLat', userLocation.lat);
-                        localStorage.setItem('userLocationLng', userLocation.lng);
+                        console.log("Localização atualizada:", userLocation);
                         
-                        // Centralizar mapa na localização do usuário
+                        // Centralizar mapa na nova localização
                         map.setCenter(userLocation);
-                        map.setZoom(15);
+                        map.setZoom(14);
 
-                        // Adicionar marcador do usuário
+                        // Adicionar marcador do usuário na nova localização
                         addUserMarker(userLocation);
+                        
+                        // Buscar clínicas veterinárias próximas à nova localização
+                        searchVeterinaryClinics(userLocation);
+                        
+                        // Esconder popup de carregamento
+                        hideLoadingPopup();
+                        
+                        // Mostrar notificação temporária mais sutil
+                        showTemporaryNotification('Localização atualizada');
                 },
                 (error) => {
-                        console.error('Erro ao obter localização:', error);
-                        alert('Não foi possível obter sua localização. Verifique as permissões do seu navegador.');
+                        console.error('Erro ao atualizar localização:', error);
+                        hideLoadingPopup();
+                        
+                        let errorMessage = 'Erro desconhecido ao atualizar localização.';
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Permissão para geolocalização negada.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Informação de localização indisponível.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'Tempo esgotado ao obter sua localização.';
+                                break;
+                        }
+                        
+                        showCustomAlert('Erro', errorMessage + ' Usando localização atual.');
                     },
-                    { timeout: 10000, maximumAge: 600000 }
+                    geoOptions
             );
         } else {
-                alert('Seu navegador não suporta geolocalização.');
+                hideLoadingPopup();
+                showCustomAlert('Erro', 'Seu navegador não suporta geolocalização. Usando localização atual.');
             }
         }
-        
-        async function loadVeterinaryClinics() {
-            try {
-                const userLocation = getSavedLocation();
-                if (!userLocation) {
-                    alert('Por favor, permita o acesso à sua localização para encontrar clínicas próximas.');
-                    requestUserLocation();
-                    return;
-                }
-                
-                const { data, error } = await window.supabase
-                    .from('clinics')
-                    .select('*');
-                
-                if (error) {
-                    console.error('Erro ao carregar clínicas:', error);
-                    return;
-                }
-                
-                if (data && data.length > 0) {
-                    data.forEach(clinic => {
-                        addClinicMarker(clinic);
-                    });
-                } else {
-                    console.log('Nenhuma clínica encontrada no banco de dados.');
-                }
-            } catch (error) {
-                console.error('Erro ao carregar clínicas:', error);
+
+        // Adicionar tratamento de erros para garantir que a página funcione mesmo com problemas do Google Maps
+        window.addEventListener('error', function(event) {
+            if (event.message.includes('Google') || event.message.includes('maps')) {
+                console.error('Google Maps Error:', event.message);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                alert('Ocorreu um erro ao carregar o Google Maps. Por favor, recarregue a página ou tente novamente mais tarde.');
             }
-        }
+        });
         
-        function addClinicMarker(clinic) {
-            if (!clinic.location || !clinic.location.lat || !clinic.location.lng) {
-                console.warn('Clínica sem localização válida:', clinic);
-                return;
+        // Adicionar timeout para garantir que a página não fique eternamente carregando
+        setTimeout(function() {
+            if (document.getElementById('loadingIndicator').style.display !== 'none') {
+                console.warn('Timeout - forcing loading indicator to hide');
+                document.getElementById('loadingIndicator').style.display = 'none';
+                
+                // Se o mapa estiver vazio, mostrar clínicas padrão para não deixar o usuário sem opções
+                if (clinicMarkers.length === 0) {
+                    displayDefaultClinics();
+                }
+                
+                alert('O carregamento está demorando mais que o esperado. Exibindo os resultados disponíveis.');
             }
+        }, 15000);
+        
+        // Função para mostrar clínicas padrão caso falhe em obter dados reais
+        function displayDefaultClinics() {
+            console.log("Exibindo clínicas padrão");
             
-            const position = {
-                lat: parseFloat(clinic.location.lat),
-                lng: parseFloat(clinic.location.lng)
-            };
+            const defaultClinics = [
+                {
+                    name: "Clínica Veterinária 24h PetCare",
+                    location: { lat: userLocation.lat + 0.005, lng: userLocation.lng + 0.002 },
+                    isOpen: true,
+                    is24h: true,
+                    distance: "500m",
+                    address: "Rua das Flores, 123",
+                    phone: "(11) 3456-7890"
+                },
+                {
+                    name: "Hospital Veterinário Animal Care",
+                    location: { lat: userLocation.lat - 0.003, lng: userLocation.lng + 0.004 },
+                    isOpen: true,
+                    is24h: false,
+                    distance: "700m",
+                    address: "Av. Principal, 456",
+                    phone: "(11) 2345-6789"
+                },
+                {
+                    name: "Clínica Pet Saúde",
+                    location: { lat: userLocation.lat + 0.001, lng: userLocation.lng - 0.005 },
+                    isOpen: false,
+                    is24h: false,
+                    distance: "600m",
+                    address: "Rua dos Animais, 789",
+                    phone: "(11) 4567-8901"
+                }
+            ];
             
+            // Limpar marcadores existentes
+            clearClinicMarkers();
+            
+            // Adicionar marcadores para cada clínica padrão
+            defaultClinics.forEach((clinic, index) => {
+                const isNearest = index === 0;
+                const isOpen = clinic.isOpen;
+                
+                // Se for a clínica mais próxima, armazenar referência
+                if (isNearest) {
+                    nearestClinic = clinic;
+                }
+                
+                // Cor do marcador
+                let markerColor = '#FF9800'; // laranja/fechado por padrão
+                if (isNearest) {
+                    markerColor = '#FF0000'; // vermelho para a mais próxima
+                } else if (isOpen) {
+                    markerColor = '#4CAF50'; // verde para aberto
+                }
+                
+                // Criar marcador
                 const marker = new google.maps.Marker({
-                position: position,
+                    position: new google.maps.LatLng(clinic.location.lat, clinic.location.lng),
                     map: map,
-                title: clinic.nome || 'Clínica Veterinária',
+                    title: clinic.name + (isOpen ? ' (Aberto)' : ' (Fechado)'),
                     icon: {
                         path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: '#4CAF50',
-                    fillOpacity: 0.9,
+                        fillColor: markerColor,
+                        fillOpacity: 0.8,
                         strokeColor: '#FFFFFF',
                         strokeWeight: 2,
-                    scale: 10
-                },
-                animation: google.maps.Animation.DROP,
-                zIndex: 2
-            });
-            
-            // Criar conteúdo para o InfoWindow
-            const contentString = `
-                <div style="width: 220px; background-color: white; padding: 0; overflow: hidden; border-radius: 10px;">
-                    <div style="margin: 0; padding: 0;">
-                        <div style="text-align: center; margin: 5px 0 15px 0;">
-                            <span style="display: inline-block; padding: 3px 12px; background-color: #4CAF50; color: white; border-radius: 20px; font-size: 12px; font-weight: bold;">
-                                Clínica Veterinária
+                        scale: isNearest ? 10 : 8
+                    },
+                    animation: isNearest ? google.maps.Animation.DROP : null,
+                    zIndex: isNearest ? 5 : (isOpen ? 2 : 1)
+                });
+                
+                // Adicionar evento de clique ao marcador
+                marker.addListener('click', () => {
+                    // Criar conteúdo do popup
+                    const content = `<div class="clinic-popup">
+                        <div class="popup-title">
+                            <a href="https://www.google.com/maps/search/${encodeURIComponent(clinic.name + ' ' + (clinic.address || clinic.vicinity || ''))}" target="_blank">
+                                ${clinic.name}
+                            </a>
+                            <span class="status-indicator ${isOpen ? 'status-open' : 'status-closed'}">
+                                <i class="fas fa-${isOpen ? 'check-circle' : 'times-circle'}"></i>
+                                ${isOpen ? 'Aberto' : 'Fechado'}
                             </span>
                         </div>
-                        <div style="text-align: center; margin: 0 0 8px 0;">
-                            <span style="margin: 0; font-size: 16px; color: #333;">${clinic.nome || 'Clínica Veterinária'}</span>
+                        <div class="popup-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${clinic.address}</span>
                     </div>
-                        <div style="margin: 0 0 8px; font-size: 12px; color: #666; text-align: center; padding: 0 10px;">
-                            <div style="margin-bottom: 5px;">
-                                <i class="fas fa-map-marker-alt" style="color: #4CAF50; margin-right: 5px;"></i>
-                                <span>${clinic.endereco || 'Endereço não disponível'}</span>
+                        <div class="popup-info">
+                            <i class="fas fa-route"></i>
+                            <span>Distância: ${clinic.distance}</span>
                         </div>
-                            <div style="margin-bottom: 5px;">
-                                <i class="fas fa-phone" style="color: #4CAF50; margin-right: 5px;"></i>
-                                <span>${clinic.telefone || 'Telefone não disponível'}</span>
+                        <div class="popup-info">
+                            <i class="fas fa-phone"></i>
+                            <span>${clinic.phone || 'Telefone não disponível'}</span>
                         </div>
+                        <div class="popup-info">
+                            <i class="fas fa-clock"></i>
+                            <span>${clinic.is24h ? 'Aberto 24 horas' : 'Horário comercial'}</span>
                         </div>
-                        <div style="padding: 0 15px 15px;">
-                            <button onclick="location.href='clinic-details.html?id=${clinic.id}'" style="background: #4CAF50; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 14px;">
-                                <span style="display: inline-flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-info-circle" style="margin-right: 5px;"></i>Ver Detalhes
+                        <div class="popup-buttons">
+                            <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${clinic.location.lat},${clinic.location.lng}&travelmode=driving" 
+                                target="_blank" 
+                                class="popup-button" style="margin-bottom: 8px;">
+                                <i class="fas fa-directions"></i> Como chegar
+                            </a>
+                            ${clinic.phone ? `
+                            <a href="tel:${clinic.phone}" 
+                                class="popup-button" style="background-color: #4CAF50;">
+                                <i class="fas fa-phone"></i> Ligar
+                            </a>
+                            ` : ''}
+                        </div>
+                    </div>`;
+                    
+                    // Exibir popup
+                    infoWindow.setContent(content);
+                    infoWindow.open(map, marker);
+                    
+                    // Aplicar mesmas correções de estilo
+                    const fixInfoWindow = () => {
+                        const iwOuter = document.querySelector('.gm-style-iw');
+                        if (iwOuter) {
+                            // Override container styles
+                            iwOuter.style.cssText = 'padding: 0 !important; margin: 0 !important; background: transparent !important; transform: translate(0, -50px) !important;';
+                            
+                            // Remove default pointer/tail
+                            const iwBackground = iwOuter.previousElementSibling;
+                            if (iwBackground) {
+                                const children = iwBackground.children;
+                                for (let i = 0; i < children.length; i++) {
+                                    children[i].style.display = 'none';
+                                }
+                            }
+                            
+                            // Clear internal container padding
+                            const iwInner = iwOuter.querySelector('.gm-style-iw-d');
+                            if (iwInner) {
+                                iwInner.style.cssText = 'overflow: hidden !important; padding: 0 !important; margin: 0 !important;';
+                            }
+                            
+                            // Style popup container
+                            const popupElement = iwOuter.querySelector('.clinic-popup');
+                            if (popupElement) {
+                                popupElement.style.overflow = 'hidden';
+                                popupElement.style.borderRadius = '12px';
+                                popupElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+                            }
+                            
+                            // Fix close button position (important!)
+                            const closeBtn = iwOuter.nextElementSibling;
+                            if (closeBtn) {
+                                closeBtn.className += ' custom-close-button';
+                                closeBtn.style.cssText = 'top: 5px !important; right: 5px !important; position: absolute !important; z-index: 9999 !important; opacity: 1 !important; transform: translate(-10px, 10px) !important;';
+                                
+                                // Add custom icon
+                                const img = closeBtn.querySelector('img');
+                                if (img) {
+                                    img.style.cssText = 'width: 20px !important; height: 20px !important;';
+                                }
+                            }
+                        }
+                    };
+                    
+                    // Tentar corrigir em intervalos diferentes para garantir
+                    setTimeout(fixInfoWindow, 10);
+                    setTimeout(fixInfoWindow, 50);
+                    setTimeout(fixInfoWindow, 100);
+                    setTimeout(fixInfoWindow, 300);
+                });
+                
+                // Adicionar marcador ao array
+                clinicMarkers.push(marker);
+            });
+            
+            // Ajustar mapa para mostrar todos os marcadores
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend(userLocation);
+            clinicMarkers.forEach(marker => bounds.extend(marker.getPosition()));
+            map.fitBounds(bounds);
+        }
+
+        // Add the missing addClinicToList function - now used in the popup
+        function addClinicToList(clinic, distance, isOpen, isNearest) {
+            const clinicCard = document.createElement('div');
+            clinicCard.className = 'clinic-card' + (isNearest ? ' nearest' : '');
+            
+            // Status indicator
+            const statusClass = isOpen ? 'status-open' : 'status-closed';
+            const statusText = isOpen ? 'Aberto' : 'Fechado';
+            const statusIcon = isOpen ? 'check-circle' : 'times-circle';
+            
+            clinicCard.innerHTML = `
+                <div class="clinic-header">
+                    <h3 class="clinic-name">
+                        <a href="https://www.google.com/maps/search/${encodeURIComponent(clinic.name + ' ' + (clinic.formatted_address || clinic.vicinity || ''))}" target="_blank" style="color: #333; text-decoration: none;">
+                            ${clinic.name}
+                        </a>
+                    </h3>
+                    <span class="status-indicator ${statusClass}">
+                        <i class="fas fa-${statusIcon}"></i>
+                        ${statusText}
                     </span>
-                            </button>
                 </div>
+                <div class="clinic-info">
+                    <p><i class="fas fa-map-marker-alt"></i> ${clinic.formatted_address || clinic.vicinity}</p>
+                    <p><i class="fas fa-route"></i> Distância: ${distance}</p>
+                    <p><i class="fas fa-phone"></i> ${clinic.formatted_phone_number || 'Telefone não disponível'}</p>
                 </div>
+                <div class="clinic-actions" style="display: flex; flex-direction: column; gap: 8px;">
+                    <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${clinic.geometry.location.lat()},${clinic.geometry.location.lng()}&travelmode=driving" 
+                       target="_blank" 
+                       class="popup-button">
+                       <i class="fas fa-directions"></i> Como chegar
+                    </a>
+                    ${clinic.formatted_phone_number ? `
+                    <a href="tel:${clinic.formatted_phone_number}" 
+                       class="popup-button" style="background-color: #4CAF50;">
+                       <i class="fas fa-phone"></i> Ligar
+                    </a>
+                    ` : ''}
                 </div>
             `;
             
-            // Configurar o InfoWindow
-            const infoWindow = new google.maps.InfoWindow({
-                content: contentString,
-                maxWidth: 220
-            });
+            return clinicCard;
+        }
+
+        // Initialize the show clinics button
+        document.addEventListener('DOMContentLoaded', function() {
+            const showClinicsBtn = document.getElementById('showClinicsBtn');
+            const closePopupBtn = document.getElementById('closePopupBtn');
+            const clinicsPopup = document.getElementById('clinics-popup');
             
-            // Adicionar evento de clique para abrir o InfoWindow
-            marker.addListener('click', function() {
-                // Fechar qualquer InfoWindow aberto
-                if (currentOpenInfoWindow) {
-                    currentOpenInfoWindow.close();
-                }
+            if (showClinicsBtn && closePopupBtn && clinicsPopup) {
+                showClinicsBtn.addEventListener('click', function() {
+                    // Populate the popup with clinics
+                    const popupList = document.getElementById('popup-clinics-list');
+                    popupList.innerHTML = '';
+                    
+                    if (window.clinicsData && window.clinicsData.length > 0) {
+                        // Add clinics to the popup list without legends
+                        window.clinicsData.forEach(item => {
+                            const clinicElement = addClinicToList(
+                                item.clinic, 
+                                item.distance, 
+                                item.isOpen, 
+                                item.isNearest
+                            );
+                            popupList.appendChild(clinicElement);
+                        });
+        } else {
+                        // No results message
+                        const noResultsEl = document.createElement('div');
+                        noResultsEl.className = 'no-results';
+                        noResultsEl.innerHTML = `
+                            <div class="no-results-icon">
+                              <i class="fas fa-paw" style="font-size: 50px; color: #FF7F50;"></i>
+                            </div>
+                            <p>Nenhuma clínica veterinária encontrada próxima à sua localização.</p>
+                        `;
+                        popupList.appendChild(noResultsEl);
+                    }
+                    
+                    // Show the popup
+                    clinicsPopup.style.display = 'flex';
+                });
                 
-                // Abrir o novo InfoWindow
-                infoWindow.open(map, marker);
-                currentOpenInfoWindow = infoWindow;
+                // Close popup when clicking X button
+                closePopupBtn.addEventListener('click', function() {
+                    clinicsPopup.style.display = 'none';
+                });
                 
-                // Animar o marcador quando clicado
-                if (marker.getAnimation() !== null) {
-                    marker.setAnimation(null);
-                } else {
-                    marker.setAnimation(google.maps.Animation.BOUNCE);
+                // Close popup when clicking outside the content
+                clinicsPopup.addEventListener('click', function(e) {
+                    if (e.target === clinicsPopup) {
+                        clinicsPopup.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        // Função para exibir uma notificação temporária que desaparece automaticamente
+        function showTemporaryNotification(message) {
+            // Verificar se já existe uma notificação
+            let notification = document.getElementById('temporaryNotification');
+            
+            // Se não existir, criar
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'temporaryNotification';
+                notification.style.position = 'fixed';
+                notification.style.bottom = '20px';
+                notification.style.left = '50%';
+                notification.style.transform = 'translateX(-50%)';
+                notification.style.backgroundColor = 'rgba(76, 175, 80, 0.9)';
+                notification.style.color = 'white';
+                notification.style.padding = '10px 20px';
+                notification.style.borderRadius = '20px';
+                notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+                notification.style.zIndex = '9999';
+                notification.style.fontWeight = '500';
+                notification.style.fontSize = '14px';
+                notification.style.transition = 'opacity 0.5s, transform 0.5s';
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(-50%) translateY(20px)';
+                document.body.appendChild(notification);
+            }
+            
+            // Atualizar mensagem
+            notification.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 8px;"></i>${message}`;
+            
+            // Mostrar com animação
                 setTimeout(() => {
-                        marker.setAnimation(null);
-                    }, 750);
-                }
-            });
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(-50%) translateY(0)';
+            }, 10);
             
-            // Armazenar o marcador para referência futura
-            clinicMarkers.push(marker);
+            // Esconder após 3 segundos
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(-50%) translateY(20px)';
+                
+                // Remover do DOM após fade out
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 500);
+            }, 3000);
+        }
+
+        // Função para estilizar infowindows
+        function styleInfoWindow() {
+            const iwOuter = document.querySelector('.gm-style-iw');
+            if (iwOuter) {
+                iwOuter.style.padding = '0';
+                iwOuter.style.borderRadius = '10px';
+                iwOuter.style.overflow = 'hidden';
+                iwOuter.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
+            }
+            
+            // Remover seta do InfoWindow
+            const iwBackground = iwOuter ? iwOuter.previousElementSibling : null;
+            if (iwBackground) {
+                const arrowElements = iwBackground.querySelectorAll('div');
+                if (arrowElements && arrowElements.length >= 4) {
+                    for (let i = 0; i < 4; i++) {
+                        arrowElements[i].style.display = 'none';
+                    }
+                }
+            }
+            
+            // Estilizar botão de fechar
+            const closeButton = document.querySelector('.gm-ui-hover-effect');
+            if (closeButton) {
+                closeButton.style.position = 'absolute';
+                closeButton.style.top = '5px';
+                closeButton.style.left = '5px'; // Alterado de right para left
+                closeButton.style.right = 'auto'; // Garantir que right não influencie
+                closeButton.style.width = '24px';
+                closeButton.style.height = '24px';
+                closeButton.style.display = 'flex';
+                closeButton.style.alignItems = 'center';
+                closeButton.style.justifyContent = 'center';
+                closeButton.style.backgroundColor = 'transparent'; // Sem fundo
+                closeButton.style.borderRadius = '0';
+                closeButton.style.boxShadow = 'none';
+                closeButton.style.opacity = '1';
+                closeButton.style.padding = '0';
+                closeButton.style.margin = '0';
+                
+                // Substituir o ícone X padrão por um X textual
+                const img = closeButton.querySelector('img');
+                if (img) {
+                    img.style.display = 'none'; // Esconder a imagem original
+                    
+                    // Se não existe já um X textual, criar um
+                    if (!closeButton.querySelector('.text-x')) {
+                        const textX = document.createElement('span');
+                        textX.className = 'text-x';
+                        textX.textContent = '✕'; // Símbolo X unicode
+                        textX.style.fontSize = '16px';
+                        textX.style.fontWeight = 'bold';
+                        textX.style.color = '#333'; // Cor mais escura para o X
+                        textX.style.lineHeight = '1';
+                        textX.style.pointerEvents = 'none';
+                        closeButton.appendChild(textX);
+                    }
+                }
+                
+                // Remover efeitos hover que modificam muito a aparência
+                closeButton.onmouseover = null;
+                closeButton.onmouseout = null;
+                
+                closeButton.addEventListener('mouseover', function() {
+                    const textX = this.querySelector('.text-x');
+                    if (textX) textX.style.color = '#FF7F50'; // Apenas muda a cor ao passar o mouse
+                });
+                
+                closeButton.addEventListener('mouseout', function() {
+                    const textX = this.querySelector('.text-x');
+                    if (textX) textX.style.color = '#333';
+                });
+            }
+        }
+
+        // Adicionar elementos do popup centralizado no DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            // Criar o overlay para o fundo escuro
+            const overlay = document.createElement('div');
+            overlay.className = 'clinic-details-overlay';
+            overlay.id = 'clinicDetailsOverlay';
+            document.body.appendChild(overlay);
+
+            // Criar o container do popup
+            const popup = document.createElement('div');
+            popup.className = 'clinic-details-popup';
+            popup.id = 'clinicDetailsPopup';
+            document.body.appendChild(popup);
+
+            // Adicionar evento de clique ao overlay para fechar o popup
+            overlay.addEventListener('click', closeClinicDetailsPopup);
+        });
+
+        // Função para mostrar o popup de detalhes da clínica
+        function showClinicDetailsPopup(clinic, formattedDistance) {
+            const popup = document.getElementById('clinicDetailsPopup');
+            const overlay = document.getElementById('clinicDetailsOverlay');
+            
+            if (!popup || !overlay) {
+                console.error('Elementos do popup não encontrados');
+                return;
+            }
+            
+            // Se o popup já estiver aberto
+            if (popup.style.display === 'block') {
+                popup.style.display = 'none';
+                overlay.style.display = 'none';
+            }
+            
+            // Preparar o conteúdo do popup
+            const isOpen = clinic.is_open;
+            
+            // Obter o dia atual corretamente
+            const now = new Date();
+            const day = now.getDay(); // 0 = domingo, 6 = sábado
+            const weekDays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+            const currentDay = weekDays[day];
+            
+            console.log("====== DEBUG DIA ATUAL ======");
+            console.log("Data completa:", now);
+            console.log("Dia da semana (número):", day);
+            console.log("Dia da semana (texto):", currentDay);
+            console.log("============================");
+            
+            // Verificar a estrutura de weekday_text para determinar o formato
+            console.log("Estrutura de weekday_text:", clinic.weekday_text);
+            
+            let hoursText = 'Horário não disponível';
+            
+            if (clinic.weekday_text && clinic.weekday_text.length > 0) {
+                // Verificar o formato real do array weekday_text
+                // A Google Places API normalmente retorna o array começando por segunda-feira:
+                // [0] = "Segunda-feira: 8:00 – 22:00", [1] = "Terça-feira: 8:00 – 22:00", etc.
+                
+                // Primeiro, detectar se o array está no formato esperado
+                const firstDay = clinic.weekday_text[0].toLowerCase();
+                
+                // Se o primeiro dia for segunda-feira, significa que o array está no formato:
+                // 0=Segunda, 1=Terça, 2=Quarta, etc. (formato padrão da Places API)
+                if (firstDay.includes('segunda')) {
+                    // Mapear day para o índice correto no array
+                    const dayMap = {
+                        0: 6, // Domingo = índice 6 no array da API
+                        1: 0, // Segunda = índice 0 no array da API
+                        2: 1, // Terça = índice 1 no array da API
+                        3: 2, // Quarta = índice 2 no array da API
+                        4: 3, // Quinta = índice 3 no array da API
+                        5: 4, // Sexta = índice 4 no array da API
+                        6: 5  // Sábado = índice 5 no array da API
+                    };
+                    
+                    const dayToShow = dayMap[day];
+                    console.log("Formato da API detectado. Índice do dia mapeado:", dayToShow);
+                    
+                    // Verificar se o índice existe no array
+                    if (dayToShow >= 0 && dayToShow < clinic.weekday_text.length) {
+                        hoursText = clinic.weekday_text[dayToShow];
+                        console.log("Texto de horário escolhido:", hoursText, "para índice:", dayToShow);
+                    }
+                } else {
+                    // O array pode estar em outro formato, tentar encontrar o dia pelo nome
+                    console.log("Formato do array não padrão, buscando dia pelo nome...");
+                }
+                
+                // Se ainda não encontrou o horário ou o índice estava fora dos limites
+                if (hoursText === 'Horário não disponível') {
+                    // Percorrer todos os itens e encontrar o que contém o nome do dia atual
+                    for (let i = 0; i < clinic.weekday_text.length; i++) {
+                        const dayText = clinic.weekday_text[i].toLowerCase();
+                        if (dayText.includes(currentDay.toLowerCase())) {
+                            hoursText = clinic.weekday_text[i];
+                            console.log("Horário encontrado pelo nome do dia:", hoursText);
+                            break;
+                        }
+                    }
+                    
+                    // Se ainda não encontrou, pegar o primeiro dia como fallback
+                    if (hoursText === 'Horário não disponível' && clinic.weekday_text.length > 0) {
+                        hoursText = clinic.weekday_text[0];
+                        console.log("Fallback: usando primeiro dia disponível:", hoursText);
+                    }
+                }
+            }
+            
+            // Destacar o dia atual no texto de horário
+            if (hoursText !== 'Horário não disponível') {
+                const parts = hoursText.split(':');
+                if (parts.length > 1) {
+                    const dayPart = parts[0];
+                    const hoursPart = parts.slice(1).join(':').trim();
+                    hoursText = `<strong style="color: #FF7F50;">${dayPart}</strong>: ${hoursPart}`;
+                }
+            }
+            
+            // Adicionar todos os horários de funcionamento em uma lista
+            let allHoursHTML = '';
+            if (clinic.weekday_text && clinic.weekday_text.length > 0) {
+                allHoursHTML = `
+                    <div class="clinic-details-row">
+                        <i class="fas fa-clock"></i>
+                        <div class="clinic-details-hours">
+                            ${hoursText}
+                            <button class="hours-toggle-btn" onclick="toggleHoursDisplay(event)">
+                                <i class="fas fa-chevron-down"></i> Ver todos os horários
+                            </button>
+                            <div class="all-hours-container" style="display: none;">
+                                <ul class="hours-list">`;
+                
+                clinic.weekday_text.forEach(dayHour => {
+                    const parts = dayHour.split(':');
+                    if (parts.length > 1) {
+                        const dayPart = parts[0];
+                        const hoursPart = parts.slice(1).join(':').trim();
+                        
+                        // Verificar se este é o dia atual para destacá-lo
+                        if (dayPart.toLowerCase().includes(currentDay.toLowerCase())) {
+                            allHoursHTML += `<li><strong style="color: #FF7F50;">${dayPart}</strong>: ${hoursPart}</li>`;
+                        } else {
+                            allHoursHTML += `<li>${dayPart}: ${hoursPart}</li>`;
+                        }
+                    } else {
+                        allHoursHTML += `<li>${dayHour}</li>`;
+                    }
+                });
+                
+                allHoursHTML += `
+                                </ul>
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                allHoursHTML = `
+                    <div class="clinic-details-row">
+                        <i class="fas fa-clock"></i>
+                        <div class="clinic-details-hours">
+                            ${hoursText}
+                        </div>
+                    </div>`;
+            }
+            
+            popup.innerHTML = `
+                <div class="clinic-details-header">
+                    <h3><a href="https://www.google.com/maps/search/${encodeURIComponent(clinic.name + ' ' + (clinic.formatted_address || clinic.vicinity || ''))}" target="_blank" style="color: #333; text-decoration: none;">${clinic.name}</a></h3>
+                    <span class="clinic-details-status ${isOpen ? 'open' : 'closed'}">
+                        ${isOpen ? 'Aberto' : 'Fechado'}
+                    </span>
+                    <button class="clinic-details-close" onclick="closeClinicDetailsPopup()">✕</button>
+                </div>
+                <div class="clinic-details-body">
+                    <div class="clinic-details-row">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div class="clinic-details-address">${clinic.formatted_address || clinic.vicinity}</div>
+                    </div>
+                    <div class="clinic-details-row">
+                        <i class="fas fa-route"></i>
+                        <div class="clinic-details-distance">Distância: ${formattedDistance}</div>
+                    </div>
+                    <div class="clinic-details-row">
+                        <i class="fas fa-phone"></i>
+                        <div class="clinic-details-phone">${clinic.formatted_phone_number || 'Telefone não disponível'}</div>
+                    </div>
+                    ${allHoursHTML}
+                    <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${clinic.geometry.location.lat()},${clinic.geometry.location.lng()}&travelmode=driving" 
+                       target="_blank" 
+                       class="clinic-details-button" style="margin-bottom: 10px;">
+                       <i class="fas fa-directions"></i> Como chegar
+                    </a>
+                    ${clinic.formatted_phone_number ? `
+                    <a href="tel:${clinic.formatted_phone_number}" 
+                       class="clinic-details-button" style="background-color: #4CAF50;">
+                       <i class="fas fa-phone"></i> Ligar
+                    </a>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Adicionar CSS para a lista de horários
+            const style = document.createElement('style');
+            style.textContent = `
+                .hours-toggle-btn {
+                    background: none;
+                    border: none;
+                    color: #FF7F50;
+                    font-size: 12px;
+                    padding: 4px 8px;
+                    margin-top: 5px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    transition: all 0.2s ease;
+                }
+                
+                .hours-toggle-btn:hover {
+                    color: #ff6b3d;
+                    text-decoration: underline;
+                }
+                
+                .all-hours-container {
+                    margin-top: 10px;
+                    border-top: 1px solid #eee;
+                    padding-top: 10px;
+                }
+                
+                .hours-list {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                    font-size: 13px;
+                }
+                
+                .hours-list li {
+                    padding: 3px 0;
+                    color: #555;
+                }
+                
+                .hours-toggle-btn.active i {
+                    transform: rotate(180deg);
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Mostrar o popup e o overlay
+            popup.style.display = 'block';
+            overlay.style.display = 'block';
         }
         
-        // Inicializar o mapa quando a página estiver carregada
-        window.onload = initMap;
+        // Função para alternar a exibição dos horários
+        function toggleHoursDisplay(event) {
+            const button = event.currentTarget;
+            const hoursContainer = button.nextElementSibling;
+            
+            // Alternar exibição
+            if (hoursContainer.style.display === 'none' || !hoursContainer.style.display) {
+                hoursContainer.style.display = 'block';
+                button.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar horários';
+                button.classList.add('active');
+            } else {
+                hoursContainer.style.display = 'none';
+                button.innerHTML = '<i class="fas fa-chevron-down"></i> Ver todos os horários';
+                button.classList.remove('active');
+            }
+            
+            // Evitar que o clique feche o popup
+            event.stopPropagation();
+        }
+
+        // Função para fechar o popup de detalhes da clínica
+        function closeClinicDetailsPopup() {
+            const popup = document.getElementById('clinicDetailsPopup');
+            const overlay = document.getElementById('clinicDetailsOverlay');
+            
+            if (popup) popup.style.display = 'none';
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        // Função para ativar/desativar o Street View
+        function toggleStreetView() {
+            // Obter localização atual ou do marcador do usuário
+            const position = userMarker ? userMarker.getPosition() : map.getCenter();
+            
+            // Criar um ponto de visualização de rua próximo à posição atual
+            const panorama = map.getStreetView();
+            
+            if (panorama.getVisible()) {
+                // Se já estiver ativo, desativar
+                panorama.setVisible(false);
+            } else {
+                // Configurar o panorama e ativar
+                panorama.setPosition(position);
+                panorama.setPov({
+                    heading: 265,
+                    pitch: 0
+                });
+                panorama.setVisible(true);
+            }
+        }
     </script>
 </body>
 </html>
-

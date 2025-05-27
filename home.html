@@ -857,33 +857,89 @@
                         
                 // Criar o conteúdo da InfoWindow com estilo melhorado
                 const contentString = `
-                    <div style="width: 220px; background-color: white; padding: 0; overflow: hidden; border-radius: 10px;">
-                        <div style="margin: 0; padding: 0;">
-                            <div style="text-align: center; margin: 5px 0 25px 0;">
-                                <span style="display: inline-block; padding: 3px 12px; background-color: ${dog.estado === 'procurado' ? '#ff0000' : '#27ae60'}; color: white; border-radius: 20px; font-size: 12px; font-weight: bold;">
-                                    ${dog.estado === 'procurado' ? 'Procurado' : 'Encontrado'}
+                    <div style="width: 220px; background: ${dog.estado === 'procurado' ? '#e74c3c' : '#27ae60'}; padding: 0; margin: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); position: relative;">
+                        <!-- Header com status -->
+                        <div style="background: ${dog.estado === 'procurado' ? '#e74c3c' : '#27ae60'}; padding: 8px 0; text-align: center; margin: 0; border-radius: 12px 12px 0 0; position: relative;">
+                            <span style="color: white; font-size: 12px; font-weight: 600; text-transform: uppercase;">
+                                ${dog.estado === 'procurado' ? 'Procurado' : 'Encontrado'}
+                            </span>
+                            <!-- Botão de fechar -->
+                            <button onclick="closeCurrentInfoWindow()" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'" style="position: absolute; top: 5px; right: 8px; background: rgba(255,255,255,0.2); border: none; color: white; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; transition: background 0.2s;">
+                                ×
+                            </button>
+                        </div>
+                        <!-- Container branco para o conteúdo -->
+                        <div style="background: white; margin: 0; padding: 0; border-radius: 0 0 12px 12px;">
+                        
+                        <!-- Imagem do animal -->
+                        ${dog.image ? 
+                        `<div style="text-align: center; margin: 0; padding: 10px 0 8px 0;">
+                            <img src="${dog.image}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);" onerror="this.src='Images/dog-placeholder.jpg'">
+                        </div>` : 
+                        `<div style="text-align: center; margin: 0; padding: 10px 0 8px 0;">
+                            <div style="width: 100px; height: 100px; margin: 0 auto; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <i class="fas fa-dog" style="font-size: 30px; color: #999;"></i>
+                            </div>
+                        </div>`}
+                        
+                        <!-- Nome/Raça -->
+                        <div style="text-align: center; margin: 0; padding: 0 15px 10px 15px;">
+                            <h3 style="margin: 0; font-size: 16px; color: #333; font-weight: 600;">
+                                ${(() => {
+                                    // Se o nome contém "Animal adicionado por", mostrar apenas a raça ou "Animal"
+                                    if (dog.nome && dog.nome.includes('Animal adicionado por')) {
+                                        return dog.raca || 'Animal';
+                                    }
+                                    return dog.nome || dog.raca || 'Animal';
+                                })()}
+                            </h3>
+                            ${(() => {
+                                // Só mostrar a raça como subtítulo se o nome não contém "Animal adicionado por" e se nome e raça são diferentes
+                                if (dog.nome && !dog.nome.includes('Animal adicionado por') && dog.raca && dog.nome !== dog.raca) {
+                                    return `<p style="margin: 3px 0 0 0; font-size: 13px; color: #666;">${dog.raca}</p>`;
+                                }
+                                return '';
+                            })()}
+                        </div>
+                        
+                        <!-- Localização -->
+                        <div style="margin: 0 15px 12px 15px; padding: 8px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #ff7f50;">
+                            <div style="display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-map-marker-alt" style="color: #ff7f50; margin-right: 6px; font-size: 12px;"></i>
+                                <span style="font-size: 12px; color: #555; text-align: center;">${dog.endereco || 'Localização não especificada'}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Contacto -->
+                        ${dog.users && dog.users.phone ? `
+                        <div style="margin: 0 15px 12px 15px; padding: 8px; background: #e8f5e8; border-radius: 8px; border-left: 3px solid #4CAF50;">
+                            <div style="display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user" style="color: #4CAF50; margin-right: 6px; font-size: 12px;"></i>
+                                <span style="font-size: 12px; color: #555; text-align: center;">${dog.users.name || 'Contacto'}: ${dog.users.phone}</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <!-- Botões -->
+                        <div style="padding: 0 15px 15px; display: flex; flex-direction: column; gap: 8px;">
+                            <button onclick="location.href='animal-details.html?id=${dog.id}'" style="background: #ff7f50; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 13px; font-weight: 500;">
+                                <span style="display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-info-circle" style="margin-right: 6px; font-size: 13px;"></i>Ver Detalhes
                                 </span>
-                            </div>
-                            ${dog.image ? 
-                            `<div style="text-align: center; margin: 0 0 8px 0;">
-                                <img src="${dog.image}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 0px;" onerror="this.src='Images/dog-placeholder.jpg'">
-                            </div>` : ''}
-                            <div style="text-align: center; margin: 0 0 8px 0;">
-                                <span style="margin: 0; font-size: 16px; color: #333;">${dog.raca || 'Não especificada'}</span>
-                            </div>
-                            <div style="margin: 0 0 8px; font-size: 12px; color: #666; text-align: center;">
-                                <div style="display: flex; align-items: center; justify-content: center; padding-left: 15px;">
-                                    <i class="fas fa-map-marker-alt" style="color: #ff6b38; margin-right: 5px; font-size: 11px; position: relative; top: -1px;"></i>
-                                    <span>${dog.endereco || 'Morada não especificada'}</span>
-                            </div>
-                            </div>
-                            <div style="padding: 0 15px 15px;">
-                                <button onclick="location.href='animal-details.html?id=${dog.id}'" style="background: #ff7f50; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 14px;">
-                                    <span style="display: inline-flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-paw" style="margin-right: 5px; font-size: 14px;"></i>Ver Detalhes
-                                    </span>
-                                </button>
-                            </div>
+                            </button>
+                            <button onclick="openDirections(${lat}, ${lng})" style="background: #4CAF50; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 13px; font-weight: 500;">
+                                <span style="display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-route" style="margin-right: 6px; font-size: 13px;"></i>Como chegar
+                                </span>
+                            </button>
+                            ${dog.users && dog.users.phone ? `
+                            <button onclick="window.open('tel:${dog.users.phone}', '_self')" style="background: #2196F3; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 13px; font-weight: 500;">
+                                <span style="display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-phone" style="margin-right: 6px; font-size: 13px;"></i>Ligar
+                                </span>
+                            </button>
+                            ` : ''}
+                        </div>
                         </div>
                     </div>
                 `;
@@ -891,9 +947,9 @@
                 // Usar configurações adicionais para evitar problemas com o InfoWindow
                 const infoWindow = new google.maps.InfoWindow({
                     content: contentString,
-                    maxWidth: 220,
-                    pixelOffset: new google.maps.Size(0, 0),
-                    disableAutoPan: false
+                    maxWidth: 240,
+                    pixelOffset: new google.maps.Size(0, -35),
+                    disableAutoPan: true
                 });
                 
                 // Adicionar evento para aplicar estilos após abrir
@@ -912,6 +968,17 @@
                     // Fechar qualquer InfoWindow aberto
                     if (currentOpenInfoWindow) {
                         currentOpenInfoWindow.close();
+                    }
+                    
+                    // Configurar posição para forçar abertura para cima
+                    const markerPosition = marker.getPosition();
+                    const mapBounds = map.getBounds();
+                    const mapCenter = map.getCenter();
+                    
+                    // Se o marcador estiver na metade inferior do mapa, ajustar o centro ligeiramente para baixo
+                    if (markerPosition.lat() < mapCenter.lat()) {
+                        const offsetLat = mapCenter.lat() - 0.002; // Pequeno offset para baixo
+                        map.panTo({lat: offsetLat, lng: mapCenter.lng()});
                     }
                     
                     // Abrir o novo InfoWindow
@@ -954,9 +1021,10 @@
                     const containers = document.querySelectorAll('.gm-style-iw-c');
                     containers.forEach(container => {
                         container.style.padding = '0 !important';
-                        container.style.borderRadius = '10px !important';
+                        container.style.margin = '0 !important';
+                        container.style.borderRadius = '12px !important';
                         container.style.overflow = 'hidden !important';
-                        container.style.boxShadow = '0 2px 7px rgba(0, 0, 0, 0.15) !important';
+                        container.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.12) !important';
                     });
                     
                     // Estilizar os containers internos
@@ -964,6 +1032,21 @@
                     innerContainers.forEach(innerContainer => {
                         innerContainer.style.overflow = 'hidden !important';
                         innerContainer.style.padding = '0 !important';
+                        innerContainer.style.margin = '0 !important';
+                    });
+
+                    // Estilizar o wrapper principal do InfoWindow
+                    const wrappers = document.querySelectorAll('.gm-style-iw');
+                    wrappers.forEach(wrapper => {
+                        wrapper.style.padding = '0 !important';
+                        wrapper.style.margin = '0 !important';
+                    });
+
+                    // Estilizar elementos específicos do Google Maps
+                    const iwContainers = document.querySelectorAll('.gm-style-iw-tc');
+                    iwContainers.forEach(container => {
+                        container.style.padding = '0 !important';
+                        container.style.margin = '0 !important';
                     });
 
                     // Estilizar o botão de fechar
@@ -973,13 +1056,18 @@
                         button.style.right = '0px !important';
                     });
 
-                    // Adicionar CSS para simplificar estilos
+                    // Adicionar CSS para eliminar todos os espaços e forçar posicionamento correto
                     const style = document.createElement('style');
                     style.textContent = `
                         .gm-style-iw-d::-webkit-scrollbar { display: none; }
-                        .gm-style-iw { padding: 0 !important; }
+                        .gm-style-iw { padding: 0 !important; margin: 0 !important; top: 0 !important; }
+                        .gm-style-iw-c { padding: 0 !important; margin: 0 !important; top: 0 !important; }
+                        .gm-style-iw-d { padding: 0 !important; margin: 0 !important; top: 0 !important; }
+                        .gm-style-iw-tc { padding: 0 !important; margin: 0 !important; top: 0 !important; }
+                        .gm-style-iw-t { padding: 0 !important; margin: 0 !important; top: 0 !important; }
                         .gm-ui-hover-effect { opacity: 1 !important; }
                         .gm-ui-hover-effect img { opacity: 1 !important; }
+                        .gm-style-iw-chr { display: none !important; }
                     `;
                     document.head.appendChild(style);
                 } catch (error) {
@@ -1003,10 +1091,10 @@
         // Função para carregar todos os cães do Supabase
         async function loadAllDogs() {
             try {
-                // Buscar todos os cães do banco de dados
+                // Buscar todos os cães do banco de dados com informações do usuário
                 const { data, error } = await window.supabase
                     .from('dogs')
-                    .select('*');
+                    .select('*, users(name, phone)');
                 
                 if (error) throw error;
                 
@@ -1565,6 +1653,51 @@
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             const distance = R * c; // Distância em km
             return distance;
+        }
+
+        // Função para fechar o InfoWindow atual
+        function closeCurrentInfoWindow() {
+            if (currentOpenInfoWindow) {
+                currentOpenInfoWindow.close();
+                currentOpenInfoWindow = null;
+            }
+        }
+
+        // Função para abrir direções no Google Maps
+        function openDirections(destinationLat, destinationLng) {
+            // Obter localização do usuário
+            const savedLocation = getSavedLocation();
+            
+            if (savedLocation) {
+                // Usar localização salva
+                const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${savedLocation.lat},${savedLocation.lng}&destination=${destinationLat},${destinationLng}&travelmode=driving`;
+                window.open(directionsUrl, '_blank');
+            } else if (userMarker) {
+                // Usar posição do marcador do usuário
+                const userPosition = userMarker.getPosition();
+                const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userPosition.lat()},${userPosition.lng()}&destination=${destinationLat},${destinationLng}&travelmode=driving`;
+                window.open(directionsUrl, '_blank');
+            } else {
+                // Tentar obter localização atual
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${position.coords.latitude},${position.coords.longitude}&destination=${destinationLat},${destinationLng}&travelmode=driving`;
+                            window.open(directionsUrl, '_blank');
+                        },
+                        (error) => {
+                            console.error('Erro ao obter localização:', error);
+                            // Abrir apenas o destino se não conseguir obter a localização
+                            const directionsUrl = `https://www.google.com/maps/search/${destinationLat},${destinationLng}`;
+                            window.open(directionsUrl, '_blank');
+                        }
+                    );
+                } else {
+                    // Abrir apenas o destino se geolocalização não estiver disponível
+                    const directionsUrl = `https://www.google.com/maps/search/${destinationLat},${destinationLng}`;
+                    window.open(directionsUrl, '_blank');
+                }
+            }
         }
     </script>
     
