@@ -437,8 +437,11 @@
 
         .popup-buttons {
             display: flex;
+<<<<<<< HEAD
             flex-direction: column;
             gap: 8px;
+=======
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
             margin: 18px;
             justify-content: center;
             padding-top: 4px;
@@ -1647,6 +1650,7 @@
         #nearestClinicLegend:hover {
             background-color: rgba(255, 127, 80, 0.08);
             border-left: 3px solid rgba(255, 127, 80, 0.8);
+<<<<<<< HEAD
         }
 
         /* Estilos para links clicáveis nos nomes das clínicas */
@@ -1681,6 +1685,8 @@
         .clinic-name a:hover {
             color: #FF7F50 !important;
             text-decoration: underline !important;
+=======
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
         }
     </style>
 </head>
@@ -1800,7 +1806,7 @@
             // Inicializar o mapa com centro em uma localização padrão
             const defaultCenter = { lat: -23.5505, lng: -46.6333 }; // São Paulo (ou outra localização padrão)
                 map = new google.maps.Map(document.getElementById('map'), {
-                    zoom: 11,
+                    zoom: 13,
                 center: defaultCenter,
                     mapTypeId: google.maps.MapTypeId.ROADMAP,
                     mapTypeControl: true,
@@ -2216,76 +2222,48 @@
                 // Criar o serviço do Places
                 const service = new google.maps.places.PlacesService(map);
                 
-                // Array para armazenar todos os resultados de múltiplas buscas
-                let allResults = [];
-                let searchesCompleted = 0;
-                const totalSearches = 5; // Busca central + 4 direções
-                
-                // Função para processar resultados quando todas as buscas terminarem
-                const processAllResults = () => {
-                    searchesCompleted++;
-                    if (searchesCompleted === totalSearches) {
-                        document.getElementById('loadingIndicator').style.display = 'none';
-                        
-                        if (allResults.length > 0) {
-                            // Remover duplicatas baseado no place_id
-                            const uniqueResults = allResults.filter((clinic, index, self) => 
-                                index === self.findIndex(c => c.place_id === clinic.place_id)
-                            );
-                            
-                            console.log("Total de clínicas únicas encontradas:", uniqueResults.length);
-                            fetchDetailedClinicInfo(uniqueResults, location);
-                        } else {
-                            showCustomAlert('Aviso', 'Não foram encontradas clínicas veterinárias próximas. Exibindo exemplos.', displayDefaultClinics);
-                        }
-                    }
-                };
-                
-                // Busca central (localização atual)
-                const centralRequest = {
+                // Realizar busca de clínicas veterinárias
+                const request = {
                     location: location,
-                    radius: 25000,
+                    radius: 10000, // Aumentado para 10 km para encontrar mais clínicas
                     type: 'veterinary_care',
                     keyword: 'veterinário clínica veterinária hospital animal'
                 };
                 
-                service.nearbySearch(centralRequest, (results, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                        allResults = allResults.concat(results);
-                        console.log("Busca central: ", results.length, "clínicas");
-                    }
-                    processAllResults();
-                });
-                
-                // Criar pontos de busca em 4 direções (Norte, Sul, Leste, Oeste)
-                const searchRadius = 0.15; // Aproximadamente 15km em graus
-                const searchPoints = [
-                    { lat: location.lat + searchRadius, lng: location.lng, name: "Norte" }, // Norte
-                    { lat: location.lat - searchRadius, lng: location.lng, name: "Sul" },   // Sul
-                    { lat: location.lat, lng: location.lng + searchRadius, name: "Leste" }, // Leste
-                    { lat: location.lat, lng: location.lng - searchRadius, name: "Oeste" }  // Oeste
-                ];
-                
-                // Realizar busca em cada direção
-                searchPoints.forEach((point, index) => {
-                    const directionRequest = {
-                        location: point,
-                        radius: 20000, // 20km de raio para cada ponto
-                        type: 'veterinary_care',
-                        keyword: 'veterinário clínica veterinária hospital animal'
-                    };
+                console.log("Searching for veterinary clinics...");
+                service.nearbySearch(request, (results, status) => {
+                    document.getElementById('loadingIndicator').style.display = 'none';
                     
-                    setTimeout(() => {
-                        service.nearbySearch(directionRequest, (results, status) => {
-                            if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                                allResults = allResults.concat(results);
-                                console.log(`Busca ${point.name}:`, results.length, "clínicas");
-                            }
-                            processAllResults();
-                        });
-                    }, index * 200); // Delay entre buscas para evitar rate limiting
+                    if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                        console.log("Clínicas encontradas:", results.length);
+                        
+                        // Buscar detalhes para cada clínica para obter horários de funcionamento
+                        fetchDetailedClinicInfo(results, location);
+                    } else {
+                        console.error('Erro na busca de clínicas veterinárias:', status);
+                        // Tente com um raio maior se não encontrar nada
+                        if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+                            const extendedRequest = {
+                                location: location,
+                                radius: 20000, // Tenta com 20km
+                                type: 'veterinary_care',
+                                keyword: 'veterinário'
+                            };
+                            
+                            service.nearbySearch(extendedRequest, (extResults, extStatus) => {
+                                if (extStatus === google.maps.places.PlacesServiceStatus.OK && extResults && extResults.length > 0) {
+                                    console.log("Clínicas encontradas com raio estendido:", extResults.length);
+                                    fetchDetailedClinicInfo(extResults, location);
+                                } else {
+                                    // Se ainda não encontrar, exibir clínicas padrão
+                                    showCustomAlert('Aviso', 'Não foram encontradas clínicas veterinárias próximas. Exibindo exemplos.', displayDefaultClinics);
+                                }
+                            });
+                        } else {
+                            showCustomAlert('Aviso', 'Ocorreu um erro ao buscar clínicas veterinárias. Exibindo exemplos.', displayDefaultClinics);
+                        }
+                    }
                 });
-                
             } catch (error) {
                 console.error("Error searching for clinics:", error);
                 document.getElementById('loadingIndicator').style.display = 'none';
@@ -2996,8 +2974,12 @@
                     isOpen: true,
                     is24h: true,
                     distance: "500m",
+<<<<<<< HEAD
                     address: "Rua das Flores, 123",
                     phone: "(11) 3456-7890"
+=======
+                    address: "Rua das Flores, 123"
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
                 },
                 {
                     name: "Hospital Veterinário Animal Care",
@@ -3005,8 +2987,12 @@
                     isOpen: true,
                     is24h: false,
                     distance: "700m",
+<<<<<<< HEAD
                     address: "Av. Principal, 456",
                     phone: "(11) 2345-6789"
+=======
+                    address: "Av. Principal, 456"
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
                 },
                 {
                     name: "Clínica Pet Saúde",
@@ -3014,8 +3000,12 @@
                     isOpen: false,
                     is24h: false,
                     distance: "600m",
+<<<<<<< HEAD
                     address: "Rua dos Animais, 789",
                     phone: "(11) 4567-8901"
+=======
+                    address: "Rua dos Animais, 789"
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
                 }
             ];
             
@@ -3062,7 +3052,11 @@
                     // Criar conteúdo do popup
                     const content = `<div class="clinic-popup">
                         <div class="popup-title">
+<<<<<<< HEAD
                             <a href="https://www.google.com/maps/search/${encodeURIComponent(clinic.name + ' ' + (clinic.address || clinic.vicinity || ''))}" target="_blank">
+=======
+                            <a href="https://www.google.com/search?q=${encodeURIComponent(clinic.name)}" target="_blank">
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
                                 ${clinic.name}
                             </a>
                             <span class="status-indicator ${isOpen ? 'status-open' : 'status-closed'}">
@@ -3079,6 +3073,7 @@
                             <span>Distância: ${clinic.distance}</span>
                         </div>
                         <div class="popup-info">
+<<<<<<< HEAD
                             <i class="fas fa-phone"></i>
                             <span>${clinic.phone || 'Telefone não disponível'}</span>
                         </div>
@@ -3099,6 +3094,18 @@
                             </a>
                             ` : ''}
                         </div>
+=======
+                            <i class="fas fa-clock"></i>
+                            <span>${clinic.is24h ? 'Aberto 24 horas' : 'Horário comercial'}</span>
+                        </div>
+                        <div class="popup-buttons">
+                            <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${clinic.location.lat},${clinic.location.lng}&travelmode=driving" 
+                                target="_blank" 
+                                class="popup-button">
+                                <i class="fas fa-directions"></i> Como chegar
+                            </a>
+                        </div>
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
                     </div>`;
                     
                     // Exibir popup
@@ -3181,7 +3188,11 @@
             clinicCard.innerHTML = `
                 <div class="clinic-header">
                     <h3 class="clinic-name">
+<<<<<<< HEAD
                         <a href="https://www.google.com/maps/search/${encodeURIComponent(clinic.name + ' ' + (clinic.formatted_address || clinic.vicinity || ''))}" target="_blank" style="color: #333; text-decoration: none;">
+=======
+                        <a href="https://www.google.com/search?q=${encodeURIComponent(clinic.name)}" target="_blank" style="color: #333; text-decoration: none;">
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
                             ${clinic.name}
                         </a>
                     </h3>
@@ -3195,18 +3206,25 @@
                     <p><i class="fas fa-route"></i> Distância: ${distance}</p>
                     <p><i class="fas fa-phone"></i> ${clinic.formatted_phone_number || 'Telefone não disponível'}</p>
                 </div>
+<<<<<<< HEAD
                 <div class="clinic-actions" style="display: flex; flex-direction: column; gap: 8px;">
+=======
+                <div class="clinic-actions">
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
                     <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${clinic.geometry.location.lat()},${clinic.geometry.location.lng()}&travelmode=driving" 
                        target="_blank" 
                        class="popup-button">
                        <i class="fas fa-directions"></i> Como chegar
                     </a>
+<<<<<<< HEAD
                     ${clinic.formatted_phone_number ? `
                     <a href="tel:${clinic.formatted_phone_number}" 
                        class="popup-button" style="background-color: #4CAF50;">
                        <i class="fas fa-phone"></i> Ligar
                     </a>
                     ` : ''}
+=======
+>>>>>>> e26035a75f8cbe8c3c76d89e0dc3def213af59d9
                 </div>
             `;
             
