@@ -351,19 +351,25 @@
             }
         }
 
+        // ===== FUNÇÃO PARA PROCESSAR PESQUISA COM FILTROS =====
+        // Esta função é chamada quando o utilizador clica no botão "Pesquisar"
         function handleSearch() {
+            // Recolher todos os valores dos filtros seleccionados pelo utilizador
             const filters = {
-                estado: document.getElementById('estado').value,
-                raca: document.getElementById('raca').value,
-                idade: document.getElementById('idade').value,
-                sexo: document.getElementById('sexo').value,
-                castrado: document.getElementById('castrado').value,
-                agressivo: document.getElementById('agressivo').value,
-                porte: document.getElementById('porte').value
+                estado: document.getElementById('estado').value,        // Procurado ou Encontrado
+                raca: document.getElementById('raca').value,            // Raça do animal
+                idade: document.getElementById('idade').value,          // Faixa etária
+                sexo: document.getElementById('sexo').value,            // Macho ou Fêmea
+                castrado: document.getElementById('castrado').value,    // Se é castrado
+                agressivo: document.getElementById('agressivo').value,  // Nível de agressividade
+                porte: document.getElementById('porte').value           // Tamanho do animal
             };
+            // Chamar a função que carrega os cães com os filtros aplicados
             loadDogs(filters);
         }
 
+        // ===== FUNÇÃO PARA MOSTRAR DETALHES DE UM ANIMAL =====
+        // Redireciona para a página de detalhes quando o utilizador clica em "Ver mais"
         function showDetails(id) {
             window.location.href = `animal-details.html?id=${id}`;
         }

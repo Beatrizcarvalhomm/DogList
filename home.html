@@ -136,7 +136,7 @@
             border-radius: 15px;
             background-color: rgba(255, 255, 255, 0.92);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+            z-index: 999; /* Z-index menor que os InfoWindows (10001) para evitar sobreposição */
             min-width: 230px;
             border: 1px solid rgba(255, 255, 255, 0.8);
             transition: all 0.3s ease;
@@ -441,6 +441,7 @@
                 left: 15px;
                 padding: 12px;
                 min-width: 220px;
+                z-index: 999; /* Z-index menor que os InfoWindows para evitar sobreposição */
             }
             
             .legend-item {
@@ -487,6 +488,7 @@
                 left: 12px;
                 padding: 10px;
                 min-width: 210px;
+                z-index: 999; /* Z-index menor que os InfoWindows para evitar sobreposição */
             }
             
             .legend-item {
@@ -567,67 +569,80 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     
     <script>
-        // Verificar se está logado
+        // Verificar se o utilizador está autenticado (logado)
+        // Se não estiver, redireciona para a página de login
         if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'index.html';
         }
         
-        // Variáveis globais
-        let map;
-        let userMarker;
-        let petMarkers = [];
-        let shelterMarkers = [];
-        let infoWindow;
-        let geocoder;
-        let currentOpenInfoWindow = null;
+        // Declaração das variáveis globais que vão ser usadas em toda a aplicação
+        let map; // Objecto do mapa do Google Maps
+        let userMarker; // Marcador que mostra onde o utilizador está localizado
+        let petMarkers = []; // Array que guarda todos os marcadores dos animais (cães)
+        let shelterMarkers = []; // Array que guarda todos os marcadores dos abrigos temporários
+        let infoWindow; // Janela de informação que aparece quando clicamos num marcador
+        let geocoder; // Serviço do Google Maps para converter endereços em coordenadas
+        let currentOpenInfoWindow = null; // Guarda referência da janela de informação que está aberta
         
-        // Variáveis para controlar visibilidade
-        let procuradosVisible = localStorage.getItem('procuradosVisible') !== 'false';
-        let encontradosVisible = localStorage.getItem('encontradosVisible') !== 'false';
-        let abrigosVisible = localStorage.getItem('abrigosVisible') !== 'false';
+        // Variáveis para controlar quais tipos de marcadores estão visíveis no mapa
+        // Estas preferências são guardadas no localStorage para persistir entre sessões
+        let procuradosVisible = localStorage.getItem('procuradosVisible') !== 'false'; // Animais procurados visíveis por defeito
+        let encontradosVisible = localStorage.getItem('encontradosVisible') !== 'false'; // Animais encontrados visíveis por defeito
+        let abrigosVisible = localStorage.getItem('abrigosVisible') !== 'false'; // Abrigos temporários visíveis por defeito
         
+        // Mostrar no console o estado inicial das preferências de visibilidade
         console.log('Estado inicial carregado - Procurados:', procuradosVisible, 'Encontrados:', encontradosVisible, 'Abrigos:', abrigosVisible);
         
+        // Função principal que inicializa o mapa do Google Maps
         function initMap() {
             try {
                 console.log("Iniciando função initMap");
+                // Mostrar o indicador de carregamento enquanto o mapa está a ser preparado
                 document.getElementById('loadingIndicator').style.display = 'flex';
                 
-                // Verificar se o elemento map existe
+                // Verificar se o elemento HTML onde o mapa vai ser colocado existe na página
                 const mapElement = document.getElementById('map');
                 if (!mapElement) {
                     console.error("Elemento 'map' não encontrado no DOM!");
                     return;
                 }
                 
-                // Mostrar dimensões do mapa para debug
+                // Mostrar as dimensões do elemento do mapa no console para ajudar no debug
                 console.log("Dimensões do mapa:", mapElement.offsetWidth, "x", mapElement.offsetHeight);
             
-                // Carregar mapa
+                // Criar o objecto do mapa do Google Maps com as configurações iniciais
                 map = new google.maps.Map(mapElement, {
-                    center: { lat: -23.550520, lng: -46.633308 }, // São Paulo
-                    zoom: 12,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP,
-                mapTypeControl: true,
-                mapTypeControlOptions: {
-                        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
-                        position: google.maps.ControlPosition.TOP_RIGHT
-                },
-                fullscreenControl: true,
+                    center: { lat: -23.550520, lng: -46.633308 }, // Coordenadas de São Paulo como centro inicial
+                    zoom: 12, // Nível de zoom inicial (12 é um bom nível para ver uma cidade)
+                    mapTypeId: google.maps.MapTypeId.ROADMAP, // Tipo de mapa (estrada/normal)
+                    
+                    // Controlo para mudar o tipo de mapa (estrada, satélite, etc.)
+                    mapTypeControl: true,
+                    mapTypeControlOptions: {
+                        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU, // Estilo dropdown
+                        position: google.maps.ControlPosition.TOP_RIGHT // Posição no canto superior direito
+                    },
+                    
+                    // Controlo para ver o mapa em ecrã completo
+                    fullscreenControl: true,
                     fullscreenControlOptions: {
                         position: google.maps.ControlPosition.RIGHT_TOP
                     },
+                    
+                    // Controlo do Street View (vista de rua)
                     streetViewControl: true,
                     streetViewControlOptions: {
                         position: google.maps.ControlPosition.RIGHT_TOP
                     },
+                    
+                    // Controlos de zoom (+ e -)
                     zoomControl: true,
                     zoomControlOptions: {
                         position: google.maps.ControlPosition.RIGHT_TOP
                     }
                 });
                 
-                // Verificar se o mapa foi inicializado corretamente
+                // Verificar se o mapa foi criado com sucesso
                 if (!map) {
                     console.error("Falha ao inicializar o mapa. O objeto do mapa é indefinido.");
                     return;
@@ -635,149 +650,188 @@
                 
                 console.log("Mapa inicializado com sucesso!");
                 
-                // Criar infowindow para uso global
+                // Criar uma janela de informação global que será reutilizada para todos os marcadores
                 infoWindow = new google.maps.InfoWindow({
-                    maxWidth: 300,
-                    disableAutoPan: false
+                    maxWidth: 300, // Largura máxima da janela
+                    disableAutoPan: false // Permite que o mapa se mova automaticamente para mostrar a janela
                 });
                 
-                // Inicializar o tema de mapa padrão
-                const savedMapType = localStorage.getItem('mapType') || 'roadmap';
+                // Carregar o tipo de mapa preferido pelo utilizador (guardado anteriormente)
+                const savedMapType = localStorage.getItem('mapType') || 'roadmap'; // Por defeito usa 'roadmap'
                 map.setMapTypeId(savedMapType);
                 
-                // Tentar obter localização salva
+                // Tentar obter a localização do utilizador que foi guardada anteriormente
                 const savedLocation = getSavedLocation();
                 if (savedLocation) {
                     console.log("Localização salva encontrada:", savedLocation);
-                    // Centralizar mapa na localização salva
+                    // Centrar o mapa na localização guardada
                     map.setCenter(savedLocation);
                     
-                    // Adicionar marcador do usuário
+                    // Colocar um marcador a mostrar onde o utilizador está
                     addUserMarker(savedLocation);
                 } else {
                     console.log("Nenhuma localização salva, tentando obter localização atual");
-                    // Tentar obter localização do usuário
+                    // Se não há localização guardada, pedir permissão para obter a localização actual
                     requestUserLocation();
                 }
                 
-                // Evento para marcar como finalizado o carregamento do mapa
+                // Evento que é executado quando o mapa termina de carregar completamente
+                // 'idle' significa que o mapa parou de se mover e está pronto para uso
                 google.maps.event.addListenerOnce(map, 'idle', function() {
                     console.log("Mapa carregado e pronto");
+                    // Esconder o indicador de carregamento
                     document.getElementById('loadingIndicator').style.display = 'none';
                     
-                    // Limpar imagens corrompidas antes de carregar dados
+                    // Limpar dados de imagens que possam estar corrompidos no localStorage
                     cleanupCorruptedImages();
                     
-                    // Carregar todos os cães e abrigos temporários
-                    loadAllDogs();
-                    loadTemporaryShelters();
+                    // Carregar todos os animais e abrigos da base de dados e colocá-los no mapa
+                    loadAllDogs(); // Carregar cães procurados e encontrados
+                    loadTemporaryShelters(); // Carregar abrigos temporários
                     
-                    // Aplicar o estado salvo após carregar os marcadores
+                    // Aplicar as preferências de visibilidade que o utilizador tinha guardadas
+                    // Usar setTimeout para garantir que os marcadores foram criados primeiro
                     setTimeout(() => {
                         applyVisibilityState();
                     }, 500);
                 });
                 
+                // Adicionar evento de clique no mapa para restaurar a legenda em dispositivos móveis
+                map.addListener('click', function() {
+                    // Fechar qualquer InfoWindow aberto
+                    if (currentOpenInfoWindow) {
+                        currentOpenInfoWindow.close();
+                        currentOpenInfoWindow = null;
+                    }
+                    
+                    // Restaurar a legenda em dispositivos móveis
+                    const isMobile = window.innerWidth <= 767;
+                    if (isMobile) {
+                        const legend = document.querySelector('.map-legend');
+                        if (legend) {
+                            legend.style.opacity = '1';
+                            legend.style.pointerEvents = 'auto';
+                        }
+                    }
+                });
+                
                 console.log("Função initMap concluída com sucesso");
             } catch (error) {
+                // Se algo correr mal, mostrar o erro e avisar o utilizador
                 console.error("ERRO ao inicializar o mapa:", error);
                 alert("Ocorreu um erro ao inicializar o mapa. Por favor, tente recarregar a página.");
             }
         }
         
+        // Função para obter a localização do utilizador que foi guardada anteriormente
         function getSavedLocation() {
+            // Tentar obter as coordenadas guardadas no localStorage
             const savedLat = localStorage.getItem('userLocationLat');
             const savedLng = localStorage.getItem('userLocationLng');
             
+            // Se ambas as coordenadas existem, devolver um objecto com lat e lng
             if (savedLat && savedLng) {
                 return {
-                    lat: parseFloat(savedLat),
-                    lng: parseFloat(savedLng)
+                    lat: parseFloat(savedLat), // Converter string para número decimal
+                    lng: parseFloat(savedLng)  // Converter string para número decimal
                 };
             }
             
+            // Se não há localização guardada, devolver null
             return null;
         }
         
+        // Função para guardar a localização do utilizador no localStorage
         function saveUserLocation(location) {
+            // Guardar latitude e longitude separadamente
             localStorage.setItem('userLocationLat', location.lat);
             localStorage.setItem('userLocationLng', location.lng);
         }
         
+        // Função para adicionar um marcador que mostra onde o utilizador está localizado
         function addUserMarker(location) {
-            // Remover marcador existente, se houver
+            // Se já existe um marcador do utilizador, removê-lo primeiro
             if (userMarker) {
                 userMarker.setMap(null);
             }
             
-            // Criar novo marcador do usuário
+            // Criar um novo marcador para mostrar a localização do utilizador
             userMarker = new google.maps.Marker({
-                position: location,
-                map: map,
-                title: 'Está aqui',
+                position: location, // Coordenadas onde colocar o marcador
+                map: map, // Mapa onde colocar o marcador
+                title: 'Está aqui', // Texto que aparece quando passamos o rato por cima
                 icon: {
+                    // Usar um círculo azul como ícone
                     path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: '#4285F4',
-                    fillOpacity: 1,
-                    strokeWeight: 2,
-                    strokeColor: '#FFFFFF',
-                    scale: 12
+                    fillColor: '#4285F4', // Cor azul do Google
+                    fillOpacity: 1, // Totalmente opaco
+                    strokeWeight: 2, // Espessura da borda
+                    strokeColor: '#FFFFFF', // Cor branca da borda
+                    scale: 12 // Tamanho do círculo
                 },
-                zIndex: 1 // Valor baixo para ficar abaixo dos outros marcadores
+                zIndex: 1 // Valor baixo para que este marcador fique atrás dos outros
             });
 
-            // Adicionar evento de clique ao marcador
+            // Adicionar um evento para quando o utilizador clica no marcador da sua localização
             userMarker.addListener('click', () => {
-                showLocationPopup(userMarker);
+                showLocationPopup(userMarker); // Mostrar popup a confirmar que é a localização do utilizador
             });
 
-            return userMarker;
+            return userMarker; // Devolver o marcador criado
         }
         
+        // Função para adicionar marcadores de todos os animais (cães) no mapa
         function addPetMarkers() {
-            // Limpar marcadores existentes
+            // Primeiro, limpar todos os marcadores de animais que já estão no mapa
             clearPetMarkers();
             
+            // Obter a lista de todos os cães guardada no localStorage
             const allDogs = JSON.parse(localStorage.getItem('allDogs') || '[]');
             console.log(`Carregando ${allDogs.length} cães:`, allDogs);
             
+            // Se não há cães para mostrar, sair da função
             if (allDogs.length === 0) {
                 console.log('Nenhum cão cadastrado para exibir no mapa');
                 return;
             }
             
+            // Para cada cão na lista, verificar se tem localização e criar um marcador
             allDogs.forEach((dog) => {
-                    if (dog.location && dog.location.lat && dog.location.lng) {
-                    addDogMarker(dog);
+                // Só criar marcador se o cão tem coordenadas válidas
+                if (dog.location && dog.location.lat && dog.location.lng) {
+                    addDogMarker(dog); // Criar marcador individual para este cão
                 }
             });
             
-            // Também recarregar abrigos temporários
+            // Também recarregar os abrigos temporários
             loadTemporaryShelters();
         }
         
+        // Função para criar um marcador individual para um cão no mapa
         function addDogMarker(dog) {
             try {
-                // Log detalhado para diagnóstico
+                // Mostrar informações detalhadas no console para ajudar no debug
                 console.log('Tentando adicionar marcador para:', dog);
                 
-                // Verificar e normalizar a localização
+                // Declarar variáveis para guardar as coordenadas do cão
+                // Vamos tentar extrair lat/lng de diferentes formatos possíveis
                 let lat, lng;
                 
+                // Tentar extrair coordenadas de diferentes formatos possíveis
                 if (dog.location) {
-                    // Verificar se location é um objeto com lat/lng
+                    // Verificar se location é um objecto (formato mais comum)
                     if (typeof dog.location === 'object') {
                         if (dog.location.lat !== undefined && dog.location.lng !== undefined) {
-                            // Formatar lat/lng
+                            // Formato padrão: {lat: X, lng: Y}
                             lat = parseFloat(dog.location.lat);
                             lng = parseFloat(dog.location.lng);
                         } else if (dog.location.latitude !== undefined && dog.location.longitude !== undefined) {
-                            // Formato alternativo com latitude/longitude
+                            // Formato alternativo: {latitude: X, longitude: Y}
                             lat = parseFloat(dog.location.latitude);
                             lng = parseFloat(dog.location.longitude);
                         }
                     } else if (typeof dog.location === 'string') {
-                        // Tentar extrair coordenadas de uma string
+                        // Se location é uma string, tentar converter para objecto JSON
                         try {
                             const locationObj = JSON.parse(dog.location);
                             lat = parseFloat(locationObj.lat || locationObj.latitude);
@@ -787,39 +841,41 @@
                         }
                     }
                 } else if (dog.lat !== undefined && dog.lng !== undefined) {
-                    // Coordenadas diretamente no objeto do cão
+                    // Coordenadas guardadas directamente no objecto do cão
                     lat = parseFloat(dog.lat);
                     lng = parseFloat(dog.lng);
                 } else if (dog.latitude !== undefined && dog.longitude !== undefined) {
-                    // Formato alternativo diretamente no objeto do cão
+                    // Formato alternativo guardado directamente no objecto do cão
                     lat = parseFloat(dog.latitude);
                     lng = parseFloat(dog.longitude);
                 }
                 
+                // Verificar se conseguimos obter coordenadas válidas
                 if (isNaN(lat) || isNaN(lng)) {
                     console.error('Coordenadas inválidas após tentativa de normalização:', {lat, lng, dog});
-                    return null;
+                    return null; // Sair da função se as coordenadas não são válidas
                 }
                 
-                // Verificar se a localização do animal está muito próxima da localização do usuário
-                // e adicionar um pequeno deslocamento se necessário
+                // Verificar se o animal está muito próximo da localização do utilizador
+                // Se estiver, vamos afastar um pouco para evitar sobreposição de marcadores
                 if (userMarker) {
                     const userPosition = userMarker.getPosition();
                     const userLat = userPosition.lat();
                     const userLng = userPosition.lng();
                     
-                    // Calcular a distância aproximada entre os pontos
+                    // Calcular a distância entre o animal e o utilizador
                     const distance = calculateDistance(lat, lng, userLat, userLng);
                     
-                    // Se estiver muito próximo (menos de 5 metros), adicionar um pequeno deslocamento
+                    // Se a distância for muito pequena (menos de 5 metros), afastar o marcador
                     if (distance < 0.005) { // 0.005 km = 5 metros
                         console.log('Animal muito próximo da localização do usuário. Adicionando deslocamento.');
                         
-                        // Adicionar um deslocamento maior (aprox. 20-30 metros)
-                        // Usando valores aleatórios para que múltiplos marcadores não fiquem sobrepostos
+                        // Criar um deslocamento aleatório de 20-30 metros
+                        // Usar valores aleatórios para que vários marcadores não fiquem no mesmo sítio
                         const offsetLat = (Math.random() * 0.0003 + 0.0002) * (Math.random() > 0.5 ? 1 : -1);
                         const offsetLng = (Math.random() * 0.0003 + 0.0002) * (Math.random() > 0.5 ? 1 : -1);
                         
+                        // Aplicar o deslocamento às coordenadas
                         lat += offsetLat;
                         lng += offsetLng;
                         
@@ -829,83 +885,95 @@
                 
                 console.log(`Criando marcador em ${lat}, ${lng} para ${dog.nome || dog.raca || 'Sem nome'}`);
                 
-                // Definir cor e texto de status com base no estado do cachorro
+                // Definir a cor do marcador baseada no estado do animal
+                // Vermelho para procurados, verde para encontrados
                 const statusColor = dog.estado === 'procurado' ? '#ff6b6b' : '#4ecdc4';
                 const statusText = dog.estado === 'procurado' ? 'Procurado' : 'Encontrado';
                 
-                // Define o ícone com base no estado do cachorro
+                // Definir o ícone SVG baseado no estado do animal (não usado actualmente)
                 const pawIconPath = dog.estado === 'procurado' ? 
                     'M12,4C7.58,4 4,7.58 4,12C4,16.42 7.58,20 12,20C16.42,20 20,16.42 20,12C20,7.58 16.42,4 12,4M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M10,17L5,12L6.41,10.59L10,14.17L17.59,6.58L19,8L10,17Z' : 
                     'M12,4C7.58,4 4,7.58 4,12C4,16.42 7.58,20 12,20C16.42,20 20,16.42 20,12C20,7.58 16.42,4 12,4M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M10,17L5,12L6.41,10.59L10,14.17L17.59,6.58L19,8L10,17Z';
                 
-                // Criar um ícone SVG personalizado com base no estado
+                // Escolher a cor do marcador: vermelho para procurados, verde para encontrados
                 const pawColor = dog.estado === 'procurado' ? '#ff0000' : '#00ff00';
                 
+                // Criar o ícone do marcador como um círculo colorido
                 const svgMarker = {
-                                path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: pawColor,
-                    fillOpacity: 1,
-                    strokeWeight: 1,
-                    strokeColor: '#ffffff',
-                                scale: 12
+                    path: google.maps.SymbolPath.CIRCLE, // Usar um círculo simples
+                    fillColor: pawColor, // Cor de preenchimento
+                    fillOpacity: 1, // Totalmente opaco
+                    strokeWeight: 1, // Espessura da borda
+                    strokeColor: '#ffffff', // Cor branca da borda
+                    scale: 12 // Tamanho do círculo
                 };
                 
-                // Determinar se o marcador deve ser visível com base no tipo
+                // Verificar se este tipo de marcador deve estar visível
+                // Baseado nas preferências do utilizador guardadas
                 const shouldShowMarker = dog.estado === 'procurado' ? procuradosVisible : encontradosVisible;
                 
-                // Criar o marcador com o ícone customizado
+                // Criar o marcador no mapa com todas as propriedades definidas
                 const marker = new google.maps.Marker({
-                    position: { lat: lat, lng: lng },
-                    map: shouldShowMarker ? map : null,
-                    icon: svgMarker,
-                    title: dog.nome || dog.raca || 'Cachorro sem nome',
-                    animation: google.maps.Animation.DROP,
-                    zIndex: 2 // Valor maior para ficar acima do marcador do usuário
+                    position: { lat: lat, lng: lng }, // Coordenadas onde colocar o marcador
+                    map: shouldShowMarker ? map : null, // Só mostrar se o tipo estiver visível
+                    icon: svgMarker, // Usar o ícone circular que criámos
+                    title: dog.nome || dog.raca || 'Cachorro sem nome', // Texto ao passar o rato
+                    animation: google.maps.Animation.DROP, // Animação de queda quando aparece
+                    zIndex: 2 // Valor alto para ficar à frente do marcador do utilizador
                 });
                         
-                // Armazenar os dados do cão no marcador para facilitar filtragem
+                // Guardar os dados do cão dentro do marcador para usar mais tarde
+                // Isto permite filtrar e manipular marcadores por tipo
                 marker.dogData = dog;
                         
-                // Criar o conteúdo da InfoWindow com estilo melhorado
+                // Criar o conteúdo HTML da janela de informação (popup) que aparece ao clicar no marcador
+                // Este HTML inclui toda a informação do animal e botões de acção
                 const contentString = `
                     <div style="width: 220px; background: white; padding: 0; margin: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); position: relative; border: 2px solid ${dog.estado === 'procurado' ? '#e74c3c' : '#27ae60'};">
-                        <!-- Header com status -->
+                        <!-- Cabeçalho com o estado do animal (Procurado/Encontrado) -->
                         <div style="background: white; padding: 8px 0; text-align: center; margin: 0; border-radius: 12px 12px 0 0; position: relative;">
                             <span style="color: ${dog.estado === 'procurado' ? '#e74c3c' : '#27ae60'}; font-size: 12px; font-weight: 600; text-transform: uppercase;">
                                     ${dog.estado === 'procurado' ? 'Procurado' : 'Encontrado'}
                                 </span>
-                                                            <!-- Botão de fechar -->
+                                                            <!-- Botão X para fechar o popup -->
                                 <button onclick="closeCurrentInfoWindow()" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='none'" style="position: absolute; top: 5px; right: 8px; background: none !important; border: none !important; outline: none !important; box-shadow: none !important; color: #999; width: 20px; height: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; transition: background 0.2s; padding: 0; margin: 0;">
                                     ×
                                 </button>
                             </div>
-                        <!-- Container branco para o conteúdo -->
+                        <!-- Container principal para todo o conteúdo do popup -->
                         <div style="background: white; margin: 0; padding: 0; border-radius: 0 0 12px 12px;">
                         
-                        <!-- Imagem do animal -->
+                        <!-- Secção da imagem do animal -->
                             ${dog.image ? 
+                        // Se o animal tem foto, mostrar a imagem real
                         `<div style="text-align: center; margin: 0; padding: 10px 0 8px 0;">
                             <img src="${dog.image}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);" onerror="this.src='Images/dog-placeholder.jpg'">
                         </div>` : 
+                        // Se não tem foto, mostrar um ícone de cão
                         `<div style="text-align: center; margin: 0; padding: 10px 0 8px 0;">
                             <div style="width: 100px; height: 100px; margin: 0 auto; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                                 <i class="fas fa-dog" style="font-size: 30px; color: #999;"></i>
                             </div>
                         </div>`}
                         
-                        <!-- Nome/Raça -->
+                        <!-- Secção do nome e raça do animal -->
                         <div style="text-align: center; margin: 0; padding: 0 15px 10px 15px;">
                             <h3 style="margin: 0; font-size: 16px; color: #333; font-weight: 600;">
                                 ${(() => {
+                                    // Lógica para decidir que nome mostrar
                                     // Se o nome contém "Animal adicionado por", mostrar apenas a raça ou "Animal"
                                     if (dog.nome && dog.nome.includes('Animal adicionado por')) {
                                         return dog.raca || 'Animal';
                                     }
+                                    // Caso contrário, mostrar o nome, raça, ou "Animal" por defeito
                                     return dog.nome || dog.raca || 'Animal';
                                 })()}
                             </h3>
                             ${(() => {
-                                // Só mostrar a raça como subtítulo se o nome não contém "Animal adicionado por" e se nome e raça são diferentes
+                                // Mostrar a raça como subtítulo apenas se:
+                                // - O nome não contém "Animal adicionado por"
+                                // - Existe raça definida
+                                // - O nome e raça são diferentes
                                 if (dog.nome && !dog.nome.includes('Animal adicionado por') && dog.raca && dog.nome !== dog.raca) {
                                     return `<p style="margin: 3px 0 0 0; font-size: 13px; color: #666;">${dog.raca}</p>`;
                                 }
@@ -913,7 +981,7 @@
                             })()}
                             </div>
                         
-                        <!-- Localização -->
+                        <!-- Secção da localização/endereço onde o animal foi visto -->
                         <div style="margin: 0 15px 12px 15px; padding: 8px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #ff7f50;">
                             <div style="display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-map-marker-alt" style="color: #ff7f50; margin-right: 6px; font-size: 12px;"></i>
@@ -921,7 +989,7 @@
                             </div>
                         </div>
                         
-                        <!-- Contacto -->
+                        <!-- Secção de contacto (só aparece se existir número de telefone) -->
                         ${dog.users && dog.users.phone ? `
                         <div style="margin: 0 15px 12px 15px; padding: 8px; background: #e8f5e8; border-radius: 8px; border-left: 3px solid #4CAF50;">
                             <div style="display: flex; align-items: center; justify-content: center;">
@@ -931,18 +999,21 @@
                         </div>
                         ` : ''}
                         
-                        <!-- Botões -->
+                        <!-- Secção dos botões de acção -->
                         <div style="padding: 0 15px 15px; display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Botão para ver detalhes completos do animal -->
                             <button onclick="location.href='animal-details.html?id=${dog.id}'" style="background: #ff7f50; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 13px; font-weight: 500;">
                                     <span style="display: inline-flex; align-items: center; justify-content: center;">
                                     <i class="fas fa-info-circle" style="margin-right: 6px; font-size: 13px;"></i>Ver Detalhes
                                     </span>
                                 </button>
+                            <!-- Botão para abrir direcções no Google Maps -->
                             <button onclick="openDirections(${lat}, ${lng})" style="background: #4CAF50; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 13px; font-weight: 500;">
                                 <span style="display: inline-flex; align-items: center; justify-content: center;">
                                     <i class="fas fa-route" style="margin-right: 6px; font-size: 13px;"></i>Como chegar
                                 </span>
                             </button>
+                            <!-- Botão para ligar (só aparece se existir número de telefone) -->
                             ${dog.users && dog.users.phone ? `
                             <button onclick="window.open('tel:${dog.users.phone}', '_self')" style="background: #2196F3; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 13px; font-weight: 500;">
                                 <span style="display: inline-flex; align-items: center; justify-content: center;">
@@ -979,6 +1050,16 @@
                     // Fechar qualquer InfoWindow aberto
                     if (currentOpenInfoWindow) {
                         currentOpenInfoWindow.close();
+                    }
+                    
+                    // Em dispositivos móveis, esconder temporariamente a legenda para evitar sobreposição
+                    const isMobile = window.innerWidth <= 767;
+                    if (isMobile) {
+                        const legend = document.querySelector('.map-legend');
+                        if (legend) {
+                            legend.style.opacity = '0.3';
+                            legend.style.pointerEvents = 'none';
+                        }
                     }
                     
                     // Centralizar o mapa no marcador clicado
@@ -1042,6 +1123,7 @@
                         container.style.borderRadius = '12px !important';
                         container.style.overflow = 'hidden !important';
                         container.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.12) !important';
+                        container.style.zIndex = '10001 !important'; // Z-index alto para ficar acima da legenda
                     });
                     
                     // Estilizar os containers internos
@@ -1050,6 +1132,7 @@
                         innerContainer.style.overflow = 'hidden !important';
                         innerContainer.style.padding = '0 !important';
                         innerContainer.style.margin = '0 !important';
+                        innerContainer.style.zIndex = '10001 !important';
                     });
 
                     // Estilizar o wrapper principal do InfoWindow
@@ -1057,6 +1140,7 @@
                     wrappers.forEach(wrapper => {
                         wrapper.style.padding = '0 !important';
                         wrapper.style.margin = '0 !important';
+                        wrapper.style.zIndex = '10001 !important'; // Z-index alto para ficar acima da legenda
                     });
 
                     // Estilizar elementos específicos do Google Maps
@@ -1064,6 +1148,7 @@
                     iwContainers.forEach(container => {
                         container.style.padding = '0 !important';
                         container.style.margin = '0 !important';
+                        container.style.zIndex = '10001 !important';
                     });
 
                     // Estilizar o botão de fechar
@@ -1071,18 +1156,19 @@
                     closeButtons.forEach(button => {
                         button.style.top = '0px !important';
                         button.style.right = '0px !important';
+                        button.style.zIndex = '10002 !important'; // Z-index ainda mais alto para o botão de fechar
                     });
 
                     // Adicionar CSS para eliminar todos os espaços e forçar posicionamento correto
                     const style = document.createElement('style');
                     style.textContent = `
                         .gm-style-iw-d::-webkit-scrollbar { display: none; }
-                        .gm-style-iw { padding: 0 !important; margin: 0 !important; top: 0 !important; }
-                        .gm-style-iw-c { padding: 0 !important; margin: 0 !important; top: 0 !important; }
-                        .gm-style-iw-d { padding: 0 !important; margin: 0 !important; top: 0 !important; }
-                        .gm-style-iw-tc { padding: 0 !important; margin: 0 !important; top: 0 !important; }
-                        .gm-style-iw-t { padding: 0 !important; margin: 0 !important; top: 0 !important; }
-                        .gm-ui-hover-effect { opacity: 1 !important; }
+                        .gm-style-iw { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
+                        .gm-style-iw-c { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
+                        .gm-style-iw-d { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
+                        .gm-style-iw-tc { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
+                        .gm-style-iw-t { padding: 0 !important; margin: 0 !important; top: 0 !important; z-index: 10001 !important; }
+                        .gm-ui-hover-effect { opacity: 1 !important; z-index: 10002 !important; }
                         .gm-ui-hover-effect img { opacity: 1 !important; }
                         .gm-style-iw-chr { display: none !important; }
                     `;
@@ -1385,6 +1471,16 @@
                             currentOpenInfoWindow.close();
                         }
                         
+                        // Em dispositivos móveis, esconder temporariamente a legenda para evitar sobreposição
+                        const isMobile = window.innerWidth <= 767;
+                        if (isMobile) {
+                            const legend = document.querySelector('.map-legend');
+                            if (legend) {
+                                legend.style.opacity = '0.3';
+                                legend.style.pointerEvents = 'none';
+                            }
+                        }
+                        
                         // Centralizar o mapa no marcador clicado
                         const markerPosition = marker.getPosition();
                         
@@ -1594,31 +1690,35 @@
             }
         }
         
-        // Função para alternar visibilidade dos animais procurados
+        // Função auxiliar para alternar visibilidade de animais por tipo
+        // Esta função é chamada quando o utilizador clica nos itens da legenda
         function showAnimalsOnly(animalType) {
             if (animalType === 'procurado') {
-                toggleProcurados();
+                toggleProcurados(); // Alternar visibilidade dos animais procurados
             } else if (animalType === 'encontrado') {
-                toggleEncontrados();
+                toggleEncontrados(); // Alternar visibilidade dos animais encontrados
             }
         }
         
-        // Função para alternar visibilidade dos procurados
+        // Função para mostrar/esconder marcadores de animais procurados
         function toggleProcurados() {
+            // Inverter o estado actual (se estava visível fica invisível e vice-versa)
             procuradosVisible = !procuradosVisible;
+            // Guardar a nova preferência no localStorage para a próxima sessão
             localStorage.setItem('procuradosVisible', procuradosVisible);
             
-            // Atualizar marcadores
+            // Percorrer todos os marcadores de animais e mostrar/esconder os procurados
             petMarkers.forEach(marker => {
                 if (marker.dogData && marker.dogData.estado === 'procurado') {
+                    // Se deve estar visível, colocar no mapa; senão, remover do mapa
                     marker.setMap(procuradosVisible ? map : null);
                 }
             });
             
-            // Atualizar aparência da legenda
+            // Actualizar a aparência visual da legenda para reflectir o estado
             updateLegendAppearance();
             
-            // Efeito visual
+            // Efeito visual temporário para mostrar que algo mudou
             const legendProcurados = document.getElementById('legendProcurados');
             legendProcurados.style.backgroundColor = 'rgba(255, 127, 80, 0.1)';
             setTimeout(() => {
@@ -1731,60 +1831,75 @@
             }, 300);
         }
 
+        // Função chamada quando o utilizador clica em "Está aqui" na legenda
+        // Centra o mapa na localização do utilizador
         function centerMapOnUserLocation() {
+            // Tentar obter a localização guardada anteriormente
             const savedLocation = getSavedLocation();
             
             if (savedLocation) {
-                // Centralizar mapa na localização salva
+                // Se temos localização guardada, centrar o mapa nela
                 map.setCenter(savedLocation);
                 
-                // Se não houver marcador, adicioná-lo
+                // Verificar se já existe um marcador do utilizador
                 if (!userMarker) {
+                    // Se não existe, criar um novo
                     addUserMarker(savedLocation);
                 } else {
-                    // Animar marcador existente
+                    // Se já existe, fazer uma animação para chamar atenção
                     userMarker.setAnimation(google.maps.Animation.BOUNCE);
                     setTimeout(() => {
-                        userMarker.setAnimation(null);
+                        userMarker.setAnimation(null); // Parar a animação após 1.4 segundos
                     }, 1400);
                 }
                 
-                // Animar a transição com zoom mais próximo
+                // Fazer zoom mais próximo para mostrar melhor a localização
                 map.setZoom(18);
                 
-                // Mostrar popup de localização
+                // Mostrar um popup a confirmar que esta é a localização do utilizador
                 showLocationPopup(userMarker);
             } else {
-                // Se não tiver localização salva, solicitar
+                // Se não há localização guardada, pedir permissão para obter a localização actual
                 requestUserLocation();
             }
         }
 
+        // Função para pedir permissão e obter a localização actual do utilizador
         function requestUserLocation() {
+            // Verificar se o navegador suporta geolocalização
             if (navigator.geolocation) {
+                // Pedir a localização actual do utilizador
                 navigator.geolocation.getCurrentPosition(
+                    // Função executada se conseguir obter a localização
                     (position) => {
+                        // Extrair as coordenadas da resposta
                         const userLocation = {
                             lat: position.coords.latitude,
                             lng: position.coords.longitude
                         };
                         
-                        // Salvar localização para uso futuro
+                        // Guardar a localização para usar nas próximas vezes
                         saveUserLocation(userLocation);
                         
-                        // Centralizar mapa na localização do usuário
+                        // Centrar o mapa na localização do utilizador
                         map.setCenter(userLocation);
-                        map.setZoom(15);
+                        map.setZoom(15); // Zoom adequado para ver a área envolvente
                         
-                        // Adicionar marcador do usuário
+                        // Criar um marcador para mostrar onde o utilizador está
                         addUserMarker(userLocation);
                     },
+                    // Função executada se houver erro ao obter a localização
                     (error) => {
                         console.error('Não foi possível obter a sua localização. Verifique as permissões do seu navegador.', error);
                     },
-                    { timeout: 10000, maximumAge: 600000 }
+                    // Opções para a geolocalização
+                    { 
+                        timeout: 10000,      // Tempo limite de 10 segundos
+                        maximumAge: 600000   // Aceitar localização até 10 minutos antiga
+                    }
                 );
             } else {
+                // Se o navegador não suporta geolocalização, avisar o utilizador
                 alert('O seu navegador não suporta geolocalização.');
             }
         }
@@ -1897,39 +2012,52 @@
                 currentOpenInfoWindow.close();
                 currentOpenInfoWindow = null;
             }
+            
+            // Restaurar a legenda em dispositivos móveis
+            const isMobile = window.innerWidth <= 767;
+            if (isMobile) {
+                const legend = document.querySelector('.map-legend');
+                if (legend) {
+                    legend.style.opacity = '1';
+                    legend.style.pointerEvents = 'auto';
+                }
+            }
         }
 
-        // Função para abrir direções no Google Maps
+        // Função para abrir direcções no Google Maps quando o utilizador clica em "Como chegar"
+        // Tenta usar a localização do utilizador como ponto de partida
         function openDirections(destinationLat, destinationLng) {
-            // Obter localização do usuário
+            // Primeiro, tentar usar a localização guardada do utilizador
             const savedLocation = getSavedLocation();
             
             if (savedLocation) {
-                // Usar localização salva
+                // Se temos localização guardada, usá-la como ponto de partida
                 const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${savedLocation.lat},${savedLocation.lng}&destination=${destinationLat},${destinationLng}&travelmode=driving`;
-                window.open(directionsUrl, '_blank');
+                window.open(directionsUrl, '_blank'); // Abrir numa nova aba
             } else if (userMarker) {
-                // Usar posição do marcador do usuário
+                // Se não há localização guardada mas existe marcador do utilizador, usar essa posição
                 const userPosition = userMarker.getPosition();
                 const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userPosition.lat()},${userPosition.lng()}&destination=${destinationLat},${destinationLng}&travelmode=driving`;
                 window.open(directionsUrl, '_blank');
             } else {
-                // Tentar obter localização atual
+                // Como último recurso, tentar obter a localização actual
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
+                        // Se conseguir obter a localização, usar como ponto de partida
                         (position) => {
                             const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${position.coords.latitude},${position.coords.longitude}&destination=${destinationLat},${destinationLng}&travelmode=driving`;
                             window.open(directionsUrl, '_blank');
                         },
+                        // Se não conseguir obter localização, mostrar apenas o destino
                         (error) => {
                             console.error('Erro ao obter localização:', error);
-                            // Abrir apenas o destino se não conseguir obter a localização
+                            // Abrir apenas o destino no Google Maps
                             const directionsUrl = `https://www.google.com/maps/search/${destinationLat},${destinationLng}`;
                             window.open(directionsUrl, '_blank');
                         }
                     );
                 } else {
-                    // Abrir apenas o destino se geolocalização não estiver disponível
+                    // Se o navegador não suporta geolocalização, mostrar apenas o destino
                     const directionsUrl = `https://www.google.com/maps/search/${destinationLat},${destinationLng}`;
                     window.open(directionsUrl, '_blank');
                 }

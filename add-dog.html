@@ -794,67 +794,88 @@
             }
         }
         
+        // Função para pesquisar localizações usando o Google Maps Geocoding
+        // Recebe como parâmetro o texto que o utilizador escreveu
         function searchLocation(query) {
+            // Cancelar pesquisa anterior se ainda estiver a decorrer (evita pesquisas desnecessárias)
             if (searchTimeout) clearTimeout(searchTimeout);
             const suggestionsContainer = document.getElementById('locationSuggestions');
             
+            // Só pesquisar se o utilizador inseriu pelo menos 3 caracteres
             if (query.length < 3) {
                 suggestionsContainer.innerHTML = '';
                 suggestionsContainer.style.display = 'none';
-                        return;
-                    }
+                return;
+            }
                     
+            // Aguardar 500ms antes de pesquisar para evitar muitas pesquisas enquanto o utilizador escreve
             searchTimeout = setTimeout(() => {
+                // Usar o serviço de geocodificação do Google Maps para converter texto em coordenadas
                 const geocoder = new google.maps.Geocoder();
                 geocoder.geocode({ 'address': query }, function(results, status) {
+                    // Se encontrou resultados válidos
                     if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
-                    suggestionsContainer.innerHTML = '';
+                        // Limpar sugestões anteriores
+                        suggestionsContainer.innerHTML = '';
                         
+                        // Mostrar apenas os primeiros 5 resultados para não sobrecarregar a interface
                         results.slice(0, 5).forEach(result => {
-                        const div = document.createElement('div');
-                        div.className = 'suggestion-item';
+                            // Criar elemento HTML para cada sugestão
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
                             div.innerHTML = result.formatted_address;
-                        div.addEventListener('click', function() {
+                            
+                            // Quando o utilizador clica numa sugestão
+                            div.addEventListener('click', function() {
+                                // Preencher o campo de pesquisa com o endereço seleccionado
                                 document.getElementById('locationSearch').value = result.formatted_address;
                             
-                                // Armazenar o endereço formatado
+                                // Mostrar o endereço seleccionado na interface do utilizador
                                 document.getElementById('locationText').textContent = result.formatted_address;
                             
-                                // Obter e armazenar as coordenadas completas para garantir precisão
+                                // Extrair e guardar as coordenadas para usar quando submeter o formulário
                                 const lat = result.geometry.location.lat();
                                 const lng = result.geometry.location.lng();
-                            document.getElementById('latitude').value = lat;
-                            document.getElementById('longitude').value = lng;
+                                document.getElementById('latitude').value = lat;
+                                document.getElementById('longitude').value = lng;
                                 
+                                // Guardar a localização válida numa variável global para referência futura
                                 lastValidLocation = {
                                     lat: lat,
                                     lng: lng,
                                     address: result.formatted_address
                                 };
                             
-                                // Mover o mapa para a localização e adicionar marcador
+                                // Actualizar o mapa para mostrar a localização seleccionada
                                 if (map) {
-                                    map.setCenter(result.geometry.location);
-                                    map.setZoom(16);
+                                    map.setCenter(result.geometry.location); // Centrar mapa na localização
+                                    map.setZoom(16); // Fazer zoom para ver melhor a área
                                     
+                                    // Remover marcador anterior se existir
                                     if (marker) marker.setMap(null);
+                                    // Criar novo marcador na localização seleccionada
                                     marker = new google.maps.Marker({
                                         position: result.geometry.location,
                                         map: map,
                                         title: result.formatted_address,
-                                        animation: google.maps.Animation.DROP
+                                        animation: google.maps.Animation.DROP // Animação de queda
                                     });
                                 }
                                 
+                                // Feedback visual: borda verde indica que a localização foi seleccionada com sucesso
                                 document.querySelector('.location-info').style.border = '2px solid #2ecc71';
                             
+                                // Esconder as sugestões após selecção
                                 suggestionsContainer.style.display = 'none';
+                            });
+                            // Adicionar a sugestão ao contentor de sugestões
+                            suggestionsContainer.appendChild(div);
                         });
-                        suggestionsContainer.appendChild(div);
-                    });
                         
+                        // Mostrar o contentor de sugestões
                         suggestionsContainer.style.display = 'block';
                     } else {
+                        // Se não encontrou resultados, mostrar mensagem informativa
                         suggestionsContainer.innerHTML = '<div class="suggestion-item">Nenhum resultado encontrado</div>';
                         suggestionsContainer.style.display = 'block';
                     }
@@ -862,79 +883,86 @@
             }, 500);
         }
 
+        // Função para obter a localização actual do utilizador usando GPS/Wi-Fi
         function useMyLocation() {
+            // Verificar se o navegador suporta geolocalização
             if (navigator.geolocation) {
+                // Obter referência do botão e desactivá-lo durante o processo
                 const locationButton = document.querySelector('.use-my-location');
                 locationButton.disabled = true;
                 locationButton.textContent = 'A obter localização...';
                 
-                // Mostrar indicador de carregamento
+                // Mostrar feedback visual ao utilizador de que está a processar
                 document.getElementById('locationText').textContent = 'A obter a sua localização...';
-                document.querySelector('.location-info').style.border = '2px solid #3498db';
+                document.querySelector('.location-info').style.border = '2px solid #3498db'; // Borda azul = a processar
 
+                // Pedir a localização actual do utilizador
                 navigator.geolocation.getCurrentPosition(
+                    // Função executada quando consegue obter a localização
                     (position) => {
+                        // Extrair coordenadas da resposta
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         
-                        // Salvar as coordenadas de qualquer forma para garantir que temos uma localização
+                        // Guardar as coordenadas imediatamente para garantir que temos uma localização válida
                         document.getElementById('latitude').value = lat;
                         document.getElementById('longitude').value = lng;
                         
-                        // Geocodificar as coordenadas para obter o endereço da rua
+                        // Converter coordenadas em endereço legível (geocodificação reversa)
                         const geocoder = new google.maps.Geocoder();
                         geocoder.geocode({ 
                             'location': { lat, lng },
-                            'language': 'pt-PT' // Forçar resultados em português
+                            'language': 'pt-PT' // Forçar resultados em português de Portugal
                         }, function(results, status) {
                             if (status === google.maps.GeocoderStatus.OK && results.length > 0) {
-                                // Tentar encontrar o resultado mais detalhado com um endereço de rua
-                                let bestResult = results[0]; // Padrão para o primeiro resultado
+                                // Tentar encontrar o resultado mais detalhado com endereço de rua
+                                let bestResult = results[0]; // Por defeito, usar o primeiro resultado
                                 
-                                // Procurar pelo resultado mais detalhado com endereço de rua
+                                // Procurar um resultado que tenha informação de rua detalhada
                                 for (let i = 0; i < results.length; i++) {
                                     const result = results[i];
-                                    // Verificar se contém componentes de endereço de rua
+                                    // Verificar se contém componentes específicos de endereço de rua
                                     const hasStreetComponents = result.address_components.some(comp => 
-                                        comp.types.includes('route') || 
-                                        comp.types.includes('street_address') ||
-                                        comp.types.includes('premise') ||
-                                        comp.types.includes('subpremise')
+                                        comp.types.includes('route') ||           // Nome da rua
+                                        comp.types.includes('street_address') ||  // Endereço completo
+                                        comp.types.includes('premise') ||         // Edifício específico
+                                        comp.types.includes('subpremise')         // Apartamento/loja
                                     );
                                     
                                     if (hasStreetComponents) {
                                         bestResult = result;
-                                        break; // Encontramos um bom resultado com detalhe de rua
+                                        break; // Encontrámos um bom resultado, parar a procura
                                     }
                                 }
                                 
-                                // Sempre usar o melhor resultado disponível, mesmo que não seja perfeito
+                                // Usar o melhor resultado disponível
                                 const formattedAddress = bestResult.formatted_address;
                                 document.getElementById('locationSearch').value = formattedAddress;
                                 document.getElementById('locationText').textContent = formattedAddress;
                                 
-                                // Atualizar mapa
+                                // Actualizar o mapa para mostrar a localização
                                 map.setCenter({lat, lng});
-                                map.setZoom(17); // Zoom mais próximo para mostrar detalhes da rua
+                                map.setZoom(17); // Zoom próximo para mostrar detalhes da rua
                                 
+                                // Remover marcador anterior e criar novo
                                 if (marker) marker.setMap(null);
                                 marker = new google.maps.Marker({
                                     position: {lat, lng},
                                     map: map,
-                                    animation: google.maps.Animation.DROP
+                                    animation: google.maps.Animation.DROP // Animação de queda
                                 });
                                 
-                                // Feedback visual positivo
+                                // Feedback visual positivo: borda verde = sucesso
                                 document.querySelector('.location-info').style.border = '2px solid #2ecc71';
                                 
                                 console.log('Endereço encontrado:', formattedAddress);
                             } else {
-                                // Mesmo sem um endereço, usamos as coordenadas
+                                // Se não conseguiu obter endereço, usar apenas as coordenadas
                                 console.error('Geocodificação falhou:', status);
                                 const coords = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                                 document.getElementById('locationText').textContent = `Localização actual (${coords})`;
                                 
-                                // Atualizar mapa
+                                // Actualizar mapa mesmo sem endereço
                                 map.setCenter({lat, lng});
                                 
                                 if (marker) marker.setMap(null);
@@ -944,18 +972,21 @@
                                     animation: google.maps.Animation.DROP
                                 });
                                 
-                                // Feedback visual neutro
+                                // Feedback visual neutro: borda laranja = parcialmente bem-sucedido
                                 document.querySelector('.location-info').style.border = '2px solid #f39c12';
                             }
                             
-                        locationButton.disabled = false;
-                        locationButton.innerHTML = '<i class="fas fa-location-arrow"></i> Usar a minha localização atual';
+                            // Restaurar o botão ao estado normal
+                            locationButton.disabled = false;
+                            locationButton.innerHTML = '<i class="fas fa-location-arrow"></i> Usar a minha localização atual';
                         });
                     },
+                    // Função executada quando há erro ao obter a localização
                     (error) => {
                         console.error('Erro ao obter localização:', error);
                         let errorMsg = 'Não foi possível obter a sua localização.';
                         
+                        // Personalizar mensagem de erro baseada no tipo de erro
                         if (error.code === error.PERMISSION_DENIED) {
                             errorMsg += ' Negou a permissão de localização.';
                         } else if (error.code === error.POSITION_UNAVAILABLE) {
@@ -966,20 +997,24 @@
                         
                         console.error('Erro de geolocalização:', error);
                         
+                        // Mostrar mensagem de erro ao utilizador e sugerir alternativas
                         alert(errorMsg + ' Por favor, seleccione manualmente no mapa ou use a pesquisa de morada.');
                         document.getElementById('locationText').textContent = 'Clique no mapa ou pesquise uma morada';
-                        document.querySelector('.location-info').style.border = '';
+                        document.querySelector('.location-info').style.border = ''; // Remover borda colorida
                         
+                        // Restaurar o botão ao estado normal
                         locationButton.disabled = false;
                         locationButton.innerHTML = '<i class="fas fa-location-arrow"></i> Usar a minha localização atual';
                     },
+                    // Opções para a geolocalização
                     {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
+                        enableHighAccuracy: true, // Usar GPS se disponível para maior precisão
+                        timeout: 10000,           // Tempo limite de 10 segundos
+                        maximumAge: 0             // Não aceitar localização em cache, obter sempre nova
                     }
                 );
             } else {
+                // Se o navegador não suporta geolocalização
                 alert('O seu navegador não suporta geolocalização.');
             }
         }

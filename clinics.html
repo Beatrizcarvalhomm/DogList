@@ -1763,39 +1763,48 @@
             });
         }
 
-        // Primeiro definimos todas as funções do mapa
+        // ===== FUNÇÃO PRINCIPAL PARA INICIALIZAR O MAPA DE CLÍNICAS =====
+        // Esta função configura o mapa, obtém a localização do utilizador e procura clínicas veterinárias
         async function initMap() {
-            // Criar infoWindow reutilizável
+            // Criar uma janela de informação reutilizável para mostrar detalhes das clínicas
             infoWindow = new google.maps.InfoWindow({ 
-                maxWidth: 300,
-                disableAutoPan: false
+                maxWidth: 300,                // Largura máxima da janela
+                disableAutoPan: false         // Permitir que o mapa se mova para mostrar a janela
             });
             
-            // Inicializar o mapa com centro em uma localização padrão
-            const defaultCenter = { lat: -23.5505, lng: -46.6333 }; // São Paulo (ou outra localização padrão)
-                map = new google.maps.Map(document.getElementById('map'), {
-                    zoom: 15,
-                center: defaultCenter,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP,
-                    mapTypeControl: true,
-                    mapTypeControlOptions: {
-                        style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                        position: google.maps.ControlPosition.TOP_RIGHT
-                    },
+            // Definir localização padrão (São Paulo) caso não consiga obter a localização do utilizador
+            const defaultCenter = { lat: -23.5505, lng: -46.6333 }; // Coordenadas de São Paulo
+            
+            // Criar o mapa do Google Maps com configurações específicas
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 15,                                           // Nível de zoom inicial
+                center: defaultCenter,                              // Centro inicial do mapa
+                mapTypeId: google.maps.MapTypeId.ROADMAP,          // Tipo de mapa (estrada)
+                
+                // Controlo para mudar tipo de mapa (estrada, satélite, etc.)
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,  // Estilo horizontal
+                    position: google.maps.ControlPosition.TOP_RIGHT        // Posição no canto superior direito
+                },
+                
+                // Controlo do Street View (vista de rua)
                 streetViewControl: true,
                 streetViewControlOptions: {
-                    position: google.maps.ControlPosition.RIGHT_BOTTOM
+                    position: google.maps.ControlPosition.RIGHT_BOTTOM     // Posição no canto inferior direito
                 },
-                    fullscreenControl: true,
-                    zoomControl: true
-                });
                 
-            // Aplicar estilos aos infowindows quando forem criados
+                // Outros controlos do mapa
+                fullscreenControl: true,    // Botão para ecrã completo
+                zoomControl: true          // Controlos de zoom (+ e -)
+            });
+                
+            // Aplicar estilos personalizados às janelas de informação quando forem abertas
             google.maps.event.addListener(infoWindow, 'domready', function() {
-                styleInfoWindow();
+                styleInfoWindow(); // Função que aplica CSS personalizado
             });
             
-            // Marcar que o mapa foi inicializado
+            // Marcar que o mapa foi inicializado com sucesso
             mapInitialized = true;
             
             // Verificar se temos coordenadas salvas

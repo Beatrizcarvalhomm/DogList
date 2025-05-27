@@ -1153,17 +1153,23 @@
     </div>
 
     <script>
-        // Função para validar UUID
+        // ===== FUNÇÃO AUXILIAR PARA VALIDAÇÃO DE UUID =====
+        // UUID é um identificador único universal usado para identificar utilizadores na base de dados
+        // Tem um formato específico que deve ser validado para evitar erros
         function isValidUUID(uuid) {
+            // Expressão regular que define o formato correcto de um UUID
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
             return uuidRegex.test(uuid);
         }
 
-        // Carrega as informações do usuário do Supabase
+        // ===== FUNÇÃO PARA CARREGAR INFORMAÇÕES DO UTILIZADOR =====
+        // Esta função obtém os dados do utilizador da base de dados e preenche os campos da página
         async function loadUserInfo() {
+            // Obter o ID do utilizador que foi guardado quando fez login
             const currentUserId = localStorage.getItem('currentUserId');
             console.log('ID do usuário atual:', currentUserId);
             
+            // Verificar se existe ID guardado (se não, a sessão expirou)
             if (!currentUserId) {
                 console.error('ID do usuário não encontrado no localStorage');
                 alert('Erro: Sessão expirada. Redirecionando para login...');
@@ -1171,11 +1177,11 @@
                 return;
             }
             
-            // Validar formato do UUID
+            // Validar se o ID tem o formato correcto de UUID
             if (!isValidUUID(currentUserId)) {
                 console.error('UUID inválido:', currentUserId);
                 alert('Erro: ID de usuário inválido. Redirecionando para login...');
-                localStorage.clear(); // Limpar dados corrompidos
+                localStorage.clear(); // Limpar dados corrompidos do localStorage
                 window.location.href = 'index.html';
                 return;
             }
