@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
--- Tabela de usuários
+-- Tabela de utilizadores
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     nome TEXT NOT NULL CHECK (char_length(nome) >= 2),
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     date_created TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
-COMMENT ON TABLE public.users IS 'Tabela de usuários do sistema Doglist';
+COMMENT ON TABLE public.users IS 'Tabela de utilizadores do sistema Doglist';
 
 -- Tabela de animais (cães)
 CREATE TABLE IF NOT EXISTS public.dogs (
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS public.clinics (
 
 COMMENT ON TABLE public.clinics IS 'Tabela de clínicas veterinárias';
 
--- Tabela de configurações do aplicativo
+-- Tabela de configurações da aplicação
 CREATE TABLE IF NOT EXISTS public.configuracoes_app (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     chave TEXT NOT NULL UNIQUE,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS public.configuracoes_app (
     data_atualizacao TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
-COMMENT ON TABLE public.configuracoes_app IS 'Configurações globais do aplicativo';
+COMMENT ON TABLE public.configuracoes_app IS 'Configurações globais da aplicação';
 
 -- Colunas geoespaciais
 ALTER TABLE public.dogs ADD COLUMN IF NOT EXISTS geo_location GEOGRAPHY(POINT, 4326);
@@ -192,13 +192,13 @@ CREATE POLICY dogs_insert_policy ON public.dogs
 DROP POLICY IF EXISTS dogs_update_policy ON public.dogs;
 CREATE POLICY dogs_update_policy ON public.dogs
     FOR UPDATE
-    USING (true)  -- Para simplificar, qualquer usuário pode atualizar
+    USING (true)  -- Para simplificar, qualquer utilizador pode actualizar
     WITH CHECK (true);
 
 DROP POLICY IF EXISTS dogs_delete_policy ON public.dogs;
 CREATE POLICY dogs_delete_policy ON public.dogs
     FOR DELETE
-    USING (true);  -- Para simplificar, qualquer usuário pode remover
+    USING (true);  -- Para simplificar, qualquer utilizador pode remover
 
 DROP POLICY IF EXISTS clinics_policy ON public.clinics;
 CREATE POLICY clinics_policy ON public.clinics

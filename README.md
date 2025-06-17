@@ -1,15 +1,15 @@
 # DogList - Sistema de Mapeamento de Cães
 
-O DogList é uma aplicação web para gerenciar e visualizar a localização de cães encontrados e procurados em um mapa interativo. A aplicação permite que usuários cadastrem cães, especificando sua localização, características e status (procurado ou encontrado).
+O DogList é uma aplicação web para gerir e visualizar a localização de cães encontrados e procurados num mapa interativo. A aplicação permite que utilizadores cadastrem cães, especificando a sua localização, características e estado (procurado ou encontrado).
 
 ## Estrutura do Projeto
 
 - **Páginas principais:**
   - `index.html` - Página de login
-  - `register.html` - Cadastro de usuários
+  - `register.html` - Cadastro de utilizadores
   - `home.html` - Mapa principal mostrando cães cadastrados
   - `add-dog.html` - Formulário para adicionar novos cães
-  - `account.html` - Gerenciamento de conta do usuário
+  - `account.html` - Gestão de conta do utilizador
   - `search.html` - Busca de cães por características
   - `clinics.html` - Mapa de clínicas veterinárias
   - `animal-details.html` - Detalhes de um animal específico
@@ -41,9 +41,9 @@ A página `dog-debug.html` permite verificar, corrigir e testar o funcionamento 
 
 A aplicação utiliza o localStorage do navegador para armazenar:
 
-- **Usuários cadastrados** - Informações de login e perfil
-- **Cães cadastrados** - Incluindo localização, características e status
-- **Preferências do usuário** - Como a última posição no mapa
+- **Utilizadores cadastrados** - Informações de login e perfil
+- **Cães cadastrados** - Incluindo localização, características e estado
+- **Preferências do utilizador** - Como a última posição no mapa
 
 ## Depuração de Problemas
 

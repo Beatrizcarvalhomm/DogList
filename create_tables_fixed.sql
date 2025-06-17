@@ -6,7 +6,7 @@ ALTER TABLE IF EXISTS public.users DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.dogs DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.shelters DISABLE ROW LEVEL SECURITY;
 
--- Criar tabela de usuários
+-- Criar tabela de utilizadores
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
@@ -87,8 +87,8 @@ ALTER TABLE IF EXISTS public.shelters DISABLE ROW LEVEL SECURITY;
 -- ALTER TABLE public.dogs ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE public.shelters ENABLE ROW LEVEL SECURITY;
 -- 
--- -- Criar políticas para usuários
--- CREATE POLICY "Acesso total para usuários" 
+-- -- Criar políticas para utilizadores
+-- CREATE POLICY "Acesso total para utilizadores" 
 -- ON public.users FOR ALL TO anon, authenticated
 -- USING (true) WITH CHECK (true);
 -- 

@@ -114,21 +114,21 @@
             <p>Ao utilizar o Doglist, você concorda em cumprir e estar vinculado por estes Termos e Condições. Se você não concordar com qualquer parte destes termos, por favor, não utilize nosso serviço.</p>
             
             <h2>2. Descrição do Serviço</h2>
-            <p>O Doglist é uma plataforma que permite aos usuários registrar informações sobre animais perdidos e encontrados, facilitando sua localização e recuperação.</p>
+            <p>O Doglist é uma plataforma que permite aos utilizadores registar informações sobre animais perdidos e encontrados, facilitando a sua localização e recuperação.</p>
             
             <h2>3. Privacidade e Proteção de Dados</h2>
             <p>Respeitamos sua privacidade e protegemos suas informações pessoais. Ao utilizar nosso serviço, você concorda com nossa Política de Privacidade, que descreve como coletamos, usamos e protegemos suas informações.</p>
             
-            <h2>4. Responsabilidades do Usuário</h2>
+            <h2>4. Responsabilidades do Utilizador</h2>
             <p>Ao utilizar o Doglist, você concorda em:</p>
             <ul>
-                <li>Fornecer informações verdadeiras e precisas sobre você e seus animais</li>
+                <li>Fornecer informações verdadeiras e precisas sobre si e os seus animais</li>
                 <li>Usar o serviço apenas para fins legítimos relacionados à localização de animais perdidos ou encontrados</li>
-                <li>Não usar o serviço para assediar, ameaçar ou enganar outros usuários</li>
-                <li>Respeitar a privacidade e os direitos dos outros usuários</li>
+                <li>Não usar o serviço para assediar, ameaçar ou enganar outros utilizadores</li>
+                <li>Respeitar a privacidade e os direitos dos outros utilizadores</li>
             </ul>
             
-            <h2>5. Conteúdo do Usuário</h2>
+            <h2>5. Conteúdo do Utilizador</h2>
             <p>Você é responsável por todo o conteúdo que publica em nossa plataforma, incluindo fotos, descrições e informações de contato. Você deve ter direitos sobre qualquer conteúdo que compartilha e não deve violar direitos de terceiros.</p>
             
             <h2>6. Limitação de Responsabilidade</h2>
@@ -176,7 +176,7 @@
             // Validar se o tempUserId é um UUID válido
             if (!isValidUUID(tempUserId)) {
                 console.error('UUID temporário inválido:', tempUserId);
-                alert('Erro nos dados de registro. Por favor, tente registrar-se novamente.');
+                alert('Erro nos dados de registo. Por favor, tente registar-se novamente.');
                 // Limpar dados corrompidos
                 localStorage.removeItem('tempUserId');
                 localStorage.removeItem('tempUserName');
@@ -216,7 +216,7 @@
                         throw new Error('UUID inválido detectado durante finalização');
                     }
                     
-                    // Definir o usuário como logado
+                    // Definir o utilizador como conectado
                     localStorage.setItem('currentUserId', tempUserId);
                     localStorage.setItem('userName', tempUserName);
                     localStorage.setItem('userPhone', tempUserPhone);

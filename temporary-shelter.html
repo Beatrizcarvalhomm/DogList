@@ -1236,10 +1236,10 @@
                     
                     if (result.error) {
                         console.error('Erro detalhado ao atualizar abrigo:', result.error);
-                        throw new Error('Falha ao atualizar informações do abrigo');
+                        throw new Error('Falha ao actualizar informações do abrigo');
                     }
                     
-                alert('Abrigo temporário atualizado com sucesso!');
+                alert('Abrigo temporário actualizado com sucesso!');
             } else {
                     // Criar novo abrigo
                     result = await window.supabase
@@ -1248,7 +1248,7 @@
                     
                     if (result.error) {
                         console.error('Erro detalhado ao criar abrigo:', result.error);
-                        throw new Error('Falha ao registrar abrigo temporário');
+                        throw new Error('Falha ao registar abrigo temporário');
                     }
                     
                     alert('Abrigo temporário registrado com sucesso!');

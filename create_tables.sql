@@ -1,4 +1,4 @@
--- Criar tabela de usuários
+-- Criar tabela de utilizadores
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
@@ -45,13 +45,13 @@ CREATE TABLE IF NOT EXISTS public.shelters (
 -- Criar políticas RLS para a tabela users
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
--- Permitir que usuários anônimos possam inserir (registrar-se)
-CREATE POLICY "Permitir registro para anônimos" 
+-- Permitir que utilizadores anónimos possam inserir (registar-se)
+CREATE POLICY "Permitir registo para anónimos" 
 ON public.users FOR INSERT TO anon 
 WITH CHECK (true);
 
--- Permitir que usuários autenticados vejam seus próprios dados
-CREATE POLICY "Usuários podem ver seus próprios dados" 
+-- Permitir que utilizadores autenticados vejam os seus próprios dados
+CREATE POLICY "Utilizadores podem ver os seus próprios dados" 
 ON public.users FOR SELECT TO authenticated 
 USING (auth.uid() = id);
 
@@ -64,20 +64,20 @@ ON public.dogs FOR SELECT
 TO anon, authenticated 
 USING (true);
 
--- Permitir que usuários autenticados adicionem cães
-CREATE POLICY "Usuários autenticados podem adicionar cães" 
+-- Permitir que utilizadores autenticados adicionem cães
+CREATE POLICY "Utilizadores autenticados podem adicionar cães" 
 ON public.dogs FOR INSERT 
 TO authenticated 
 WITH CHECK (true);
 
--- Permitir que usuários autenticados atualizem seus próprios cães
-CREATE POLICY "Usuários podem atualizar seus próprios cães" 
+-- Permitir que utilizadores autenticados actualizem os seus próprios cães
+CREATE POLICY "Utilizadores podem actualizar os seus próprios cães" 
 ON public.dogs FOR UPDATE 
 TO authenticated 
 USING (auth.uid() = user_id);
 
--- Permitir que usuários autenticados excluam seus próprios cães
-CREATE POLICY "Usuários podem excluir seus próprios cães" 
+-- Permitir que utilizadores autenticados excluam os seus próprios cães
+CREATE POLICY "Utilizadores podem excluir os seus próprios cães" 
 ON public.dogs FOR DELETE 
 TO authenticated 
 USING (auth.uid() = user_id);
@@ -91,20 +91,20 @@ ON public.shelters FOR SELECT
 TO anon, authenticated 
 USING (true);
 
--- Permitir que usuários autenticados adicionem abrigos
-CREATE POLICY "Usuários autenticados podem adicionar abrigos" 
+-- Permitir que utilizadores autenticados adicionem abrigos
+CREATE POLICY "Utilizadores autenticados podem adicionar abrigos" 
 ON public.shelters FOR INSERT 
 TO authenticated 
 WITH CHECK (true);
 
--- Permitir que usuários autenticados atualizem seus próprios abrigos
-CREATE POLICY "Usuários podem atualizar seus próprios abrigos" 
+-- Permitir que utilizadores autenticados actualizem os seus próprios abrigos
+CREATE POLICY "Utilizadores podem actualizar os seus próprios abrigos" 
 ON public.shelters FOR UPDATE 
 TO authenticated 
 USING (auth.uid() = user_id);
 
--- Permitir que usuários autenticados excluam seus próprios abrigos
-CREATE POLICY "Usuários podem excluir seus próprios abrigos" 
+-- Permitir que utilizadores autenticados excluam os seus próprios abrigos
+CREATE POLICY "Utilizadores podem excluir os seus próprios abrigos" 
 ON public.shelters FOR DELETE 
 TO authenticated 
 USING (auth.uid() = user_id);
