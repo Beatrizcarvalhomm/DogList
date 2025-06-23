@@ -482,7 +482,6 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            transition: all 0.3s ease;
             background-color: #FFFFFF;
             position: absolute;
             left: 15px;
@@ -492,6 +491,12 @@
             border: none;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             z-index: 1001;
+            transition: none;
+        }
+
+        .back-button:hover {
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .title {
@@ -875,12 +880,6 @@
             100% {
                 transform: rotate(360deg);
             }
-        }
-
-        .back-button:hover {
-            background-color: #FFFFFF;
-            transform: translateX(-3px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         /* Responsive adjustments for search cards */
