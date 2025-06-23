@@ -257,7 +257,7 @@
             box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.2);
         }
         
-        /* Estilo para campos readonly como o contacto */
+        /* Estilo para campos readonly como o contato */
         .input-field[readonly] {
             background-color: #f0f0f0;
             color: #666;
@@ -590,11 +590,11 @@
                     </div>
                 </div>
 
-                <h2 class="section-title">Contacto</h2>
+                <h2 class="section-title">Contato</h2>
                 <div class="input-group">
-                    <label for="contact" class="option-label">Contacto</label>
+                    <label for="contact" class="option-label">Contato</label>
                     <input type="tel" id="contact" name="contact" class="input-field" 
-                        placeholder="O seu número de contacto" 
+                        placeholder="O seu número de contato" 
                         required
                         readonly
                         pattern="[2-9][0-9]{8}"
@@ -827,10 +827,10 @@
                             
                             // Quando o utilizador clica numa sugestão
                             div.addEventListener('click', function() {
-                                // Preencher o campo de pesquisa com o endereço seleccionado
+                                // Preencher o campo de pesquisa com o endereço selecionado
                                 document.getElementById('locationSearch').value = result.formatted_address;
                             
-                                // Mostrar o endereço seleccionado na interface do utilizador
+                                // Mostrar o endereço selecionado na interface do utilizador
                                 document.getElementById('locationText').textContent = result.formatted_address;
                             
                                 // Extrair e guardar as coordenadas para usar quando submeter o formulário
@@ -846,14 +846,14 @@
                                     address: result.formatted_address
                                 };
                             
-                                // Actualizar o mapa para mostrar a localização seleccionada
+                                // Atualizar o mapa para mostrar a localização selecionada
                                 if (map) {
                                     map.setCenter(result.geometry.location); // Centrar mapa na localização
                                     map.setZoom(16); // Fazer zoom para ver melhor a área
                                     
                                     // Remover marcador anterior se existir
                                     if (marker) marker.setMap(null);
-                                    // Criar novo marcador na localização seleccionada
+                                    // Criar novo marcador na localização selecionada
                                     marker = new google.maps.Marker({
                                         position: result.geometry.location,
                                         map: map,
@@ -862,7 +862,7 @@
                                     });
                                 }
                                 
-                                // Feedback visual: borda verde indica que a localização foi seleccionada com sucesso
+                                // Feedback visual: borda verde indica que a localização foi selecionada com sucesso
                                 document.querySelector('.location-info').style.border = '2px solid #2ecc71';
                             
                                 // Esconder as sugestões após selecção
@@ -940,7 +940,7 @@
                                 document.getElementById('locationSearch').value = formattedAddress;
                                 document.getElementById('locationText').textContent = formattedAddress;
                                 
-                                // Actualizar o mapa para mostrar a localização
+                                // Atualizar o mapa para mostrar a localização
                                 map.setCenter({lat, lng});
                                 map.setZoom(17); // Zoom próximo para mostrar detalhes da rua
                                 
@@ -962,7 +962,7 @@
                                 const coords = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                                 document.getElementById('locationText').textContent = `Localização actual (${coords})`;
                                 
-                                // Actualizar mapa mesmo sem endereço
+                                // Atualizar mapa mesmo sem endereço
                                 map.setCenter({lat, lng});
                                 
                                 if (marker) marker.setMap(null);
@@ -998,7 +998,7 @@
                         console.error('Erro de geolocalização:', error);
                         
                         // Mostrar mensagem de erro ao utilizador e sugerir alternativas
-                        alert(errorMsg + ' Por favor, seleccione manualmente no mapa ou use a pesquisa de morada.');
+                        alert(errorMsg + ' Por favor, selecione manualmente no mapa ou use a pesquisa de morada.');
                         document.getElementById('locationText').textContent = 'Clique no mapa ou pesquise uma morada';
                         document.querySelector('.location-info').style.border = ''; // Remover borda colorida
                         
@@ -1136,9 +1136,9 @@
                         } else {
                             console.log("Colunas da tabela 'dogs':", columnsData);
                             
-                            // Verificar se a coluna 'contacto' existe
-                            const contactoExists = columnsData.some(c => c.column_name === 'contacto');
-                            console.log("Coluna 'contacto' existe:", contactoExists);
+                            // Verificar se a coluna 'contato' existe
+                                            const contatoExists = columnsData.some(c => c.column_name === 'contato');
+                console.log("Coluna 'contato' existe:", contatoExists);
                             
                             // Verificar todas as variações possíveis do campo de contato
                             const contactVariations = ['contact', 'telefone', 'phone', 'telefono', 'phone_number'];
@@ -1148,8 +1148,8 @@
                             });
                             
                             // Armazenar o nome correto da coluna para uso posterior
-                            if (contactoExists) {
-                                window.contactColumnName = 'contacto';
+                                            if (contatoExists) {
+                    window.contactColumnName = 'contato';
                             } else {
                                 // Verificar se alguma variação existe
                                 for (const variation of contactVariations) {
@@ -1256,7 +1256,7 @@
                         endereco: dogData.endereco || null,
                         image: dogData.image,
                         location: dogData.location
-                        // Não incluir contacto pois não existe na tabela
+                        // Não incluir contato pois não existe na tabela
                         // created_at é gerenciado automaticamente pelo banco de dados
                     }]);
                 
@@ -1354,20 +1354,20 @@
                 }
                 
                 // Obter número de contato para usar como nome ou descrição
-                const contacto = document.getElementById('contact').value;
+                const contato = document.getElementById('contact').value;
                 
                 // Criar objeto de dados que corresponde EXATAMENTE à tabela do banco de dados
                 const dogData = {
                     user_id: userId,
                     // Usar o número de contato como nome para fins de referência
-                    nome: "Animal adicionado por: " + contacto,
+                    nome: "Animal adicionado por: " + contato,
                     raca: document.getElementById('breedSearch').value || null,
                     idade: formData.get('idade') || null,
                     sexo: formData.get('sexo') || null,
                     porte: formData.get('porte') || null,
                     estado: formData.get('estado'),
                     // Adicionar o contato na descrição já que não temos campo específico
-                    descricao: "Contato: " + contacto,
+                    descricao: "Contato: " + contato,
                     caracteristicas: null,
                     castrado: formData.get('castrado') === 'yes',
                     agressivo: formData.get('agressivo') || null,

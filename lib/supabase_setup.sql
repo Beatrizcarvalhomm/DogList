@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS public.dogs (
     estado TEXT NOT NULL CHECK (estado IN ('procurado', 'encontrado')),
     agressivo TEXT CHECK (agressivo IN ('nenhum', 'humanos', 'animais', 'ambos', 'desconhecido')),
     porte TEXT CHECK (porte IN ('pequeno', 'medio', 'grande')),
-    contacto TEXT NOT NULL,
+    contato TEXT NOT NULL,
     local JSONB NOT NULL, -- {lat: number, lng: number, address: string}
     data_registro TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
@@ -192,7 +192,7 @@ CREATE POLICY dogs_insert_policy ON public.dogs
 DROP POLICY IF EXISTS dogs_update_policy ON public.dogs;
 CREATE POLICY dogs_update_policy ON public.dogs
     FOR UPDATE
-    USING (true)  -- Para simplificar, qualquer utilizador pode actualizar
+    USING (true)  -- Para simplificar, qualquer utilizador pode atualizar
     WITH CHECK (true);
 
 DROP POLICY IF EXISTS dogs_delete_policy ON public.dogs;

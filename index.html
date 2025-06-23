@@ -507,7 +507,7 @@
             
             // ===== INICIALIZAR LIGAÇÃO À BASE DE DADOS =====
             try {
-                // Verificar se a biblioteca Supabase foi carregada correctamente
+                // Verificar se a biblioteca Supabase foi carregada corretamente
                 if (typeof supabase === 'undefined') {
                     throw new Error('Biblioteca Supabase não carregada. Verifique a sua ligação à internet.');
                 }
@@ -594,7 +594,7 @@
                     // Buscar utilizador pelo número de telefone
                     const { data, error } = await supabaseClient
                         .from('users') // Tabela 'users' na base de dados
-                        .select('*') // Seleccionar todas as colunas
+                        .select('*') // Selecionar todas as colunas
                         .eq('phone', phone) // Onde o telefone é igual ao inserido
                         .maybeSingle(); // Esperar no máximo um resultado
                     
@@ -611,7 +611,7 @@
                     
                     // ===== VERIFICAR PALAVRA-PASSE =====
                     if (data.password !== password) {
-                        showError('Palavra-passe incorrecta. Por favor, tente novamente.');
+                        showError('Palavra-passe incorreta. Por favor, tente novamente.');
                         return;
                     }
                     
@@ -622,7 +622,7 @@
                     
                     if (!uuidRegex.test(userId)) {
                         console.error('UUID inválido na base de dados:', userId);
-                        showError('Erro interno: dados de utilizador corrompidos. Entre em contacto com o suporte.');
+                        showError('Erro interno: dados de utilizador corrompidos. Entre em contato com o suporte.');
                         return;
                     }
                     

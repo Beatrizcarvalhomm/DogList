@@ -599,7 +599,7 @@
                 <div class="legend-color" style="background-color: #ffffff; display: flex; justify-content: center; align-items: center;">
                     <i class="fas fa-sync-alt" style="color: #FF7F50;"></i>
                 </div>
-                <span class="legend-text">Actualizar localização</span>
+                                    <span class="legend-text">Atualizar localização</span>
             </div>
         </div>
 
@@ -621,7 +621,7 @@
         }
         
         // Declaração das variáveis globais que vão ser usadas em toda a aplicação
-        let map; // Objecto do mapa do Google Maps
+        let map; // Objeto do mapa do Google Maps
         let userMarker; // Marcador que mostra onde o utilizador está localizado
         let petMarkers = []; // Array que guarda todos os marcadores dos animais (cães)
         let shelterMarkers = []; // Array que guarda todos os marcadores dos abrigos temporários
@@ -655,7 +655,7 @@
                 // Mostrar as dimensões do elemento do mapa no console para ajudar no debug
                 console.log("Dimensões do mapa:", mapElement.offsetWidth, "x", mapElement.offsetHeight);
             
-                // Criar o objecto do mapa do Google Maps com as configurações iniciais
+                // Criar o objeto do mapa do Google Maps com as configurações iniciais
                 map = new google.maps.Map(mapElement, {
                     center: { lat: -23.550520, lng: -46.633308 }, // Coordenadas de São Paulo como centro inicial
                     zoom: 12, // Nível de zoom inicial (12 é um bom nível para ver uma cidade)
@@ -755,7 +755,7 @@
             const savedLat = localStorage.getItem('userLocationLat');
             const savedLng = localStorage.getItem('userLocationLng');
             
-            // Se ambas as coordenadas existem, devolver um objecto com lat e lng
+                            // Se ambas as coordenadas existem, devolver um objeto com lat e lng
             if (savedLat && savedLng) {
                 return {
                     lat: parseFloat(savedLat), // Converter string para número decimal
@@ -845,7 +845,7 @@
                 
                 // Tentar extrair coordenadas de diferentes formatos possíveis
                 if (dog.location) {
-                    // Verificar se location é um objecto (formato mais comum)
+                    // Verificar se location é um objeto (formato mais comum)
                     if (typeof dog.location === 'object') {
                         if (dog.location.lat !== undefined && dog.location.lng !== undefined) {
                             // Formato padrão: {lat: X, lng: Y}
@@ -857,7 +857,7 @@
                             lng = parseFloat(dog.location.longitude);
                         }
                     } else if (typeof dog.location === 'string') {
-                        // Se location é uma string, tentar converter para objecto JSON
+                        // Se location é uma string, tentar converter para objeto JSON
                         try {
                             const locationObj = JSON.parse(dog.location);
                             lat = parseFloat(locationObj.lat || locationObj.latitude);
@@ -867,11 +867,11 @@
                         }
                     }
                 } else if (dog.lat !== undefined && dog.lng !== undefined) {
-                    // Coordenadas guardadas directamente no objecto do cão
+                    // Coordenadas guardadas diretamente no objeto do cão
                     lat = parseFloat(dog.lat);
                     lng = parseFloat(dog.lng);
                 } else if (dog.latitude !== undefined && dog.longitude !== undefined) {
-                    // Formato alternativo guardado directamente no objecto do cão
+                    // Formato alternativo guardado diretamente no objeto do cão
                     lat = parseFloat(dog.latitude);
                     lng = parseFloat(dog.longitude);
                 }
@@ -953,7 +953,7 @@
                 marker.dogData = dog;
                         
                 // Criar o conteúdo HTML da janela de informação (popup) que aparece ao clicar no marcador
-                // Este HTML inclui toda a informação do animal e botões de acção
+                // Este HTML inclui toda a informação do animal e botões de ação
                 const contentString = `
                     <div style="width: 220px; background: white; padding: 0; margin: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); position: relative; border: 2px solid ${dog.estado === 'procurado' ? '#e74c3c' : '#27ae60'};">
                         <!-- Cabeçalho com o estado do animal (Procurado/Encontrado) -->
@@ -969,7 +969,7 @@
                         <!-- Container principal para todo o conteúdo do popup -->
                         <div style="background: white; margin: 0; padding: 0; border-radius: 0 0 12px 12px;">
                         
-                        <!-- Secção da imagem do animal -->
+                        <!-- Seção da imagem do animal -->
                             ${dog.image ? 
                         // Se o animal tem foto, mostrar a imagem real
                         `<div style="text-align: center; margin: 0; padding: 10px 0 8px 0;">
@@ -982,7 +982,7 @@
                             </div>
                         </div>`}
                         
-                        <!-- Secção do nome e raça do animal -->
+                        <!-- Seção do nome e raça do animal -->
                         <div style="text-align: center; margin: 0; padding: 0 15px 10px 15px;">
                             <h3 style="margin: 0; font-size: 16px; color: #333; font-weight: 600;">
                                 ${(() => {
@@ -1007,7 +1007,7 @@
                             })()}
                             </div>
                         
-                        <!-- Secção da localização/endereço onde o animal foi visto -->
+                        <!-- Seção da localização/endereço onde o animal foi visto -->
                         <div style="margin: 0 15px 12px 15px; padding: 8px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #ff7f50;">
                             <div style="display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-map-marker-alt" style="color: #ff7f50; margin-right: 6px; font-size: 12px;"></i>
@@ -1015,17 +1015,17 @@
                             </div>
                         </div>
                         
-                        <!-- Secção de contacto (só aparece se existir número de telefone) -->
+                        <!-- Seção de contato (só aparece se existir número de telefone) -->
                         ${dog.users && dog.users.phone ? `
                         <div style="margin: 0 15px 12px 15px; padding: 8px; background: #e8f5e8; border-radius: 8px; border-left: 3px solid #4CAF50;">
                             <div style="display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-user" style="color: #4CAF50; margin-right: 6px; font-size: 12px;"></i>
-                                <span style="font-size: 12px; color: #555; text-align: center;">${dog.users.name || 'Contacto'}: ${dog.users.phone}</span>
+                                <span style="font-size: 12px; color: #555; text-align: center;">${dog.users.name || 'Contato'}: ${dog.users.phone}</span>
                             </div>
                         </div>
                         ` : ''}
                         
-                        <!-- Secção dos botões de acção -->
+                        <!-- Seção dos botões de ação -->
                         <div style="padding: 0 15px 15px; display: flex; flex-direction: column; gap: 8px;">
                             <!-- Botão para ver detalhes completos do animal -->
                             <button onclick="location.href='animal-details.html?id=${dog.id}'" style="background: #ff7f50; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 13px; font-weight: 500;">
@@ -1033,7 +1033,7 @@
                                     <i class="fas fa-info-circle" style="margin-right: 6px; font-size: 13px;"></i>Ver Detalhes
                                     </span>
                                 </button>
-                            <!-- Botão para abrir direcções no Google Maps -->
+                            <!-- Botão para abrir direções no Google Maps -->
                             <button onclick="openDirections(${lat}, ${lng})" style="background: #4CAF50; color: white; padding: 10px 0; border: none; border-radius: 20px; cursor: pointer; width: 100%; text-align: center; font-size: 13px; font-weight: 500;">
                                 <span style="display: inline-flex; align-items: center; justify-content: center;">
                                     <i class="fas fa-route" style="margin-right: 6px; font-size: 13px;"></i>Como chegar
@@ -1343,7 +1343,7 @@
                     id: shelter.id,
                     userId: shelter.user_id,
                     userName: shelter.users ? shelter.users.name : 'Anônimo',
-                    contacto: shelter.users ? shelter.users.phone : '',
+                    contato: shelter.users ? shelter.users.phone : '',
                     endereco: shelter.endereco,
                     location: shelter.location,
                     photoUrl: shelter.photo_url,
@@ -1466,7 +1466,7 @@
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <i class="fas fa-phone" style="color: #ff9800; margin-right: 5px;"></i>
-                                    <span style="font-size: 13px;">${shelter.contacto || 'Contato não disponível'}</span>
+                                    <span style="font-size: 13px;">${shelter.contato || 'Contato não disponível'}</span>
                                 </div>
                             </div>
                             <div style="padding: 0 15px 15px;">
@@ -1596,7 +1596,7 @@
                         </div>
                         <div style="margin-bottom: 15px;">
                             <i class="fas fa-phone" style="color: #ff9800; margin-right: 5px;"></i>
-                            <span style="font-size: 13px;">${shelter.contacto || 'Contato não disponível'}</span>
+                            <span style="font-size: 13px;">${shelter.contato || 'Contato não disponível'}</span>
                         </div>
                     </div>
                     
@@ -1690,7 +1690,7 @@
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <i class="fas fa-phone" style="color: #ff9800; margin-right: 5px;"></i>
-                                    <span style="font-size: 13px;">${marker.shelterData.contacto || 'Contato não disponível'}</span>
+                                    <span style="font-size: 13px;">${marker.shelterData.contato || 'Contato não disponível'}</span>
                                 </div>
                             </div>
                             <div style="padding: 0 15px 15px;">
@@ -1747,7 +1747,7 @@
                 }
             });
             
-            // Actualizar a aparência visual da legenda para reflectir o estado
+                            // Atualizar a aparência visual da legenda para refletir o estado
             updateLegendAppearance();
             
             // Efeito visual temporário para mostrar que algo mudou
@@ -1958,8 +1958,8 @@
                         alert('Localização actualizada com sucesso!');
                     },
                     (error) => {
-                        console.error('Erro ao actualizar localização:', error);
-                        alert('Não foi possível actualizar a sua localização. Verifique as permissões do seu navegador.');
+                                        console.error('Erro ao atualizar localização:', error);
+                alert('Não foi possível atualizar a sua localização. Verifique as permissões do seu navegador.');
                     },
                     { timeout: 10000, maximumAge: 600000 }
                 );
@@ -2052,7 +2052,7 @@
             }
         }
 
-        // Função para abrir direcções no Google Maps quando o utilizador clica em "Como chegar"
+                    // Função para abrir direções no Google Maps quando o utilizador clica em "Como chegar"
         // Tenta usar a localização do utilizador como ponto de partida
         function openDirections(destinationLat, destinationLng) {
             // Primeiro, tentar usar a localização guardada do utilizador

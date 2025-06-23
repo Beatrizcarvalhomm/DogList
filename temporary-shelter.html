@@ -1,7 +1,7 @@
 <!--
     DogList - Abrigo Temporário
     Comentários detalhados em português de Portugal para explicar toda a estrutura, estilos e scripts.
-    Este ficheiro permite ao utilizador registar ou actualizar um abrigo temporário para animais.
+    Este ficheiro permite ao utilizador registar ou atualizar um abrigo temporário para animais.
 -->
 <!DOCTYPE html>
 <html lang="pt">
@@ -871,7 +871,7 @@
                     };
                     
                 }, function() {
-                    alert('Erro ao obter a localização actual. Por favor, tente novamente ou seleccione manualmente no mapa.');
+                    alert('Erro ao obter a localização atual. Por favor, tente novamente ou selecione manualmente no mapa.');
                 }, {
                     enableHighAccuracy: true,
                     timeout: 10000,
@@ -1043,7 +1043,7 @@
             
                 if (!currentUserId) {
                     console.log('Erro: Usuário não está logado ou ID não encontrado');
-                    alert('Precisa de estar com sessão iniciada para registar um abrigo. Vamos redireccionar para a página de login.');
+                    alert('Precisa de estar com sessão iniciada para registar um abrigo. Vamos redirecionar para a página de login.');
                     window.location.href = 'index.html';
                     return;
             }
@@ -1190,7 +1190,7 @@
                 const endereco = document.getElementById('locationText').textContent;
                 if (!endereco || endereco === 'Localização selecionada' || endereco.trim() === '') {
                     console.error('Erro: Endereço não especificado');
-                    throw new Error('Por favor, seleccione uma morada válida no mapa.');
+                    throw new Error('Por favor, selecione uma morada válida no mapa.');
                 }
                 
                 // Garantir que a localização esteja no formato correto
@@ -1236,7 +1236,7 @@
                     
                     if (result.error) {
                         console.error('Erro detalhado ao atualizar abrigo:', result.error);
-                        throw new Error('Falha ao actualizar informações do abrigo');
+                        throw new Error('Falha ao atualizar informações do abrigo');
                     }
                     
                 alert('Abrigo temporário actualizado com sucesso!');

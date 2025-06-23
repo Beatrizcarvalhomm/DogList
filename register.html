@@ -569,7 +569,7 @@
                         // ===== VERIFICAR SE O TELEFONE JÁ ESTÁ REGISTADO =====
                         const { data: existingUsers, error: checkError } = await supabaseClient
                             .from('users') // Tabela de utilizadores
-                            .select('*') // Seleccionar todos os campos
+                            .select('*') // Selecionar todos os campos
                             .eq('phone', phone) // Onde o telefone é igual ao inserido
                             .maybeSingle(); // Esperar no máximo um resultado
                         
@@ -597,7 +597,7 @@
                             throw new Error(`Erro ao criar utilizador: ${insertError.message}`);
                         }
                         
-                        // Verificar se os dados foram inseridos correctamente
+                        // Verificar se os dados foram inseridos corretamente
                         if (!data || data.length === 0) {
                             throw new Error('Resposta vazia do servidor ao criar utilizador');
                         }

@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS public.dogs (
     castrado BOOLEAN,
     agressivo TEXT,
     endereco TEXT,
-    contacto TEXT,
+    contato TEXT,
     image TEXT,
     location JSONB,
     data_adicao TIMESTAMP WITH TIME ZONE DEFAULT NOW()

@@ -385,7 +385,7 @@
                     <div class="info-item">
                         <i class="fas fa-phone"></i>
                         <div class="info-text">
-                            <strong>Contacto</strong>
+                            <strong>Contato</strong>
                             <span id="shelterContact">Carregando...</span>
                         </div>
                     </div>
@@ -618,7 +618,7 @@
                     id: data.id,
                     userId: data.user_id,
                     userName: data.users ? data.users.name : 'Anônimo',
-                    contacto: data.users ? data.users.phone : 'Contacto não disponível',
+                    contato: data.users ? data.users.phone : 'Contato não disponível',
                     endereco: data.endereco,
                     location: data.location,
                     photoUrl: data.photo_url,
@@ -645,12 +645,12 @@
             // Preencher informações básicas
             document.getElementById('shelterName').textContent = shelter.userName;
             document.getElementById('shelterLocation').textContent = shelter.endereco || 'Localização não disponível';
-            document.getElementById('shelterContact').textContent = shelter.contacto;
+            document.getElementById('shelterContact').textContent = shelter.contato;
             
             // Configurar botão de ligar
             const callButton = document.getElementById('callButton');
-            if (shelter.contacto && shelter.contacto !== 'Contacto não disponível') {
-                callButton.href = `tel:${shelter.contacto}`;
+            if (shelter.contato && shelter.contato !== 'Contato não disponível') {
+                callButton.href = `tel:${shelter.contato}`;
             } else {
                 callButton.style.opacity = '0.5';
                 callButton.style.pointerEvents = 'none';

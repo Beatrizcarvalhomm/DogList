@@ -333,7 +333,7 @@
                             </div>
                             <div class="result-contact">
                                 <i class="fas fa-phone"></i>
-                                <span>Contato: ${dog.contacto || (dog.descricao && dog.descricao.includes('Contato:') ? dog.descricao.split('Contato:')[1].trim() : 'Não disponível')}</span>
+                                <span>Contato: ${dog.contato || (dog.descricao && dog.descricao.includes('Contato:') ? dog.descricao.split('Contato:')[1].trim() : 'Não disponível')}</span>
                             </div>
                             <button onclick="showDetails('${dog.id}')" class="see-more">Ver mais detalhes</button>
                         </div>
@@ -354,7 +354,7 @@
         // ===== FUNÇÃO PARA PROCESSAR PESQUISA COM FILTROS =====
         // Esta função é chamada quando o utilizador clica no botão "Pesquisar"
         function handleSearch() {
-            // Recolher todos os valores dos filtros seleccionados pelo utilizador
+            // Recolher todos os valores dos filtros selecionados pelo utilizador
             const filters = {
                 estado: document.getElementById('estado').value,        // Procurado ou Encontrado
                 raca: document.getElementById('raca').value,            // Raça do animal

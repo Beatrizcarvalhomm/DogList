@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.dogs (
     castrado BOOLEAN,
     agressivo TEXT,
     endereco TEXT,
-    contacto TEXT,
+    contato TEXT,
     image TEXT,
     location JSONB,
     data_adicao TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -71,7 +71,7 @@ TO authenticated
 WITH CHECK (true);
 
 -- Permitir que utilizadores autenticados actualizem os seus próprios cães
-CREATE POLICY "Utilizadores podem actualizar os seus próprios cães" 
+CREATE POLICY "Utilizadores podem atualizar os seus próprios cães" 
 ON public.dogs FOR UPDATE 
 TO authenticated 
 USING (auth.uid() = user_id);
@@ -98,7 +98,7 @@ TO authenticated
 WITH CHECK (true);
 
 -- Permitir que utilizadores autenticados actualizem os seus próprios abrigos
-CREATE POLICY "Utilizadores podem actualizar os seus próprios abrigos" 
+CREATE POLICY "Utilizadores podem atualizar os seus próprios abrigos" 
 ON public.shelters FOR UPDATE 
 TO authenticated 
 USING (auth.uid() = user_id);
