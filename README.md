@@ -14,18 +14,6 @@ O DogList é uma aplicação web para gerir e visualizar a localização de cãe
   - `clinics.html` - Mapa de clínicas veterinárias
   - `animal-details.html` - Detalhes de um animal específico
 
-- **Ferramentas de diagnóstico:**
-  - `dog-debug.html` - Visualização e diagnóstico dos dados dos cães armazenados
-
-## Como Usar a Ferramenta de Diagnóstico
-
-A página `dog-debug.html` permite verificar, corrigir e testar o funcionamento do sistema de cães:
-
-1. **Visualizar Cães Cadastrados** - Mostra todos os cães salvos no armazenamento local.
-2. **Corrigir Cães** - Ajusta automaticamente problemas comuns nos dados dos cães.
-3. **Adicionar Cão Teste** - Cria um cão de teste com localização aleatória próxima a Lisboa.
-4. **Voltar ao Mapa** - Retorna à página principal com o mapa.
-
 ## Funcionamento do Mapa
 
 - **Marcadores no Mapa:**
@@ -45,14 +33,6 @@ A aplicação utiliza o localStorage do navegador para armazenar:
 - **Cães cadastrados** - Incluindo localização, características e estado
 - **Preferências do utilizador** - Como a última posição no mapa
 
-## Depuração de Problemas
-
-Se os cães não aparecerem no mapa, você pode:
-
-1. Usar a ferramenta `dog-debug.html` para verificar se existem cães cadastrados
-2. Adicionar um cão de teste com o botão apropriado
-3. Verificar se os cães têm coordenadas válidas (lat/lng)
-4. Usar o botão "Corrigir Cães" para resolver problemas comuns
 
 ## Desenvolvimento
 
